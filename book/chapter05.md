@@ -2,15 +2,15 @@
 
 # 使用 Struct 來組織相關資料
 
-*Struct*，或者說*結構*，是一種自訂資料型別，讓你可以將多個相關的值打包在一起並命名，形成一個有意義的群組。如果你熟悉物件導向語言，*struct* 就像是一個物件的資料屬性。在本章中，我們將比較 tuple 和 struct，以深化你已有的知識，並展示 struct 何時是分組資料更好的方式。
+_Struct_，或者說_結構_，是一種自訂資料型別，讓你可以將多個相關的值打包在一起並命名，形成一個有意義的群組。如果你熟悉物件導向語言，_struct_ 就像是一個物件的資料屬性。在本章中，我們將比較 tuple 和 struct，以深化你已有的知識，並展示 struct 何時是分組資料更好的方式。
 
-我們將示範如何定義和實例化 struct。我們將討論如何定義 associated functions，特別是稱為 *methods* 的 associated functions，以指定與 struct 型別相關的行為。Struct 和 enum (在第六章討論) 是在你的程式 domain 中建立新型別的基礎，以便充分利用 Rust 的編譯時型別檢查。
+我們將示範如何定義和實例化 struct。我們將討論如何定義 associated functions，特別是稱為 _methods_ 的 associated functions，以指定與 struct 型別相關的行為。Struct 和 enum (在第六章討論) 是在你的程式 domain 中建立新型別的基礎，以便充分利用 Rust 的編譯時型別檢查。
 
 ## 定義和實例化 Struct
 
 Struct 與在「The Tuple Type」章節中討論的 tuple 相似，兩者都包含多個相關的值。如同 tuple，struct 的組成部分可以是不同的 type。但與 tuple 不同的是，在 struct 中，你會命名每個資料片段，使其明確表示這些值的意義。增加這些名稱意味著 struct 比 tuple 更靈活：你不需要依賴資料的順序來指定或存取實例的值。
 
-要定義一個 struct，我們輸入關鍵字 `struct` 並為整個 struct 命名。struct 的名稱應該描述被分組資料片段的重要性。然後，在花括號內部，我們定義了資料片段的名稱和 type，我們稱這些為 *fields*。舉例來說，Listing 5-1 展示了一個儲存使用者帳戶資訊的 struct。
+要定義一個 struct，我們輸入關鍵字 `struct` 並為整個 struct 命名。struct 的名稱應該描述被分組資料片段的重要性。然後，在花括號內部，我們定義了資料片段的名稱和 type，我們稱這些為 _fields_。舉例來說，Listing 5-1 展示了一個儲存使用者帳戶資訊的 struct。
 
 src/main.rs
 
@@ -25,7 +25,7 @@ struct User {
 
 Listing 5-1: `User` struct 的定義
 
-在定義完 struct 後要使用它，我們透過為每個 fields 指定具體的值來建立該 struct 的*實例*。我們透過聲明 struct 的名稱，然後添加包含 *`key: value`* 對的花括號來建立實例，其中 key 是 fields 的名稱，values 是我們想儲存在這些 fields 中的資料。我們不需要按照 struct 中宣告它們的順序來指定 fields。換句話說，struct 定義就像是該 type 的通用 template，而實例則用特定的資料填充該 template，以建立該 type 的值。舉例來說，我們可以按照 Listing 5-2 所示來宣告一個特定的使用者。
+在定義完 struct 後要使用它，我們透過為每個 fields 指定具體的值來建立該 struct 的_實例_。我們透過聲明 struct 的名稱，然後添加包含 _`key: value`_ 對的花括號來建立實例，其中 key 是 fields 的名稱，values 是我們想儲存在這些 fields 中的資料。我們不需要按照 struct 中宣告它們的順序來指定 fields。換句話說，struct 定義就像是該 type 的通用 template，而實例則用特定的資料填充該 template，以建立該 type 的值。舉例來說，我們可以按照 Listing 5-2 所示來宣告一個特定的使用者。
 
 src/main.rs
 
@@ -86,7 +86,7 @@ Listing 5-4: 一個 `build_user` function，它接受一個 email 和 username �
 
 ### 使用 Field Init 簡寫語法
 
-由於 Listing 5-4 中的參數名稱和 struct field 名稱完全相同，我們可以使用 *field init shorthand* 語法來重寫 `build_user`，使其行為完全相同，但避免了 `username` 和 `email` 的重複，如 Listing 5-5 所示。
+由於 Listing 5-4 中的參數名稱和 struct field 名稱完全相同，我們可以使用 _field init shorthand_ 語法來重寫 `build_user`，使其行為完全相同，但避免了 `username` 和 `email` 的重複，如 Listing 5-5 所示。
 
 src/main.rs
 
@@ -107,7 +107,7 @@ Listing 5-5: 一個 `build_user` function，它使用 field init shorthand，因
 
 ### 使用 Struct Update 語法從其他實例建立實例
 
-建立一個 struct 的新實例，其中包含同一 type 的另一個實例的大部分值，但只改變部分值，這種做法通常很有用。你可以使用 *struct update syntax* 來做到這一點。
+建立一個 struct 的新實例，其中包含同一 type 的另一個實例的大部分值，但只改變部分值，這種做法通常很有用。你可以使用 _struct update syntax_ 來做到這一點。
 
 首先，在 Listing 5-6 中，我們展示了如何在 `user2` 中以常規方式建立新的 `User` 實例，而不使用 update syntax。我們為 `email` 設定一個新值，但其他部分則使用我們在 Listing 5-2 中建立的 `user1` 中的相同值。
 
@@ -151,7 +151,7 @@ Listing 5-7 中的程式碼也在 `user2` 中建立了一個實例，該實例�
 
 ### 使用沒有命名 fields 的 Tuple Struct 來建立不同的 Type
 
-Rust 也支援看起來像 tuple 的 struct，稱為 *tuple structs*。Tuple structs 具有 struct 名稱所提供的額外意義，但其 fields 沒有關聯的名稱；相反地，它們只有 fields 的 type。Tuple structs 在你希望為整個 tuple 命名並使其成為與其他 tuple 不同的 type 時很有用，以及當像常規 struct 那樣命名每個 field 會顯得冗長或重複時。
+Rust 也支援看起來像 tuple 的 struct，稱為 _tuple structs_。Tuple structs 具有 struct 名稱所提供的額外意義，但其 fields 沒有關聯的名稱；相反地，它們只有 fields 的 type。Tuple structs 在你希望為整個 tuple 命名並使其成為與其他 tuple 不同的 type 時很有用，以及當像常規 struct 那樣命名每個 field 會顯得冗長或重複時。
 
 要定義一個 tuple struct，請以 `struct` 關鍵字和 struct 名稱開頭，後面接著 tuple 中的 type。舉例來說，這裡我們定義並使用了兩個名為 `Color` 和 `Point` 的 tuple structs：
 
@@ -171,7 +171,7 @@ fn main() {
 
 ### 不帶任何 Field 的 Unit-Like Struct
 
-你也可以定義不帶任何 fields 的 struct！這些稱為 *unit-like structs*，因為它們的行為與我們在「The Tuple Type」章節中提到的 unit type `()` 相似。當你需要為某個 type 實作一個 trait 但不想在 type 本身儲存任何資料時，unit-like structs 可能會很有用。我們將在第十章討論 traits。以下是宣告和實例化一個名為 `AlwaysEqual` 的 unit struct 的範例：
+你也可以定義不帶任何 fields 的 struct！這些稱為 _unit-like structs_，因為它們的行為與我們在「The Tuple Type」章節中提到的 unit type `()` 相似。當你需要為某個 type 實作一個 trait 但不想在 type 本身儲存任何資料時，unit-like structs 可能會很有用。我們將在第十章討論 traits。以下是宣告和實例化一個名為 `AlwaysEqual` 的 unit struct 的範例：
 
 src/main.rs
 
@@ -189,7 +189,7 @@ fn main() {
 >
 > 在 Listing 5-1 的 `User` struct 定義中，我們使用了 owned 的 `String` type 而不是 `&str` string slice type。這是一個有意的選擇，因為我們希望這個 struct 的每個實例都擁有其所有資料，並且該資料在整個 struct 有效期間都保持有效。
 >
-> Structs 也可以儲存對其他東西所擁有資料的 reference，但這樣做需要使用 *lifetimes*，這是 Rust 的一個功能，我們將在第十章討論。Lifetimes 確保 struct 參考的資料在 struct 有效期間都保持有效。假設你嘗試在 struct 中儲存一個 reference，但沒有指定 lifetimes，如下所示；這將無法運作：
+> Structs 也可以儲存對其他東西所擁有資料的 reference，但這樣做需要使用 _lifetimes_，這是 Rust 的一個功能，我們將在第十章討論。Lifetimes 確保 struct 參考的資料在 struct 有效期間都保持有效。假設你嘗試在 struct 中儲存一個 reference，但沒有指定 lifetimes，如下所示；這將無法運作：
 >
 > <Listing file-name="src/main.rs">
 >
@@ -257,7 +257,7 @@ fn main() {
 
 為了理解我們何時可能想使用 struct，讓我們來編寫一個計算矩形面積的程式。我們將從使用單一變數開始，然後重構程式直到我們改用 struct。
 
-讓我們使用 Cargo 建立一個新的 binary project，名為 *rectangles*，它將接受以像素指定的矩形寬度和高度，並計算矩形的面積。Listing 5-8 展示了一個簡短的程式，這是我們專案中 *src/main.rs* 裡實現此目標的一種方式。
+讓我們使用 Cargo 建立一個新的 binary project，名為 _rectangles_，它將接受以像素指定的矩形寬度和高度，並計算矩形的面積。Listing 5-8 展示了一個簡短的程式，這是我們專案中 _src/main.rs_ 裡實現此目標的一種方式。
 
 src/main.rs
 
@@ -398,8 +398,8 @@ error[E0277]: `Rectangle` doesn't implement `std::fmt::Display`
 如果我們繼續閱讀錯誤訊息，我們會找到這個有用的提示：
 
 ```text
-   = help: the trait `std::fmt::Display` is not implemented for `Rectangle`
-   = note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
+= help: the trait `std::fmt::Display` is not implemented for `Rectangle`
+= note: in format strings you may be able to use `{:?}` (or {:#?} for pretty-print) instead
 ```
 
 我們來試試看！現在 `println!` macro 呼叫將會像 `println!("rect1 is {rect1:?}");`。將 specifier `:?` 放在花括號內部，會告訴 `println!` 我們想使用一種稱為 `Debug` 的輸出格式。`Debug` trait 使我們能夠以對開發人員有用的方式印出我們的 struct，這樣我們在除錯程式碼時就可以看到它的值。
@@ -413,8 +413,8 @@ error[E0277]: `Rectangle` doesn't implement `Debug`
 但同樣地，編譯器又給了我們一個有用的提示：
 
 ```text
-   = help: the trait `Debug` is not implemented for `Rectangle`
-   = note: add `#[derive(Debug)]` to `Rectangle` or manually `impl Debug for Rectangle`
+= help: the trait `Debug` is not implemented for `Rectangle`
+= note: add `#[derive(Debug)]` to `Rectangle` or manually `impl Debug for Rectangle`
 ```
 
 Rust *確實*包含印出除錯資訊的功能，但我們必須明確地選擇啟用，才能使該功能對我們的 struct 可用。為此，我們在 struct 定義之前添加外層 attribute `#[derive(Debug)]`，如 Listing 5-12 所示。
@@ -501,15 +501,15 @@ $ cargo run
 }
 ```
 
-我們可以看到第一部分輸出來自 *src/main.rs* 第 10 行，我們正在對 expression `30 * scale` 進行除錯，其結果值為 `60` (為整數實作的 `Debug` 格式化只會印出它們的值)。*src/main.rs* 第 14 行的 `dbg!` 呼叫輸出了 `&rect1` 的值，也就是 `Rectangle` struct。這個輸出使用了 `Rectangle` type 的美觀 `Debug` 格式化。當你嘗試找出程式碼在做什麼時，`dbg!` macro 會非常有用！
+我們可以看到第一部分輸出來自 _src/main.rs_ 第 10 行，我們正在對 expression `30 * scale` 進行除錯，其結果值為 `60` (為整數實作的 `Debug` 格式化只會印出它們的值)。_src/main.rs_ 第 14 行的 `dbg!` 呼叫輸出了 `&rect1` 的值，也就是 `Rectangle` struct。這個輸出使用了 `Rectangle` type 的美觀 `Debug` 格式化。當你嘗試找出程式碼在做什麼時，`dbg!` macro 會非常有用！
 
 除了 `Debug` trait 之外，Rust 還提供了許多可供我們與 `derive` attribute 搭配使用的 traits，這些 traits 可以為我們的自訂 type 添加實用行為。這些 traits 及其行為列在附錄 C 中。我們將在第十章介紹如何實作這些帶有自訂行為的 traits，以及如何建立自己的 traits。除了 `derive` 之外還有許多其他 attributes；更多資訊請參閱 Rust Reference 的「Attributes」章節，網址為 [https://doc.rust-lang.org/book/reference/attributes.html](https://doc.rust-lang.org/book/reference/attributes.html)。
 
-我們的 `area` function 非常具體：它只計算矩形的面積。將此行為與我們的 `Rectangle` struct 更緊密地綁定會很有幫助，因為它無法與任何其他 type 配合使用。讓我們看看如何透過將 `area` function 變成在 `Rectangle` type 上定義的 `area` *method* 來繼續重構這段程式碼。
+我們的 `area` function 非常具體：它只計算矩形的面積。將此行為與我們的 `Rectangle` struct 更緊密地綁定會很有幫助，因為它無法與任何其他 type 配合使用。讓我們看看如何透過將 `area` function 變成在 `Rectangle` type 上定義的 `area` _method_ 來繼續重構這段程式碼。
 
 ## Method 語法
 
-*Methods* 與 functions 相似：我們使用 `fn` 關鍵字和一個名稱來宣告它們，它們可以有參數和回傳值，並且包含一些在 method 從其他地方被呼叫時執行的程式碼。與 functions 不同的是，methods 是在 struct 的 context (或 enum 或 trait object，我們分別在第六章和第十八章討論) 中定義的，而且它們的第一個參數始終是 `self`，它代表呼叫該 method 的 struct 實例。
+_Methods_ 與 functions 相似：我們使用 `fn` 關鍵字和一個名稱來宣告它們，它們可以有參數和回傳值，並且包含一些在 method 從其他地方被呼叫時執行的程式碼。與 functions 不同的是，methods 是在 struct 的 context (或 enum 或 trait object，我們分別在第六章和第十八章討論) 中定義的，而且它們的第一個參數始終是 `self`，它代表呼叫該 method 的 struct 實例。
 
 ### 定義 Methods
 
@@ -545,7 +545,7 @@ fn main() {
 
 Listing 5-13: 在 `Rectangle` struct 上定義 `area` method
 
-要在 `Rectangle` 的 context 中定義 function，我們為 `Rectangle` 開始一個 `impl` (實作) block。這個 `impl` block 內的所有內容都將與 `Rectangle` type 相關聯。然後我們將 `area` function 移到 `impl` 的花括號內，並將 signature 中和 body 內的第一個 (也是唯一一個) 參數改為 `self`。在 `main` 中，我們呼叫 `area` function 並傳遞 `rect1` 作為參數的地方，現在可以使用 *method syntax* 來在我們的 `Rectangle` 實例上呼叫 `area` method。method 語法跟在實例後面：我們添加一個點，然後是 method 名稱、括號和任何參數。
+要在 `Rectangle` 的 context 中定義 function，我們為 `Rectangle` 開始一個 `impl` (實作) block。這個 `impl` block 內的所有內容都將與 `Rectangle` type 相關聯。然後我們將 `area` function 移到 `impl` 的花括號內，並將 signature 中和 body 內的第一個 (也是唯一一個) 參數改為 `self`。在 `main` 中，我們呼叫 `area` function 並傳遞 `rect1` 作為參數的地方，現在可以使用 _method syntax_ 來在我們的 `Rectangle` 實例上呼叫 `area` method。method 語法跟在實例後面：我們添加一個點，然後是 method 名稱、括號和任何參數。
 
 在 `area` 的 signature 中，我們使用 `&self` 而不是 `rectangle: &Rectangle`。`&self` 實際上是 `self: &Self` 的簡寫。在 `impl` block 中，type `Self` 是該 `impl` block 所針對的 type 的 alias。Methods 的第一個參數必須是 `Self` type 且名為 `self`，因此 Rust 允許你只在第一個參數位置使用 `self` 來縮寫。請注意，我們仍然需要在 `self` 簡寫前面使用 `&`，以表示此 method borrow 了 `Self` 實例，就像我們在 `rectangle: &Rectangle` 中所做的那樣。Methods 可以取得 `self` 的 ownership，像我們在這裡一樣 immutable borrow `self`，或者 mutable borrow `self`，就像它們可以對任何其他參數一樣。
 
@@ -578,13 +578,13 @@ fn main() {
 
 在這裡，我們選擇讓 `width` method 在實例的 `width` field 值大於 `0` 時回傳 `true`，在值為 `0` 時回傳 `false`：我們可以為了任何目的在同名 method 內使用 field。在 `main` 中，當我們在 `rect1.width` 後加上括號時，Rust 知道我們指的是 `width` method。當我們不使用括號時，Rust 知道我們指的是 `width` field。
 
-通常 (但非總是如此)，當我們給 method 與 field 相同的名稱時，我們希望它只回傳 field 中的值，而不做其他事情。像這樣的 methods 稱為 *getters*，Rust 不會像其他一些語言那樣自動為 struct fields 實作它們。Getters 很有用，因為你可以將 field 設為 private，但將 method 設為 public，從而允許對該 field 的唯讀存取作為 type 的 public API 的一部分。我們將在第七章討論 public 和 private 是什麼，以及如何將 field 或 method 指定為 public 或 private。
+通常 (但非總是如此)，當我們給 method 與 field 相同的名稱時，我們希望它只回傳 field 中的值，而不做其他事情。像這樣的 methods 稱為 _getters_，Rust 不會像其他一些語言那樣自動為 struct fields 實作它們。Getters 很有用，因為你可以將 field 設為 private，但將 method 設為 public，從而允許對該 field 的唯讀存取作為 type 的 public API 的一部分。我們將在第七章討論 public 和 private 是什麼，以及如何將 field 或 method 指定為 public 或 private。
 
 > ### -> 運算子在哪裡？
 >
 > 在 C 和 C++ 中，呼叫 methods 使用兩種不同的運算子：如果你直接在 object 上呼叫 method，使用 `.`；如果你在指向 object 的 pointer 上呼叫 method 並需要先 dereference 該 pointer，則使用 `->`。換句話說，如果 `object` 是一個 pointer，`object->something()` 與 `(*object).something()` 相似。
 >
-> Rust 沒有等同於 `->` 運算子的東西；相反地，Rust 有一個稱為 *automatic referencing and dereferencing* 的功能。呼叫 methods 是 Rust 中少數有此行為的地方之一。
+> Rust 沒有等同於 `->` 運算子的東西；相反地，Rust 有一個稱為 _automatic referencing and dereferencing_ 的功能。呼叫 methods 是 Rust 中少數有此行為的地方之一。
 >
 > 它的運作方式如下：當你使用 `object.something()` 呼叫 method 時，Rust 會自動加入 `&`、`&mut` 或 `*`，以便 `object` 符合 method 的 signature。換句話說，以下是相同的：
 >
@@ -670,7 +670,7 @@ Listing 5-15: 在 `Rectangle` 上實作 `can_hold` method，它接受另一個 `
 
 ### Associated Functions
 
-在 `impl` block 內定義的所有 functions 都稱為 *associated functions*，因為它們與 `impl` 後面命名的 type 相關聯。我們可以定義 associated functions，這些 functions 的第一個參數不是 `self` (因此它們不是 methods)，因為它們不需要 type 的實例來運作。我們已經使用過一個這樣的 function：在 `String` type 上定義的 `String::from` function。
+在 `impl` block 內定義的所有 functions 都稱為 _associated functions_，因為它們與 `impl` 後面命名的 type 相關聯。我們可以定義 associated functions，這些 functions 的第一個參數不是 `self` (因此它們不是 methods)，因為它們不需要 type 的實例來運作。我們已經使用過一個這樣的 function：在 `String` type 上定義的 `String::from` function。
 
 不是 methods 的 associated functions 通常用於 constructors，它們將回傳 struct 的新實例。這些通常被稱為 `new`，但 `new` 不是一個特殊名稱，也不是內建在語言中的。舉例來說，我們可以選擇提供一個名為 `square` 的 associated function，它將有一個維度參數，並將其同時用作 width 和 height，這樣可以更容易地建立一個正方形 `Rectangle`，而無需重複指定相同的值：
 

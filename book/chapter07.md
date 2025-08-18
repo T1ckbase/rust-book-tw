@@ -10,18 +10,18 @@ directory, so all fixes need to be made in `/src/`.
 
 當你撰寫大型程式時，組織你的程式碼將變得越來越重要。透過將相關的功能分組，並將具有不同特性的程式碼分開，你將能更清楚地找到實作特定功能的程式碼，以及在哪裡更改功能的運作方式。
 
-我們到目前為止所撰寫的程式都位於單一檔案中的單一 module 內。隨著專案的成長，你應該透過將程式碼拆分成多個 module，然後再拆分成多個檔案來組織程式碼。一個 package 可以包含多個 binary crate，並可選擇包含一個 library crate。隨著 package 的成長，你可以將部分程式碼提取為單獨的 crate，使其成為外部 dependency。本章將涵蓋所有這些技術。對於包含一系列相互關聯、共同發展的非常大型專案，Cargo 提供了 *workspaces*，我們將在第 14 章的「[Cargo Workspaces](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)」中介紹。
+我們到目前為止所撰寫的程式都位於單一檔案中的單一 module 內。隨著專案的成長，你應該透過將程式碼拆分成多個 module，然後再拆分成多個檔案來組織程式碼。一個 package 可以包含多個 binary crate，並可選擇包含一個 library crate。隨著 package 的成長，你可以將部分程式碼提取為單獨的 crate，使其成為外部 dependency。本章將涵蓋所有這些技術。對於包含一系列相互關聯、共同發展的非常大型專案，Cargo 提供了 _workspaces_，我們將在第 14 章的「[Cargo Workspaces](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)」中介紹。
 
 我們還將討論封裝 (encapsulating) 實作細節，這讓你可以更高級別地重複使用程式碼：一旦你實作了一個操作，其他程式碼就可以透過其 public interface 呼叫你的程式碼，而無需知道實作如何運作。你編寫程式碼的方式定義了哪些部分是 public 的供其他程式碼使用，哪些部分是 private 的實作細節，你可以隨時更改這些細節。這是另一種限制你必須記住的細節量的方式。
 
 一個相關的概念是 scope：程式碼寫作的巢狀上下文有一組定義為「在 scope 內 (in scope)」的名稱。在讀取、撰寫和編譯程式碼時，程式設計師和編譯器需要知道特定位置的特定名稱是指變數 (variable)、函式 (function)、struct、enum、module、常數 (constant) 或其他項目，以及該項目代表的意義。你可以建立 scope 並更改哪些名稱在 scope 內或外。同一個 scope 中不能有兩個同名的項目；有工具可以解決名稱衝突。
 
-Rust 有許多功能，允許你管理程式碼的組織，包括哪些細節被暴露、哪些細節是 private 的，以及程式中每個 scope 包含哪些名稱。這些功能有時統稱為 *module system*，包括：
+Rust 有許多功能，允許你管理程式碼的組織，包括哪些細節被暴露、哪些細節是 private 的，以及程式中每個 scope 包含哪些名稱。這些功能有時統稱為 _module system_，包括：
 
-*   **Packages**：一個 Cargo 功能，讓你可以建置、測試和分享 crate。
-*   **Crates**：一個 module 樹，產生 library 或可執行檔 (executable)。
-*   **Modules 和 use**：讓你可以控制 path 的組織、scope 和 privacy。
-*   **Paths**：一種命名項目的方式，例如 struct、函式或 module。
+- **Packages**：一個 Cargo 功能，讓你可以建置、測試和分享 crate。
+- **Crates**：一個 module 樹，產生 library 或可執行檔 (executable)。
+- **Modules 和 use**：讓你可以控制 path 的組織、scope 和 privacy。
+- **Paths**：一種命名項目的方式，例如 struct、函式或 module。
 
 在本章中，我們將涵蓋所有這些功能，討論它們如何互動，並解釋如何使用它們來管理 scope。到本章結束時，你應該對 module system 有扎實的理解，並能夠像專業人士一樣處理 scope！
 
@@ -29,15 +29,15 @@ Rust 有許多功能，允許你管理程式碼的組織，包括哪些細節被
 
 我們將介紹的 module system 的第一部分是 packages 和 crates。
 
-一個 *crate* 是 Rust 編譯器一次考慮的最小程式碼量。即使你執行 `rustc` 而不是 `cargo` 並傳遞一個單一的 source code file (就像我們在第 1 章的「[撰寫並執行 Rust 程式](https://doc.rust-lang.org/book/ch01-02-hello-world.html)」中所做的那樣)，編譯器也會將該檔案視為一個 crate。Crates 可以包含 module，並且 module 可以定義在與 crate 一起編譯的其他檔案中，我們將在接下來的章節中看到。
+一個 _crate_ 是 Rust 編譯器一次考慮的最小程式碼量。即使你執行 `rustc` 而不是 `cargo` 並傳遞一個單一的 source code file (就像我們在第 1 章的「[撰寫並執行 Rust 程式](https://doc.rust-lang.org/book/ch01-02-hello-world.html)」中所做的那樣)，編譯器也會將該檔案視為一個 crate。Crates 可以包含 module，並且 module 可以定義在與 crate 一起編譯的其他檔案中，我們將在接下來的章節中看到。
 
-一個 crate 可以有兩種形式：binary crate 或 library crate。*Binary crates* 是你可以編譯成可執行檔 (executable) 的程式，例如 command line program 或 server。每個 binary crate 都必須有一個名為 `main` 的函式，定義可執行檔執行時會發生什麼事。我們到目前為止建立的所有 crate 都是 binary crate。
+一個 crate 可以有兩種形式：binary crate 或 library crate。_Binary crates_ 是你可以編譯成可執行檔 (executable) 的程式，例如 command line program 或 server。每個 binary crate 都必須有一個名為 `main` 的函式，定義可執行檔執行時會發生什麼事。我們到目前為止建立的所有 crate 都是 binary crate。
 
-*Library crates* 沒有 `main` 函式，它們不會編譯成可執行檔。相反，它們定義了旨在與多個專案共享的功能。例如，我們在第 2 章中使用的 `rand` crate 提供了生成 random numbers 的功能。大多數情況下，當 Rustaceans 說「crate」時，他們指的是 library crate，並且他們將「crate」與一般的程式設計概念「library」互換使用。
+_Library crates_ 沒有 `main` 函式，它們不會編譯成可執行檔。相反，它們定義了旨在與多個專案共享的功能。例如，我們在第 2 章中使用的 `rand` crate 提供了生成 random numbers 的功能。大多數情況下，當 Rustaceans 說「crate」時，他們指的是 library crate，並且他們將「crate」與一般的程式設計概念「library」互換使用。
 
-*crate root* 是 Rust 編譯器開始的 source file，並構成你的 crate 的根 module (我們將在「[定義 Module 以控制 Scope 和 Privacy](https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html)」中深入解釋 module)。
+_crate root_ 是 Rust 編譯器開始的 source file，並構成你的 crate 的根 module (我們將在「[定義 Module 以控制 Scope 和 Privacy](https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html)」中深入解釋 module)。
 
-一個 *package* 是一個或多個 crate 的捆綁，提供一組功能。一個 package 包含一個 *Cargo.toml* 檔案，描述如何建置這些 crate。Cargo 實際上是一個 package，其中包含用於你一直用來建置程式碼的 command line tool 的 binary crate。Cargo package 還包含一個 binary crate 所依賴的 library crate。其他專案可以依賴 Cargo library crate 來使用 Cargo command line tool 使用的相同邏輯。
+一個 _package_ 是一個或多個 crate 的捆綁，提供一組功能。一個 package 包含一個 _Cargo.toml_ 檔案，描述如何建置這些 crate。Cargo 實際上是一個 package，其中包含用於你一直用來建置程式碼的 command line tool 的 binary crate。Cargo package 還包含一個 binary crate 所依賴的 library crate。其他專案可以依賴 Cargo library crate 來使用 Cargo command line tool 使用的相同邏輯。
 
 一個 package 可以包含任意數量的 binary crate，但最多只能包含一個 library crate。一個 package 必須至少包含一個 crate，無論是 library 還是 binary crate。
 
@@ -53,26 +53,26 @@ $ ls my-project/src
 main.rs
 ```
 
-在我們執行 `cargo new my-project` 後，我們使用 `ls` 來查看 Cargo 建立的內容。在 project directory 中，有一個 *Cargo.toml* 檔案，這給了我們一個 package。還有一個 *src* directory，其中包含 *main.rs*。在你的文字編輯器中打開 *Cargo.toml*，並注意其中沒有提及 *src/main.rs*。Cargo 遵循一個慣例：*src/main.rs* 是與 package 同名的 binary crate 的 crate root。同樣，Cargo 知道如果 package directory 包含 *src/lib.rs*，則該 package 包含一個與 package 同名的 library crate，並且 *src/lib.rs* 是其 crate root。Cargo 將 crate root files 傳遞給 `rustc` 以建置 library 或 binary。
+在我們執行 `cargo new my-project` 後，我們使用 `ls` 來查看 Cargo 建立的內容。在 project directory 中，有一個 _Cargo.toml_ 檔案，這給了我們一個 package。還有一個 _src_ directory，其中包含 _main.rs_。在你的文字編輯器中打開 _Cargo.toml_，並注意其中沒有提及 _src/main.rs_。Cargo 遵循一個慣例：_src/main.rs_ 是與 package 同名的 binary crate 的 crate root。同樣，Cargo 知道如果 package directory 包含 _src/lib.rs_，則該 package 包含一個與 package 同名的 library crate，並且 _src/lib.rs_ 是其 crate root。Cargo 將 crate root files 傳遞給 `rustc` 以建置 library 或 binary。
 
-在這裡，我們有一個只包含 *src/main.rs* 的 package，這意味著它只包含一個名為 `my-project` 的 binary crate。如果一個 package 包含 *src/main.rs* 和 *src/lib.rs*，它就有兩個 crate：一個 binary 和一個 library，兩者都與 package 同名。一個 package 可以透過將檔案放置在 *src/bin* directory 中來擁有多個 binary crate：每個檔案都將是一個獨立的 binary crate。
+在這裡，我們有一個只包含 _src/main.rs_ 的 package，這意味著它只包含一個名為 `my-project` 的 binary crate。如果一個 package 包含 _src/main.rs_ 和 _src/lib.rs_，它就有兩個 crate：一個 binary 和一個 library，兩者都與 package 同名。一個 package 可以透過將檔案放置在 _src/bin_ directory 中來擁有多個 binary crate：每個檔案都將是一個獨立的 binary crate。
 
 ### Module 快速參考
 
 在我們深入了解 module 和 path 的細節之前，我們在這裡提供了一個關於 module、path、`use` 關鍵字和 `pub` 關鍵字在編譯器中如何運作，以及大多數開發人員如何組織程式碼的快速參考。我們將在本章中透過範例來解釋這些規則，但這是一個很好的地方可以作為提醒 module 如何運作。
 
-*   **從 crate root 開始**：當編譯一個 crate 時，編譯器首先在 crate root file (通常 library crate 是 *src/lib.rs*，binary crate 是 *src/main.rs*) 中尋找要編譯的程式碼。
-*   **宣告 module**：在 crate root file 中，你可以宣告新的 module；例如，你使用 `mod garden;` 宣告一個「garden」module。編譯器將在這些地方尋找 module 的程式碼：
-    *   內聯 (Inline)，在替換 `mod garden` 後分號的大括號內。
-    *   在檔案 *src/garden.rs* 中。
-    *   在檔案 *src/garden/mod.rs* 中。
-*   **宣告 submodule**：在 crate root 以外的任何檔案中，你可以宣告 submodule。例如，你可以在 *src/garden.rs* 中宣告 `mod vegetables;`。編譯器將在以 parent module 命名的 directory 中尋找 submodule 的程式碼：
-    *   內聯 (Inline)，直接跟在 `mod vegetables` 後面，使用大括號而不是分號。
-    *   在檔案 *src/garden/vegetables.rs* 中。
-    *   在檔案 *src/garden/vegetables/mod.rs* 中。
-*   **Module 中程式碼的 path**：一旦 module 成為你的 crate 的一部分，只要 privacy rules 允許，你就可以使用程式碼的 path 從該 crate 中的任何其他地方引用該 module 中的程式碼。例如，`garden vegetables` module 中的 `Asparagus` type 將在 `crate::garden::vegetables::Asparagus` 找到。
-*   **Private vs. public**：Module 內的程式碼預設對其 parent module 是 private 的。要使 module public，請使用 `pub mod` 而不是 `mod` 來宣告它。要使 public module 中的項目也 public，請在宣告前使用 `pub`。
-*   **`use` 關鍵字**：在 scope 內，`use` 關鍵字為項目建立快捷方式，以減少重複冗長的 path。在任何可以引用 `crate::garden::vegetables::Asparagus` 的 scope 中，你可以使用 `use crate::garden::vegetables::Asparagus;` 建立一個快捷方式，從那以後你只需要撰寫 `Asparagus` 即可在該 scope 中使用該 type。
+- **從 crate root 開始**：當編譯一個 crate 時，編譯器首先在 crate root file (通常 library crate 是 _src/lib.rs_，binary crate 是 _src/main.rs_) 中尋找要編譯的程式碼。
+- **宣告 module**：在 crate root file 中，你可以宣告新的 module；例如，你使用 `mod garden;` 宣告一個「garden」module。編譯器將在這些地方尋找 module 的程式碼：
+  - 內聯 (Inline)，在替換 `mod garden` 後分號的大括號內。
+  - 在檔案 _src/garden.rs_ 中。
+  - 在檔案 _src/garden/mod.rs_ 中。
+- **宣告 submodule**：在 crate root 以外的任何檔案中，你可以宣告 submodule。例如，你可以在 _src/garden.rs_ 中宣告 `mod vegetables;`。編譯器將在以 parent module 命名的 directory 中尋找 submodule 的程式碼：
+  - 內聯 (Inline)，直接跟在 `mod vegetables` 後面，使用大括號而不是分號。
+  - 在檔案 _src/garden/vegetables.rs_ 中。
+  - 在檔案 _src/garden/vegetables/mod.rs_ 中。
+- **Module 中程式碼的 path**：一旦 module 成為你的 crate 的一部分，只要 privacy rules 允許，你就可以使用程式碼的 path 從該 crate 中的任何其他地方引用該 module 中的程式碼。例如，`garden vegetables` module 中的 `Asparagus` type 將在 `crate::garden::vegetables::Asparagus` 找到。
+- **Private vs. public**：Module 內的程式碼預設對其 parent module 是 private 的。要使 module public，請使用 `pub mod` 而不是 `mod` 來宣告它。要使 public module 中的項目也 public，請在宣告前使用 `pub`。
+- **`use` 關鍵字**：在 scope 內，`use` 關鍵字為項目建立快捷方式，以減少重複冗長的 path。在任何可以引用 `crate::garden::vegetables::Asparagus` 的 scope 中，你可以使用 `use crate::garden::vegetables::Asparagus;` 建立一個快捷方式，從那以後你只需要撰寫 `Asparagus` 即可在該 scope 中使用該 type。
 
 在這裡，我們建立一個名為 `backyard` 的 binary crate，它說明了這些規則。該 crate 的 directory 也名為 `backyard`，包含以下檔案和目錄：
 
@@ -87,7 +87,7 @@ backyard
     └── main.rs
 ```
 
-在這種情況下，crate root file 是 *src/main.rs*，它包含：
+在這種情況下，crate root file 是 _src/main.rs_，它包含：
 
 ```rust
 use crate::garden::vegetables::Asparagus;
@@ -100,7 +100,7 @@ fn main() {
 }
 ```
 
-`pub mod garden;` 行告訴編譯器包含它在 *src/garden.rs* 中找到的程式碼，該程式碼是：
+`pub mod garden;` 行告訴編譯器包含它在 _src/garden.rs_ 中找到的程式碼，該程式碼是：
 
 src/garden.rs
 
@@ -108,7 +108,7 @@ src/garden.rs
 pub mod vegetables;
 ```
 
-在這裡，`pub mod vegetables;` 意味著 *src/garden/vegetables.rs* 中的程式碼也被包含在內。該程式碼是：
+在這裡，`pub mod vegetables;` 意味著 _src/garden/vegetables.rs_ 中的程式碼也被包含在內。該程式碼是：
 
 ```rust
 #[derive(Debug)]
@@ -119,15 +119,15 @@ pub struct Asparagus {}
 
 ## 定義 Module 以控制 Scope 和 Privacy
 
-在本節中，我們將討論 module 和 module system 的其他部分，即 *paths* (允許你命名項目)、將 path 引入 scope 的 `use` 關鍵字，以及使項目 public 的 `pub` 關鍵字。我們還將討論 `as` 關鍵字、external packages 和 glob operator。
+在本節中，我們將討論 module 和 module system 的其他部分，即 _paths_ (允許你命名項目)、將 path 引入 scope 的 `use` 關鍵字，以及使項目 public 的 `pub` 關鍵字。我們還將討論 `as` 關鍵字、external packages 和 glob operator。
 
-*Module* 讓我們在 crate 內組織程式碼，以提高可讀性和易於重複使用。Module 還允許我們控制項目的 *privacy*，因為 module 內的程式碼預設是 private 的。Private 項目是內部實作細節，不供外部使用。我們可以選擇將 module 及其內部項目設定為 public，這將它們暴露出來，允許外部程式碼使用並依賴它們。
+_Module_ 讓我們在 crate 內組織程式碼，以提高可讀性和易於重複使用。Module 還允許我們控制項目的 _privacy_，因為 module 內的程式碼預設是 private 的。Private 項目是內部實作細節，不供外部使用。我們可以選擇將 module 及其內部項目設定為 public，這將它們暴露出來，允許外部程式碼使用並依賴它們。
 
 舉例來說，讓我們撰寫一個提供餐廳功能的 library crate。我們將定義函式的簽名 (signature)，但將其主體 (body) 留空，以便專注於程式碼的組織，而不是餐廳的實作。
 
-在餐飲業中，餐廳的一些部分被稱為 *front of house* (前場)，而另一些部分被稱為 *back of house* (後場)。Front of house 是顧客所在的地方；這包括迎賓帶位、服務生點餐和收款，以及調酒師製作飲料的地方。Back of house 是廚師在廚房工作、洗碗工清理，以及經理處理行政工作的地方。
+在餐飲業中，餐廳的一些部分被稱為 _front of house_ (前場)，而另一些部分被稱為 _back of house_ (後場)。Front of house 是顧客所在的地方；這包括迎賓帶位、服務生點餐和收款，以及調酒師製作飲料的地方。Back of house 是廚師在廚房工作、洗碗工清理，以及經理處理行政工作的地方。
 
-為了以這種方式組織我們的 crate，我們可以將其函式組織到巢狀 module 中。透過執行 `cargo new restaurant --lib` 建立一個名為 `restaurant` 的新 library。然後在 *src/lib.rs* 中輸入 Listing 7-1 中的程式碼來定義一些 module 和函式簽名；這段程式碼是 front of house 部分。
+為了以這種方式組織我們的 crate，我們可以將其函式組織到巢狀 module 中。透過執行 `cargo new restaurant --lib` 建立一個名為 `restaurant` 的新 library。然後在 _src/lib.rs_ 中輸入 Listing 7-1 中的程式碼來定義一些 module 和函式簽名；這段程式碼是 front of house 部分。
 
 src/lib.rs
 
@@ -155,7 +155,7 @@ Listing 7-1: 包含其他 module，然後這些 module 包含函式的 `front_of
 
 透過使用 module，我們可以將相關定義分組在一起，並說明它們之間的關係。使用這段程式碼的程式設計師可以根據這些組來瀏覽程式碼，而無需閱讀所有定義，這使得找到與他們相關的定義更容易。為這段程式碼新增功能的程式設計師將知道在哪裡放置程式碼以保持程式的組織性。
 
-早先，我們提到 *src/main.rs* 和 *src/lib.rs* 被稱為 crate roots。它們得名的原因是，這兩個檔案中的任何一個的內容都形成一個名為 `crate` 的 module，位於 crate 的 module 結構的根部，這被稱為 *module tree*。
+早先，我們提到 _src/main.rs_ 和 _src/lib.rs_ 被稱為 crate roots。它們得名的原因是，這兩個檔案中的任何一個的內容都形成一個名為 `crate` 的 module，位於 crate 的 module 結構的根部，這被稱為 _module tree_。
 
 Listing 7-2 顯示了 Listing 7-1 中結構的 module tree。
 
@@ -173,7 +173,7 @@ crate
 
 Listing 7-2: Listing 7-1 中程式碼的 module tree
 
-這棵樹顯示了一些 module 如何巢狀地包含在其他 module 內部；例如，`hosting` 巢狀地包含在 `front_of_house` 內部。這棵樹還顯示了一些 module 是 *siblings* (同級)，這意味著它們在同一個 module 中定義；`hosting` 和 `serving` 是在 `front_of_house` 內部定義的同級 module。如果 module A 包含在 module B 內部，我們說 module A 是 module B 的 *child*，而 module B 是 module A 的 *parent*。請注意，整個 module tree 都以隱含的 `crate` module 為根。
+這棵樹顯示了一些 module 如何巢狀地包含在其他 module 內部；例如，`hosting` 巢狀地包含在 `front_of_house` 內部。這棵樹還顯示了一些 module 是 _siblings_ (同級)，這意味著它們在同一個 module 中定義；`hosting` 和 `serving` 是在 `front_of_house` 內部定義的同級 module。如果 module A 包含在 module B 內部，我們說 module A 是 module B 的 _child_，而 module B 是 module A 的 _parent_。請注意，整個 module tree 都以隱含的 `crate` module 為根。
 
 module tree 可能會讓你聯想到你電腦上的檔案系統目錄樹；這是一個非常恰當的比較！就像檔案系統中的目錄一樣，你使用 module 來組織程式碼。就像目錄中的檔案一樣，我們需要一種方法來找到我們的 module。
 
@@ -183,8 +183,8 @@ module tree 可能會讓你聯想到你電腦上的檔案系統目錄樹；這�
 
 path 可以有兩種形式：
 
-*   *Absolute path* (絕對路徑) 是從 crate root 開始的完整 path；對於來自 external crate 的程式碼，absolute path 以 crate 名稱開頭，對於來自 current crate 的程式碼，它以字面量 `crate` 開頭。
-*   *Relative path* (相對路徑) 從 current module 開始，並使用 `self`、`super` 或 current module 中的 identifier。
+- _Absolute path_ (絕對路徑) 是從 crate root 開始的完整 path；對於來自 external crate 的程式碼，absolute path 以 crate 名稱開頭，對於來自 current crate 的程式碼，它以字面量 `crate` 開頭。
+- _Relative path_ (相對路徑) 從 current module 開始，並使用 `self`、`super` 或 current module 中的 identifier。
 
 Absolute path 和 relative path 都跟隨一個或多個由雙冒號 (`::`) 分隔的 identifier。
 
@@ -318,7 +318,7 @@ error: could not compile `restaurant` (lib) due to 2 previous errors
 
 Listing 7-6: 建置 Listing 7-5 中程式碼時的編譯器錯誤
 
-發生了什麼事？在 `mod hosting` 前面加上 `pub` 關鍵字會使該 module public。有了這個更改，如果我們可以存取 `front_of_house`，我們就可以存取 `hosting`。但是 `hosting` 的 *內容* 仍然是 private 的；使 module public 並不會使其內容 public。module 上的 `pub` 關鍵字只允許其 ancestor module 中的程式碼引用它，而不是存取其內部程式碼。因為 module 是容器，所以僅僅使 module public 並沒有多大作用；我們需要進一步選擇將 module 內的一個或多個項目也公開。
+發生了什麼事？在 `mod hosting` 前面加上 `pub` 關鍵字會使該 module public。有了這個更改，如果我們可以存取 `front_of_house`，我們就可以存取 `hosting`。但是 `hosting` 的 _內容_ 仍然是 private 的；使 module public 並不會使其內容 public。module 上的 `pub` 關鍵字只允許其 ancestor module 中的程式碼引用它，而不是存取其內部程式碼。因為 module 是容器，所以僅僅使 module public 並沒有多大作用；我們需要進一步選擇將 module 內的一個或多個項目也公開。
 
 Listing 7-6 中的錯誤指出 `add_to_waitlist` 函式是 private 的。privacy rules 適用於 struct、enum、函式和方法，以及 module。
 
@@ -344,13 +344,13 @@ Listing 7-7: 在 `mod hosting` 和 `fn add_to_waitlist` 中添加 `pub` 關鍵�
 
 在 relative path 中，邏輯與 absolute path 相同，除了第一步：path 不是從 crate root 開始，而是從 `front_of_house` 開始。`front_of_house` module 定義在與 `eat_at_restaurant` 相同的 module 中，因此從定義 `eat_at_restaurant` 的 module 開始的 relative path 有效。然後，因為 `hosting` 和 `add_to_waitlist` 都標記為 `pub`，path 的其餘部分有效，並且此函式呼叫是有效的！
 
-如果你打算分享你的 library crate 以便其他專案可以使用你的程式碼，你的 public API 是你與 crate 使用者之間的契約，決定了他們如何與你的程式碼互動。關於管理 public API 變更以方便人們依賴你的 crate，有許多考量。這些考量超出了本書的範圍；如果你對此主題感興趣，請參閱 Rust API Guidelines (位於 *https://rust-lang.github.io/api-guidelines/*)。
+如果你打算分享你的 library crate 以便其他專案可以使用你的程式碼，你的 public API 是你與 crate 使用者之間的契約，決定了他們如何與你的程式碼互動。關於管理 public API 變更以方便人們依賴你的 crate，有許多考量。這些考量超出了本書的範圍；如果你對此主題感興趣，請參閱 Rust API Guidelines (位於 _https://rust-lang.github.io/api-guidelines/_)。
 
 > #### 帶有 Binary 和 Library 的 Package 的最佳實踐
 >
-> 我們提到一個 package 可以包含 *src/main.rs* binary crate root 和 *src/lib.rs* library crate root，並且這兩個 crate 預設將具有 package 名稱。通常，具有這種同時包含 library 和 binary crate 模式的 package，其 binary crate 中只有足夠的程式碼來啟動一個可執行檔 (executable)，該可執行檔會呼叫 library crate 中定義的程式碼。這讓其他專案可以受益於 package 提供的大部分功能，因為 library crate 的程式碼可以共享。
+> 我們提到一個 package 可以包含 _src/main.rs_ binary crate root 和 _src/lib.rs_ library crate root，並且這兩個 crate 預設將具有 package 名稱。通常，具有這種同時包含 library 和 binary crate 模式的 package，其 binary crate 中只有足夠的程式碼來啟動一個可執行檔 (executable)，該可執行檔會呼叫 library crate 中定義的程式碼。這讓其他專案可以受益於 package 提供的大部分功能，因為 library crate 的程式碼可以共享。
 >
-> module tree 應該定義在 *src/lib.rs* 中。然後，任何 public 項目都可以透過以 package 名稱開頭的 path 在 binary crate 中使用。binary crate 成為 library crate 的使用者，就像一個完全 external 的 crate 會使用 library crate 一樣：它只能使用 public API。這有助於你設計一個良好的 API；你不僅是作者，你也是一個 client！
+> module tree 應該定義在 _src/lib.rs_ 中。然後，任何 public 項目都可以透過以 package 名稱開頭的 path 在 binary crate 中使用。binary crate 成為 library crate 的使用者，就像一個完全 external 的 crate 會使用 library crate 一樣：它只能使用 public API。這有助於你設計一個良好的 API；你不僅是作者，你也是一個 client！
 >
 > 在第 12 章中，我們將透過一個包含 binary crate 和 library crate 的 command line program 來演示這種組織實踐。
 
@@ -590,7 +590,7 @@ Listing 7-15: 將兩個同名的 type 引入同一 scope 需要使用它們的 p
 
 ### 使用 `as` 關鍵字提供新名稱
 
-還有一個解決方案可以解決使用 `use` 將兩個同名 type 引入同一 scope 的問題：在 path 之後，我們可以指定 `as` 和該 type 的新 local 名稱或 *alias*。Listing 7-16 顯示了另一種撰寫 Listing 7-15 中程式碼的方式，透過使用 `as` 重新命名其中一個 `Result` type。
+還有一個解決方案可以解決使用 `use` 將兩個同名 type 引入同一 scope 的問題：在 path 之後，我們可以指定 `as` 和該 type 的新 local 名稱或 _alias_。Listing 7-16 顯示了另一種撰寫 Listing 7-15 中程式碼的方式，透過使用 `as` 重新命名其中一個 `Result` type。
 
 src/lib.rs
 
@@ -613,7 +613,7 @@ Listing 7-16: 使用 `as` 關鍵字將 type 引入 scope 時重新命名它
 
 ### 使用 `pub use` 重新匯出名稱
 
-當我們使用 `use` 關鍵字將名稱引入 scope 時，該名稱對我們匯入的 scope 是 private 的。為了使該 scope 外部的程式碼能夠引用該名稱，就好像它已在該 scope 中定義一樣，我們可以結合 `pub` 和 `use`。這種技術稱為 *re-exporting* (重新匯出)，因為我們將一個項目引入 scope，同時也使該項目可用於其他人將其引入其 scope。
+當我們使用 `use` 關鍵字將名稱引入 scope 時，該名稱對我們匯入的 scope 是 private 的。為了使該 scope 外部的程式碼能夠引用該名稱，就好像它已在該 scope 中定義一樣，我們可以結合 `pub` 和 `use`。這種技術稱為 _re-exporting_ (重新匯出)，因為我們將一個項目引入 scope，同時也使該項目可用於其他人將其引入其 scope。
 
 Listing 7-17 顯示了 Listing 7-11 中的程式碼，其中根 module 中的 `use` 已更改為 `pub use`。
 
@@ -641,7 +641,7 @@ Listing 7-17: 使用 `pub use` 使名稱在新的 scope 中供任何程式碼使
 
 ### 使用 External Packages
 
-在第 2 章中，我們程式設計了一個猜謎遊戲專案，它使用了一個名為 `rand` 的 external package 來獲取 random numbers。要在我們的專案中使用 `rand`，我們將這一行添加到 *Cargo.toml* 中：
+在第 2 章中，我們程式設計了一個猜謎遊戲專案，它使用了一個名為 `rand` 的 external package 來獲取 random numbers。要在我們的專案中使用 `rand`，我們將這一行添加到 _Cargo.toml_ 中：
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -655,7 +655,7 @@ Cargo.toml
 rand = "0.8.5"
 ```
 
-在 *Cargo.toml* 中將 `rand` 添加為 dependency，告訴 Cargo 從 *https://crates.io/* 下載 `rand` package 及其任何 dependency，並使 `rand` 可供我們的專案使用。
+在 _Cargo.toml_ 中將 `rand` 添加為 dependency，告訴 Cargo 從 _https://crates.io/_ 下載 `rand` package 及其任何 dependency，並使 `rand` 可供我們的專案使用。
 
 然後，為了將 `rand` 定義引入我們 package 的 scope，我們添加了一行 `use`，以 crate 的名稱 `rand` 開頭，並列出了我們想要引入 scope 的項目。回想在第 2 章的「[生成 Random Number](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#generating-a-random-number)」中，我們將 `Rng` trait 引入 scope 並呼叫 `rand::thread_rng` 函式：
 
@@ -667,9 +667,9 @@ fn main() {
 }
 ```
 
-Rust 社群的成員在 *https://crates.io/* 上提供了許多 packages，將其中任何一個引入你的 package 都涉及相同的步驟：在你的 package 的 *Cargo.toml* 檔案中列出它們，並使用 `use` 將其 crate 中的項目引入 scope。
+Rust 社群的成員在 _https://crates.io/_ 上提供了許多 packages，將其中任何一個引入你的 package 都涉及相同的步驟：在你的 package 的 _Cargo.toml_ 檔案中列出它們，並使用 `use` 將其 crate 中的項目引入 scope。
 
-請注意，標準 `std` library 也是一個獨立於我們 package 的 crate。由於標準 library 是隨 Rust 語言一起發佈的，我們無需更改 *Cargo.toml* 來包含 `std`。但我們確實需要使用 `use` 來引用它，以便將其中的項目引入我們 package 的 scope。例如，對於 `HashMap`，我們會使用這一行：
+請注意，標準 `std` library 也是一個獨立於我們 package 的 crate。由於標準 library 是隨 Rust 語言一起發佈的，我們無需更改 _Cargo.toml_ 來包含 `std`。但我們確實需要使用 `use` 來引用它，以便將其中的項目引入我們 package 的 scope。例如，對於 `HashMap`，我們會使用這一行：
 
 ```rust
 use std::collections::HashMap;
@@ -729,7 +729,7 @@ Listing 7-20: 將 Listing 7-19 中的 path 合併到一個 `use` 語句中
 
 ### Glob Operator
 
-如果我們想將 path 中定義的 *所有* public 項目引入 scope，我們可以指定該 path 後跟 `*` glob operator：
+如果我們想將 path 中定義的 _所有_ public 項目引入 scope，我們可以指定該 path 後跟 `*` glob operator：
 
 ```rust
 use std::collections::*;
@@ -743,9 +743,9 @@ Glob operator 通常在測試時使用，將所有受測項目引入 `tests` mod
 
 到目前為止，本章中的所有範例都在一個檔案中定義了多個 module。當 module 變大時，你可能希望將其定義移動到單獨的檔案中，以使程式碼更容易瀏覽。
 
-例如，讓我們從 Listing 7-17 中包含多個餐廳 module 的程式碼開始。我們將 module 提取到檔案中，而不是將所有 module 都定義在 crate root file 中。在這種情況下，crate root file 是 *src/lib.rs*，但此程序也適用於 crate root file 是 *src/main.rs* 的 binary crate。
+例如，讓我們從 Listing 7-17 中包含多個餐廳 module 的程式碼開始。我們將 module 提取到檔案中，而不是將所有 module 都定義在 crate root file 中。在這種情況下，crate root file 是 _src/lib.rs_，但此程序也適用於 crate root file 是 _src/main.rs_ 的 binary crate。
 
-首先，我們將 `front_of_house` module 提取到自己的檔案中。刪除 `front_of_house` module 大括號內的程式碼，只留下 `mod front_of_house;` 宣告，這樣 *src/lib.rs* 就包含 Listing 7-21 所示的程式碼。請注意，在我們建立 Listing 7-22 中的 *src/front_of_house.rs* 檔案之前，這將無法編譯。
+首先，我們將 `front_of_house` module 提取到自己的檔案中。刪除 `front_of_house` module 大括號內的程式碼，只留下 `mod front_of_house;` 宣告，這樣 _src/lib.rs_ 就包含 Listing 7-21 所示的程式碼。請注意，在我們建立 Listing 7-22 中的 _src/front_of_house.rs_ 檔案之前，這將無法編譯。
 
 src/lib.rs
 
@@ -759,9 +759,9 @@ pub fn eat_at_restaurant() {
 }
 ```
 
-Listing 7-21: 宣告 `front_of_house` module，其主體將在 *src/front_of_house.rs* 中
+Listing 7-21: 宣告 `front_of_house` module，其主體將在 _src/front_of_house.rs_ 中
 
-接下來，將大括號中的程式碼放入一個名為 *src/front_of_house.rs* 的新檔案中，如 Listing 7-22 所示。編譯器知道要查看此檔案，因為它在 crate root 中遇到了名為 `front_of_house` 的 module 宣告。
+接下來，將大括號中的程式碼放入一個名為 _src/front_of_house.rs_ 的新檔案中，如 Listing 7-22 所示。編譯器知道要查看此檔案，因為它在 crate root 中遇到了名為 `front_of_house` 的 module 宣告。
 
 src/front_of_house.rs
 
@@ -771,13 +771,13 @@ pub mod hosting {
 }
 ```
 
-Listing 7-22: *src/front_of_house.rs* 中 `front_of_house` module 內部的定義
+Listing 7-22: _src/front_of_house.rs_ 中 `front_of_house` module 內部的定義
 
-請注意，你只需要在 module tree 中使用 `mod` 宣告載入檔案 *一次*。一旦編譯器知道該檔案是專案的一部分 (並且知道程式碼位於 module tree 中的哪個位置，因為你放置 `mod` 語句的位置)，專案中的其他檔案應該使用 path 引用已載入檔案的程式碼，該 path 指向其宣告位置，如「[透過 Path 引用 Module Tree 中的項目](https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html#paths-for-referring-to-an-item-in-the-module-tree)」一節所述。換句話說，`mod` *不是* 你可能在其他程式語言中看到的「include」操作。
+請注意，你只需要在 module tree 中使用 `mod` 宣告載入檔案 _一次_。一旦編譯器知道該檔案是專案的一部分 (並且知道程式碼位於 module tree 中的哪個位置，因為你放置 `mod` 語句的位置)，專案中的其他檔案應該使用 path 引用已載入檔案的程式碼，該 path 指向其宣告位置，如「[透過 Path 引用 Module Tree 中的項目](https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html#paths-for-referring-to-an-item-in-the-module-tree)」一節所述。換句話說，`mod` _不是_ 你可能在其他程式語言中看到的「include」操作。
 
-接下來，我們將 `hosting` module 提取到自己的檔案中。這個過程有點不同，因為 `hosting` 是 `front_of_house` 的 child module，而不是 root module 的 child。我們將 `hosting` 的檔案放在一個新目錄中，該目錄將以其在 module tree 中的 ancestor 命名，在本例中為 *src/front_of_house*。
+接下來，我們將 `hosting` module 提取到自己的檔案中。這個過程有點不同，因為 `hosting` 是 `front_of_house` 的 child module，而不是 root module 的 child。我們將 `hosting` 的檔案放在一個新目錄中，該目錄將以其在 module tree 中的 ancestor 命名，在本例中為 _src/front_of_house_。
 
-要開始移動 `hosting`，我們將 *src/front_of_house.rs* 更改為只包含 `hosting` module 的宣告：
+要開始移動 `hosting`，我們將 _src/front_of_house.rs_ 更改為只包含 `hosting` module 的宣告：
 
 src/front_of_house.rs
 
@@ -785,7 +785,7 @@ src/front_of_house.rs
 pub mod hosting;
 ```
 
-然後我們建立一個 *src/front_of_house* 目錄和一個 *hosting.rs* 檔案來包含 `hosting` module 中的定義：
+然後我們建立一個 _src/front_of_house_ 目錄和一個 _hosting.rs_ 檔案來包含 `hosting` module 中的定義：
 
 src/front_of_house/hosting.rs
 
@@ -793,27 +793,27 @@ src/front_of_house/hosting.rs
 pub fn add_to_waitlist() {}
 ```
 
-如果我們將 *hosting.rs* 放在 *src* 目錄中，編譯器會期望 *hosting.rs* 程式碼位於 crate root 中宣告的 `hosting` module 中，而不是宣告為 `front_of_house` module 的 child。編譯器關於檢查哪些檔案以尋找哪些 module 程式碼的規則意味著目錄和檔案更密切地匹配 module tree。
+如果我們將 _hosting.rs_ 放在 _src_ 目錄中，編譯器會期望 _hosting.rs_ 程式碼位於 crate root 中宣告的 `hosting` module 中，而不是宣告為 `front_of_house` module 的 child。編譯器關於檢查哪些檔案以尋找哪些 module 程式碼的規則意味著目錄和檔案更密切地匹配 module tree。
 
 > ### 替代檔案 Path
 >
 > 到目前為止，我們已經涵蓋了 Rust 編譯器使用的最符合慣例的檔案 path，但 Rust 也支援舊式的檔案 path。對於在 crate root 中宣告的名為 `front_of_house` 的 module，編譯器將在以下位置尋找 module 的程式碼：
 >
-> *   *src/front_of_house.rs* (我們涵蓋的)
-> *   *src/front_of_house/mod.rs* (舊式，仍然支援的 path)
+> - _src/front_of_house.rs_ (我們涵蓋的)
+> - _src/front_of_house/mod.rs_ (舊式，仍然支援的 path)
 >
 > 對於名為 `hosting` 且是 `front_of_house` 的 submodule 的 module，編譯器將在以下位置尋找 module 的程式碼：
 >
-> *   *src/front_of_house/hosting.rs* (我們涵蓋的)
-> *   *src/front_of_house/hosting/mod.rs* (舊式，仍然支援的 path)
+> - _src/front_of_house/hosting.rs_ (我們涵蓋的)
+> - _src/front_of_house/hosting/mod.rs_ (舊式，仍然支援的 path)
 >
 > 如果你對同一個 module 使用兩種風格，你會得到編譯器錯誤。允許在同一個專案中混合使用不同 module 的兩種風格，但這可能會讓瀏覽你的專案的人感到困惑。
 >
-> 使用名為 *mod.rs* 的檔案風格的主要缺點是你的專案最終可能會有很多名為 *mod.rs* 的檔案，當你在編輯器中同時打開它們時，這可能會變得令人困惑。
+> 使用名為 _mod.rs_ 的檔案風格的主要缺點是你的專案最終可能會有很多名為 _mod.rs_ 的檔案，當你在編輯器中同時打開它們時，這可能會變得令人困惑。
 
 我們已將每個 module 的程式碼移到單獨的檔案中，module tree 保持不變。`eat_at_restaurant` 中的函式呼叫將無需任何修改即可運作，即使定義位於不同的檔案中。這種技術讓你可以隨著 module 大小的增長將它們移動到新檔案中。
 
-請注意，*src/lib.rs* 中的 `pub use crate::front_of_house::hosting` 語句也沒有改變，`use` 對於哪些檔案作為 crate 的一部分進行編譯也沒有任何影響。`mod` 關鍵字宣告 module，Rust 會在與 module 同名的檔案中尋找該 module 的程式碼。
+請注意，_src/lib.rs_ 中的 `pub use crate::front_of_house::hosting` 語句也沒有改變，`use` 對於哪些檔案作為 crate 的一部分進行編譯也沒有任何影響。`mod` 關鍵字宣告 module，Rust 會在與 module 同名的檔案中尋找該 module 的程式碼。
 
 ## 總結
 

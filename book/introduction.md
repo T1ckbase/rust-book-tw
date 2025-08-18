@@ -8,7 +8,7 @@ directory, so all fixes need to be made in `/src/`.
 
 # 介紹
 
-歡迎來到《*The Rust Programming Language*》，這是一本關於 Rust 的入門書籍。
+歡迎來到《_The Rust Programming Language_》，這是一本關於 Rust 的入門書籍。
 Rust 程式語言能幫助你編寫更快、更可靠的軟體。
 高階的人體工學設計與低階的控制能力，在程式語言設計中往往相互衝突；而 Rust 挑戰了這個衝突。
 透過平衡強大的技術能力和出色的開發者體驗，Rust 讓你能夠控制低階細節（例如記憶體使用），同時避免了傳統上與此類控制相關的所有麻煩。
@@ -26,9 +26,9 @@ Rust 被證明是一個高效的工具，適用於擁有不同 systems programmi
 
 Rust 也將現代開發工具帶入 systems programming 領域：
 
-* Cargo，內建的 dependency manager 和 build tool，使得在 Rust ecosystem 中添加、編譯和管理 dependencies 變得輕鬆且一致。
-* Rustfmt 格式化工具確保開發者之間擁有統一的 coding style。
-* Rust Language Server 為 Integrated Development Environment (IDE) 整合提供支援，實現 code completion 和 inline error messages。
+- Cargo，內建的 dependency manager 和 build tool，使得在 Rust ecosystem 中添加、編譯和管理 dependencies 變得輕鬆且一致。
+- Rustfmt 格式化工具確保開發者之間擁有統一的 coding style。
+- Rust Language Server 為 Integrated Development Environment (IDE) 整合提供支援，實現 code completion 和 inline error messages。
 
 透過使用這些以及 Rust ecosystem 中的其他工具，開發者在編寫 systems-level code 時能夠保持高效率。
 
@@ -55,7 +55,7 @@ Rust compiler 的檢查確保了透過功能添加和 refactoring 實現穩定�
 透過追求 zero-cost abstractions，也就是將高階功能編譯成與手動編寫的程式碼一樣快速的低階程式碼，Rust 努力讓安全的程式碼同時也是快速的程式碼。
 
 Rust 語言也希望支援許多其他使用者；這裡提到的僅僅是其中一些最大的利害關係人。
-總體而言，Rust 的最大抱負是透過提供 safety *和* productivity、speed *和* ergonomics，來消除程式設計師數十年來一直接受的權衡。嘗試一下 Rust，看看它的選擇是否適合你。
+總體而言，Rust 的最大抱負是透過提供 safety _和_ productivity、speed _和_ ergonomics，來消除程式設計師數十年來一直接受的權衡。嘗試一下 Rust，看看它的選擇是否適合你。
 
 ## 本書適合誰
 
@@ -94,6 +94,6 @@ Rust 語言也希望支援許多其他使用者；這裡提到的僅僅是其中
 
 ## 資源與如何貢獻本書
 
-本書是 open source 的。如果您發現錯誤，請隨時在 GitHub 上提出 issue 或發送 pull request：*https://github.com/rust-lang/book/*。有關更多詳細資訊，請參閱 *https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md* 上的 *CONTRIBUTING.md*。
+本書是 open source 的。如果您發現錯誤，請隨時在 GitHub 上提出 issue 或發送 pull request：_https://github.com/rust-lang/book/_。有關更多詳細資訊，請參閱 _https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md_ 上的 _CONTRIBUTING.md_。
 
-本書中範例的 source code、勘誤表以及其他資訊可在此處取得：*https://www.nostarch.com/Rust2021/*。
+本書中範例的 source code、勘誤表以及其他資訊可在此處取得：_https://www.nostarch.com/Rust2021/_。

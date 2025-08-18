@@ -20,7 +20,7 @@ directory, so all fixes need to be made in `/src/`.
 
 例如，如果我們正在建構一個檔案下載管理工具，我們應該能夠撰寫我們的程式，以便啟動一個下載不會鎖定 UI，並且使用者應該能夠同時啟動多個下載。然而，許多用於與網路互動的作業系統 API 都是*blocking*的；也就是說，它們會阻塞程式的進度，直到它們正在處理的資料完全準備好。
 
-> 註：如果您仔細想想，這就是*大多數*函數呼叫的運作方式。然而，*blocking*這個術語通常保留給與檔案、網路或電腦上其他資源互動的函數呼叫，因為這些情況下，個別程式將從操作為*non*-blocking 中受益。
+> 註：如果您仔細想想，這就是*大多數*函數呼叫的運作方式。然而，*blocking*這個術語通常保留給與檔案、網路或電腦上其他資源互動的函數呼叫，因為這些情況下，個別程式將從操作為_non_-blocking 中受益。
 
 我們可以透過產生一個專用 thread 來下載每個檔案，從而避免阻塞主 thread。然而，這些 thread 的 overhead 最終會成為一個問題。如果呼叫一開始就不阻塞，那會更好。如果我們能夠以與 blocking 程式碼相同的直接風格撰寫，那也會更好，類似於這樣：
 
@@ -29,11 +29,11 @@ let data = fetch_data_from(url).await;
 println!("{data}");
 ```
 
-這正是 Rust 的*async*（*asynchronous*的縮寫）抽象給予我們的。在本章中，您將學習所有關於 async 的知識，我們將涵蓋以下主題：
+這正是 Rust 的_async_（*asynchronous*的縮寫）抽象給予我們的。在本章中，您將學習所有關於 async 的知識，我們將涵蓋以下主題：
 
-* 如何使用 Rust 的 `async` 和 `await` 語法
-* 如何使用 async 模型來解決第 16 章中我們探討的一些相同挑戰
-* multithreading 和 async 如何提供互補的解決方案，您可以在許多情況下將它們結合起來
+- 如何使用 Rust 的 `async` 和 `await` 語法
+- 如何使用 async 模型來解決第 16 章中我們探討的一些相同挑戰
+- multithreading 和 async 如何提供互補的解決方案，您可以在許多情況下將它們結合起來
 
 不過，在我們實際了解 async 如何運作之前，我們需要稍微繞道一下，討論 parallelism 和 concurrency 之間的差異。
 
@@ -43,13 +43,13 @@ println!("{data}");
 
 考慮一個團隊在軟體專案上分工的不同方式。您可以為單個成員分配多個任務，為每個成員分配一個任務，或者使用兩者的混合方法。
 
-當一個人同時處理多個不同任務，而這些任務都沒有完成時，這就是*concurrency*。也許您的電腦上簽出了兩個不同的專案，當您對一個專案感到厭倦或卡住時，您就切換到另一個。您只是一個人，所以您無法在同一時間點同時處理兩項任務，但您可以多工處理，透過在它們之間切換，一次處理一項任務（參見圖 17-1）。
+當一個人同時處理多個不同任務，而這些任務都沒有完成時，這就是_concurrency_。也許您的電腦上簽出了兩個不同的專案，當您對一個專案感到厭倦或卡住時，您就切換到另一個。您只是一個人，所以您無法在同一時間點同時處理兩項任務，但您可以多工處理，透過在它們之間切換，一次處理一項任務（參見圖 17-1）。
 
 <img src="https://doc.rust-lang.org/book/img/trpl17-01.svg" class="center" alt="一個圖表，其中包含標記為 Task A 和 Task B 的方框，裡面有代表子任務的菱形。箭頭從 A1 指向 B1，B1 指向 A2，A2 指向 B2，B2 指向 A3，A3 指向 A4，A4 指向 B3。子任務之間的箭頭穿過 Task A 和 Task B 之間的方框。" />
 
 圖 17-1：一種 concurrent 工作流程，在 Task A 和 Task B 之間切換
 
-當團隊透過讓每個成員負責一項任務並單獨完成來分配一組任務時，這就是*parallelism*。團隊中的每個人都可以同時取得進展（參見圖 17-2）。
+當團隊透過讓每個成員負責一項任務並單獨完成來分配一組任務時，這就是_parallelism_。團隊中的每個人都可以同時取得進展（參見圖 17-2）。
 
 <img src="https://doc.rust-lang.org/book/img/trpl17-02.svg" class="center" alt="一個圖表，其中包含標記為 Task A 和 Task B 的方框，裡面有代表子任務的菱形。箭頭從 A1 指向 A2，A2 指向 A3，A3 指向 A4，B1 指向 B2，B2 指向 B3。Task A 和 Task B 的方框之間沒有箭頭交叉。" />
 
@@ -73,11 +73,11 @@ Parallelism 和 concurrency 也可以相互交叉。如果您得知一位同事�
 
 ## Futures 和 Async 語法
 
-Rust 中非同步程式設計的關鍵元素是 *futures* 和 Rust 的 `async` 和 `await` 關鍵字。
+Rust 中非同步程式設計的關鍵元素是 _futures_ 和 Rust 的 `async` 和 `await` 關鍵字。
 
-*future* 是一個值，它可能現在還沒有準備好，但在未來的某個時間點會準備好。（這個概念在許多語言中都有出現，有時以*task*或*promise*等其他名稱出現。）Rust 提供了一個 `Future` trait 作為建構塊，以便可以使用不同的資料結構實現不同的 async 操作，但具有通用的介面。在 Rust 中，futures 是實現 `Future` trait 的類型。每個 future 都包含有關已取得的進度以及「準備好」的含義的資訊。
+_future_ 是一個值，它可能現在還沒有準備好，但在未來的某個時間點會準備好。（這個概念在許多語言中都有出現，有時以*task*或*promise*等其他名稱出現。）Rust 提供了一個 `Future` trait 作為建構塊，以便可以使用不同的資料結構實現不同的 async 操作，但具有通用的介面。在 Rust 中，futures 是實現 `Future` trait 的類型。每個 future 都包含有關已取得的進度以及「準備好」的含義的資訊。
 
-您可以將 `async` 關鍵字應用於區塊和函數，以指定它們可以被中斷和恢復。在 async 區塊或 async 函數中，您可以使用 `await` 關鍵字來*等待一個 future*（即，等待它準備好）。您在 async 區塊或函數中等待 future 的任何一點都是該 async 區塊或函數可能暫停和恢復的潛在位置。檢查 future 以查看其值是否可用的過程稱為*polling*。
+您可以將 `async` 關鍵字應用於區塊和函數，以指定它們可以被中斷和恢復。在 async 區塊或 async 函數中，您可以使用 `await` 關鍵字來_等待一個 future_（即，等待它準備好）。您在 async 區塊或函數中等待 future 的任何一點都是該 async 區塊或函數可能暫停和恢復的潛在位置。檢查 future 以查看其值是否可用的過程稱為_polling_。
 
 其他一些語言，例如 C# 和 JavaScript，也使用 `async` 和 `await` 關鍵字進行 async 程式設計。如果您熟悉這些語言，您可能會注意到 Rust 處理事物的方式存在一些顯著差異，包括它如何處理語法。這是有充分理由的，我們將會看到！
 
@@ -129,12 +129,12 @@ async fn page_title(url: &str) -> Option<String> {
 
 一旦我們有了 `response_text`，我們就可以使用 `Html::parse` 將其解析為 `Html` 類型的實例。現在我們不再是原始字串，而是一個可以用來處理 HTML 的更豐富的資料結構。特別是，我們可以使用 `select_first` 方法來查找給定 CSS selector 的第一個實例。透過傳遞字串 `"title"`，我們將獲取文件中第一個 `<title>` 元素，如果有的話。由於可能沒有任何匹配的元素，`select_first` 返回 `Option<ElementRef>`。最後，我們使用 `Option::map` 方法，該方法允許我們在 `Option` 中存在項目時處理它，如果不存在則不執行任何操作。（我們也可以在這裡使用 `match` 運算式，但 `map` 更慣用。）在我們提供給 `map` 的函數體中，我們在 `title_element` 上呼叫 `inner_html` 以獲取其內容，它是一個 `String`。總而言之，我們有一個 `Option<String>`。
 
-請注意，Rust 的 `await` 關鍵字位於您正在等待的運算式*之後*，而不是之前。也就是說，它是一個*postfix*關鍵字。這可能與您在其他語言中使用 `async` 時習慣的有所不同，但在 Rust 中，它使方法鏈更易於使用。因此，我們可以將 `page_url_for` 的主體更改為將 `trpl::get` 和 `text` 函數呼叫與其間的 `await` 連結起來，如列表 17-2 所示。
+請注意，Rust 的 `await` 關鍵字位於您正在等待的運算式_之後_，而不是之前。也就是說，它是一個*postfix*關鍵字。這可能與您在其他語言中使用 `async` 時習慣的有所不同，但在 Rust 中，它使方法鏈更易於使用。因此，我們可以將 `page_url_for` 的主體更改為將 `trpl::get` 和 `text` 函數呼叫與其間的 `await` 連結起來，如列表 17-2 所示。
 
 src/main.rs
 
 ```rust
-    let response_text = trpl::get(url).await.text().await;
+let response_text = trpl::get(url).await.text().await;
 ```
 
 列表 17-2：使用 `await` 關鍵字進行鏈接
@@ -161,12 +161,12 @@ fn page_title(url: &str) -> impl Future<Output = Option<String>> + '_ {
 
 讓我們逐一檢視轉換後的版本中的每個部分：
 
-* 它使用了我們在第 10 章「Traits 作為參數」部分中討論過的 `impl Trait` 語法。
-* 回傳的 trait 是一個 `Future`，帶有一個 `Output` 的關聯類型。請注意，`Output` 類型是 `Option<String>`，這與 `async fn` 版本的 `page_title` 的原始回傳類型相同。
-* 原始函數體中呼叫的所有程式碼都被包裝在一個 `async move` 區塊中。請記住，區塊是運算式。這個完整的區塊是函數回傳的運算式。
-* 這個 async 區塊產生一個類型為 `Option<String>` 的值，正如剛才所述。該值與回傳類型中的 `Output` 類型匹配。這就像您見過的其他區塊一樣。
-* 函數的新版本的主體是一個 `async move` 區塊，因為它如何使用 `url` 參數。（我們將在本章後面更多地討論 `async` 與 `async move`。）
-* 函數的新版本在輸出類型中有一種我們以前從未見過的 lifetime：`'_`。因為函數返回一個引用 — 在這種情況下，是來自 `url` 參數的引用 — 的 future，我們需要告訴 Rust 我們希望包含該引用。我們不需要在這裡命名 lifetime，因為 Rust 足夠聰明，知道只會涉及一個引用，但我們*確實*必須明確表示產生的 future 受該 lifetime 的約束。
+- 它使用了我們在第 10 章「Traits 作為參數」部分中討論過的 `impl Trait` 語法。
+- 回傳的 trait 是一個 `Future`，帶有一個 `Output` 的關聯類型。請注意，`Output` 類型是 `Option<String>`，這與 `async fn` 版本的 `page_title` 的原始回傳類型相同。
+- 原始函數體中呼叫的所有程式碼都被包裝在一個 `async move` 區塊中。請記住，區塊是運算式。這個完整的區塊是函數回傳的運算式。
+- 這個 async 區塊產生一個類型為 `Option<String>` 的值，正如剛才所述。該值與回傳類型中的 `Output` 類型匹配。這就像您見過的其他區塊一樣。
+- 函數的新版本的主體是一個 `async move` 區塊，因為它如何使用 `url` 參數。（我們將在本章後面更多地討論 `async` 與 `async move`。）
+- 函數的新版本在輸出類型中有一種我們以前從未見過的 lifetime：`'_`。因為函數返回一個引用 — 在這種情況下，是來自 `url` 參數的引用 — 的 future，我們需要告訴 Rust 我們希望包含該引用。我們不需要在這裡命名 lifetime，因為 Rust 足夠聰明，知道只會涉及一個引用，但我們*確實*必須明確表示產生的 future 受該 lifetime 的約束。
 
 現在我們可以在 `main` 中呼叫 `page_title`。
 
@@ -199,7 +199,7 @@ error[E0752]: `main` function is not allowed to be `async`
   | ^^^^^^^^^^^^^^^ `main` function is not allowed to be `async`
 ```
 
-`main` 不能被標記為 `async` 的原因是 async 程式碼需要一個 *runtime*：一個 Rust crate，它管理執行非同步程式碼的細節。一個程式的 `main` 函數可以*初始化*一個 runtime，但它本身不是一個 runtime。（我們稍後會看到更多關於為何如此的原因。）每個執行 async 程式碼的 Rust 程式至少有一個地方會設定一個 runtime 並執行 futures。
+`main` 不能被標記為 `async` 的原因是 async 程式碼需要一個 _runtime_：一個 Rust crate，它管理執行非同步程式碼的細節。一個程式的 `main` 函數可以*初始化*一個 runtime，但它本身不是一個 runtime。（我們稍後會看到更多關於為何如此的原因。）每個執行 async 程式碼的 Rust 程式至少有一個地方會設定一個 runtime 並執行 futures。
 
 大多數支援 async 的語言都綁定了一個 runtime，但 Rust 沒有。相反，有許多不同的 async runtime 可用，每個 runtime 都針對其目標用例做出不同的取捨。例如，一個具有許多 CPU 核心和大量 RAM 的高吞吐量網路伺服器與一個具有單個核心、少量 RAM 且沒有 heap 分配能力的 microcontroller 的需求截然不同。提供這些 runtime 的 crate 也通常提供常見功能的 async 版本，例如檔案或網路 I/O。
 
@@ -237,7 +237,7 @@ The title for https://www.rust-lang.org was
 
 呼 — 我們終於有一些可運作的 async 程式碼了！但在我們添加程式碼來讓兩個網站相互競爭之前，讓我們簡要地將注意力轉回 futures 的運作方式。
 
-每個 *await point* — 也就是說，程式碼中使用 `await` 關鍵字的每個地方 — 都表示控制權交回 runtime 的地方。為了實現這一點，Rust 需要追蹤 async 區塊中涉及的狀態，以便 runtime 可以啟動其他工作，然後在準備好再次嘗試推進第一個工作時返回。這是一個隱形的 state machine，就好像您撰寫了這樣一個 `enum` 來儲存每個 await point 的當前狀態一樣：
+每個 _await point_ — 也就是說，程式碼中使用 `await` 關鍵字的每個地方 — 都表示控制權交回 runtime 的地方。為了實現這一點，Rust 需要追蹤 async 區塊中涉及的狀態，以便 runtime 可以啟動其他工作，然後在準備好再次嘗試推進第一個工作時返回。這是一個隱形的 state machine，就好像您撰寫了這樣一個 `enum` 來儲存每個 await point 的當前狀態一樣：
 
 ```rust
 enum PageTitleFuture<'a> {
@@ -321,7 +321,7 @@ enum Either<A, B> {
 
 在本節中，我們將應用 async 來解決第 16 章中我們使用 thread 處理的一些相同 concurrency 挑戰。由於我們已經討論了許多關鍵概念，因此在本節中，我們將專注於 thread 和 futures 之間的不同之處。
 
-在許多情況下，使用 async 處理 concurrency 的 API 與使用 thread 的 API 非常相似。在其他情況下，它們可能會有很大的不同。即使 API 在 thread 和 async 之間看起來*相似*，它們通常也有不同的行為 — 而且它們幾乎總是有不同的 performance 特性。
+在許多情況下，使用 async 處理 concurrency 的 API 與使用 thread 的 API 非常相似。在其他情況下，它們可能會有很大的不同。即使 API 在 thread 和 async 之間看起來_相似_，它們通常也有不同的行為 — 而且它們幾乎總是有不同的 performance 特性。
 
 ### 使用 spawn_task 建立新任務
 
@@ -461,9 +461,9 @@ hi number 9 from the first task!
 
 嘗試這些等待 futures 的變體，看看它們會做什麼：
 
-* 移除任一個或兩個迴圈周圍的 async 區塊。
-* 在定義每個 async 區塊後立即等待它。
-* 僅將第一個迴圈包裝在 async 區塊中，並在第二個迴圈的主體之後等待產生的 future。
+- 移除任一個或兩個迴圈周圍的 async 區塊。
+- 在定義每個 async 區塊後立即等待它。
+- 僅將第一個迴圈包裝在 async 區塊中，並在第二個迴圈的主體之後等待產生的 future。
 
 額外挑戰是，在執行程式碼之前，看看您是否能弄清楚每種情況下的輸出會是什麼！
 
@@ -567,14 +567,14 @@ src/main.rs
 
 然而，程式仍然沒有退出，因為 `while let` 迴圈與 `trpl::join` 的互動方式：
 
-* `trpl::join` 返回的 future 只有在傳遞給它的*兩個* futures 都完成後才會完成。
-* `tx` future 在發送 `vals` 中最後一條訊息後，完成睡眠後就會完成。
-* `rx` future 在 `while let` 迴圈結束之前不會完成。
-* `while let` 迴圈在等待 `rx.recv` 產生 `None` 之前不會結束。
-* 只有在 channel 的另一端關閉時，等待 `rx.recv` 才會返回 `None`。
-* Channel 只有在我們呼叫 `rx.close` 或當 sender 端 `tx` 被 dropped 時才會關閉。
-* 我們沒有在任何地方呼叫 `rx.close`，而且 `tx` 在傳遞給 `trpl::run` 的最外層 async 區塊結束之前不會被 dropped。
-* 該區塊無法結束，因為它被阻塞在 `trpl::join` 的完成上，這又將我們帶回此列表的頂部。
+- `trpl::join` 返回的 future 只有在傳遞給它的_兩個_ futures 都完成後才會完成。
+- `tx` future 在發送 `vals` 中最後一條訊息後，完成睡眠後就會完成。
+- `rx` future 在 `while let` 迴圈結束之前不會完成。
+- `while let` 迴圈在等待 `rx.recv` 產生 `None` 之前不會結束。
+- 只有在 channel 的另一端關閉時，等待 `rx.recv` 才會返回 `None`。
+- Channel 只有在我們呼叫 `rx.close` 或當 sender 端 `tx` 被 dropped 時才會關閉。
+- 我們沒有在任何地方呼叫 `rx.close`，而且 `tx` 在傳遞給 `trpl::run` 的最外層 async 區塊結束之前不會被 dropped。
+- 該區塊無法結束，因為它被阻塞在 `trpl::join` 的完成上，這又將我們帶回此列表的頂部。
 
 我們可以在某處手動呼叫 `rx.close` 來關閉 `rx`，但這沒有太大意義。處理任意數量的訊息後停止會導致程式關閉，但我們可能會錯過訊息。我們需要其他方式來確保 `tx` 在函數結束*之前*被 dropped。
 
@@ -659,7 +659,7 @@ src/main.rs
 
 列表 17-13：使用多個生產者與 async 區塊
 
-首先，我們在第一個 async 區塊外部 clone `tx`，建立 `tx1`。我們將 `tx1` 移入該區塊，就像我們之前對 `tx` 所做的那樣。然後，稍後，我們將原始的 `tx` 移入一個*新的* async 區塊，在那裡我們以稍微慢一點的延遲傳送更多訊息。我們碰巧將這個新的 async 區塊放在接收訊息的 async 區塊之後，但它也可以放在前面。關鍵是等待 futures 的順序，而不是它們建立的順序。
+首先，我們在第一個 async 區塊外部 clone `tx`，建立 `tx1`。我們將 `tx1` 移入該區塊，就像我們之前對 `tx` 所做的那樣。然後，稍後，我們將原始的 `tx` 移入一個_新的_ async 區塊，在那裡我們以稍微慢一點的延遲傳送更多訊息。我們碰巧將這個新的 async 區塊放在接收訊息的 async 區塊之後，但它也可以放在前面。關鍵是等待 futures 的順序，而不是它們建立的順序。
 
 兩個用於發送訊息的 async 區塊都需要是 `async move` 區塊，這樣 `tx` 和 `tx1` 在這些區塊完成時都會被 dropped。否則，我們將回到我們最初的無限迴圈中。最後，我們從 `trpl::join` 切換到 `trpl::join3` 來處理額外的 future。
 
@@ -685,7 +685,7 @@ received 'you'
 src/main.rs
 
 ```rust
-        trpl::join!(tx1_fut, tx_fut, rx_fut);
+trpl::join!(tx1_fut, tx_fut, rx_fut);
 ```
 
 列表 17-14：使用 `join!` 等待多個 futures
@@ -811,7 +811,7 @@ note: required by a bound in `futures_util::future::join_all::JoinAll`
 
 這可能令人驚訝。畢竟，所有 async 區塊都沒有回傳任何東西，所以每個都產生一個 `Future<Output = ()>`。請記住，`Future` 是一個 trait，並且編譯器會為每個 async 區塊創建一個唯一的 enum。您不能將兩個不同的手寫 struct 放入 `Vec` 中，同樣的規則也適用於編譯器生成的不同 enum。
 
-為了讓這段程式碼生效，我們需要使用*trait objects*，就像我們在第 12 章的「從 `run` 函數返回錯誤」中做的那樣。（我們將在第 18 章詳細討論 trait objects。）使用 trait objects 讓我們可以將這些類型產生的每個匿名 futures 視為相同的類型，因為它們都實現了 `Future` trait。
+為了讓這段程式碼生效，我們需要使用_trait objects_，就像我們在第 12 章的「從 `run` 函數返回錯誤」中做的那樣。（我們將在第 18 章詳細討論 trait objects。）使用 trait objects 讓我們可以將這些類型產生的每個匿名 futures 視為相同的類型，因為它們都實現了 `Future` trait。
 
 > 註：在第 8 章「使用 Enum 儲存多個值」一節中，我們討論了另一種在 `Vec` 中包含多種類型的方法：使用 enum 來表示可以在 vector 中出現的每種類型。然而，我們在這裡不能這樣做。一方面，我們無法命名不同的類型，因為它們是匿名的。另一方面，我們最初使用 vector 和 `join_all` 的原因是要能夠處理 futures 的動態集合，我們只關心它們具有相同的輸出類型。
 
@@ -833,8 +833,8 @@ src/main.rs
 src/main.rs
 
 ```rust
-        let futures: Vec<Pin<Box<dyn Future<Output = ()>>>> =
-            vec![Box::pin(tx1_fut), Box::pin(rx_fut), Box::pin(tx_fut)];
+let futures: Vec<Pin<Box<dyn Future<Output = ()>>>> =
+    vec![Box::pin(tx1_fut), Box::pin(rx_fut), Box::pin(tx_fut)];
 ```
 
 列表 17-17：透過使用明確的類型宣告來修復其餘的類型不匹配錯誤
@@ -959,8 +959,8 @@ note: required by a bound in `futures_util::future::join_all::JoinAll`
 src/main.rs
 
 ```rust
-        let futures: Vec<Pin<Box<dyn Future<Output = ()>>>> =
-            vec![Box::pin(tx1_fut), Box::pin(rx_fut), Box::pin(tx_fut)];
+let futures: Vec<Pin<Box<dyn Future<Output = ()>>>> =
+    vec![Box::pin(tx1_fut), Box::pin(rx_fut), Box::pin(tx_fut)];
 ```
 
 列表 17-18：使用 `Pin` 和 `Box::pin` 使 `Vec` 類型檢查通過
@@ -1056,7 +1056,7 @@ src/main.rs
 
 回想一下「我們第一個 Async 程式」中，在每個 await point，Rust 都會給 runtime 一個機會來暫停任務並切換到另一個任務，如果正在等待的 future 還沒有準備好。反之亦然：Rust *只會*在 await point 暫停 async 區塊並將控制權交還給 runtime。await point 之間的所有內容都是同步的。
 
-這表示如果您在一個沒有 await point 的 async 區塊中執行大量工作，該 future 將阻塞任何其他 futures 取得進展。您有時可能會聽到這被稱為一個 future *starving* 其他 futures。在某些情況下，這可能不是大問題。但是，如果您正在執行某些昂貴的設定或長時間運行的工作，或者如果您有一個 future 將無限期地執行某些特定任務，您將需要考慮何時以及何處將控制權交還給 runtime。
+這表示如果您在一個沒有 await point 的 async 區塊中執行大量工作，該 future 將阻塞任何其他 futures 取得進展。您有時可能會聽到這被稱為一個 future _starving_ 其他 futures。在某些情況下，這可能不是大問題。但是，如果您正在執行某些昂貴的設定或長時間運行的工作，或者如果您有一個 future 將無限期地執行某些特定任務，您將需要考慮何時以及何處將控制權交還給 runtime。
 
 同樣地，如果您有長時間運行的 blocking 操作，async 可以成為一個有用的工具，提供程式不同部分相互關聯的方式。
 
@@ -1175,7 +1175,7 @@ src/main.rs
 
 `a` future 在將控制權交給 `b` 之前仍然運行了一小段時間，因為它在呼叫 `trpl::sleep` 之前呼叫了 `slow`，但之後每當其中一個 future 達到 await point 時，它們就會來回交換。在這種情況下，我們在每次呼叫 `slow` 之後都這樣做了，但我們可以以任何對我們來說最有意義的方式分解工作。
 
-然而，我們並不想在這裡真正*睡眠*：我們想盡可能快地取得進展。我們只需要將控制權交還給 runtime。我們可以透過直接使用 `yield_now` 函數來實現這一點。在列表 17-25 中，我們將所有這些 `sleep` 呼叫替換為 `yield_now`。
+然而，我們並不想在這裡真正_睡眠_：我們想盡可能快地取得進展。我們只需要將控制權交還給 runtime。我們可以透過直接使用 `yield_now` 函數來實現這一點。在列表 17-25 中，我們將所有這些 `sleep` 呼叫替換為 `yield_now`。
 
 src/main.rs
 
@@ -1207,7 +1207,7 @@ src/main.rs
 
 列表 17-25：使用 `yield_now` 讓操作切換以取得進度
 
-這段程式碼不僅更清楚地表達了實際意圖，而且比使用 `sleep` 顯著更快，因為像 `sleep` 使用的計時器通常對其精細度有限制。例如，我們正在使用的 `sleep` 版本即使我們傳遞給它一個一毫微秒的 `Duration`，也總是至少會睡眠一毫秒。再次強調，現代電腦*很快*：它們可以在一毫秒內做很多事情！
+這段程式碼不僅更清楚地表達了實際意圖，而且比使用 `sleep` 顯著更快，因為像 `sleep` 使用的計時器通常對其精細度有限制。例如，我們正在使用的 `sleep` 版本即使我們傳遞給它一個一毫微秒的 `Duration`，也總是至少會睡眠一毫秒。再次強調，現代電腦_很快_：它們可以在一毫秒內做很多事情！
 
 您可以透過設定一個小型的 benchmark 來親自驗證這一點，例如列表 17-26 中的那個。（這不是一種特別嚴謹的效能測試方式，但足以顯示這裡的差異。）
 
@@ -1246,7 +1246,7 @@ src/main.rs
 
 在這裡，我們跳過了所有狀態列印，將一毫微秒的 `Duration` 傳遞給 `trpl::sleep`，並讓每個 future 獨立運行，沒有在 futures 之間切換。然後我們運行 1,000 次迭代，看看使用 `trpl::sleep` 的 future 比使用 `trpl::yield_now` 的 future 花了多少時間。
 
-使用 `yield_now` 的版本*快得多*！
+使用 `yield_now` 的版本_快得多_！
 
 這表示 async 即使對於 compute-bound 任務也很有用，具體取決於您的程式正在執行的其他內容，因為它提供了一個有用的工具來組織程式不同部分之間的關係。這是一種*cooperative multitasking*形式，其中每個 future 都有能力透過 await point 決定何時交出控制權。因此，每個 future 也有責任避免阻塞過長時間。在某些基於 Rust 的 embedded operating systems 中，這是*唯一*一種 multitasking！
 
@@ -1278,10 +1278,10 @@ src/main.rs
 
 讓我們來實現這個功能！首先，讓我們考慮 `timeout` 的 API：
 
-* 它本身需要是一個 async 函數，這樣我們才能等待它。
-* 它的第一個參數應該是一個要執行的 future。我們可以將其泛型化以允許它與任何 future 一起使用。
-* 它的第二個參數將是最大等待時間。如果我們使用 `Duration`，那麼將它傳遞給 `trpl::sleep` 將會很容易。
-* 它應該返回一個 `Result`。如果 future 成功完成，`Result` 將是 `Ok`，並帶有 future 產生的值。如果 timeout 先到期，`Result` 將是 `Err`，並帶有 timeout 等待的時間。
+- 它本身需要是一個 async 函數，這樣我們才能等待它。
+- 它的第一個參數應該是一個要執行的 future。我們可以將其泛型化以允許它與任何 future 一起使用。
+- 它的第二個參數將是最大等待時間。如果我們使用 `Duration`，那麼將它傳遞給 `trpl::sleep` 將會很容易。
+- 它應該返回一個 `Result`。如果 future 成功完成，`Result` 將是 `Ok`，並帶有 future 產生的值。如果 timeout 先到期，`Result` 將是 `Err`，並帶有 timeout 等待的時間。
 
 列表 17-28 顯示了這個宣告。
 
@@ -1298,7 +1298,7 @@ async fn timeout<F: Future>(
 
 列表 17-28：定義 `timeout` 的簽名
 
-這滿足了我們對類型的目標。現在讓我們考慮一下我們需要的*行為*：我們希望 future 與 duration 競爭。我們可以使用 `trpl::sleep` 從 duration 創建一個 timer future，並使用 `trpl::race` 將該 timer 與呼叫者傳入的 future 一起運行。
+這滿足了我們對類型的目標。現在讓我們考慮一下我們需要的_行為_：我們希望 future 與 duration 競爭。我們可以使用 `trpl::sleep` 從 duration 創建一個 timer future，並使用 `trpl::race` 將該 timer 與呼叫者傳入的 future 一起運行。
 
 我們也知道 `race` 不公平，它會按照參數傳遞的順序 polling。因此，我們首先將 `future_to_try` 傳遞給 `race`，這樣即使 `max_time` 是一個非常短的 duration，它也有機會完成。如果 `future_to_try` 首先完成，`race` 將返回 `Left` 並帶有 `future_to_try` 的輸出。如果 `timer` 首先完成，`race` 將返回 `Right` 並帶有 timer 的 `()` 輸出。
 
@@ -1352,15 +1352,15 @@ Failed after 2 seconds
 
 在實際程式碼中，您通常會直接使用 `async` 和 `await`，其次是 `join`、`join_all`、`race` 等函數和 macro。您只需偶爾使用 `pin` 來將 futures 與這些 API 結合使用。
 
-我們現在已經看到了多種同時處理多個 futures 的方法。接下來，我們將探討如何使用 *streams* 以序列方式處理多個 futures。不過，您可能還想先考慮以下幾點：
+我們現在已經看到了多種同時處理多個 futures 的方法。接下來，我們將探討如何使用 _streams_ 以序列方式處理多個 futures。不過，您可能還想先考慮以下幾點：
 
-* 我們使用 `Vec` 與 `join_all` 來等待某組中的所有 futures 完成。您如何使用 `Vec` 來依序處理一組 futures 呢？這樣做的權衡是什麼？
+- 我們使用 `Vec` 與 `join_all` 來等待某組中的所有 futures 完成。您如何使用 `Vec` 來依序處理一組 futures 呢？這樣做的權衡是什麼？
 
-* 看看 `futures` crate 中的 `futures::stream::FuturesUnordered` 類型。使用它與使用 `Vec` 有何不同？（別擔心它來自 crate 的 `stream` 部分；它與任何 futures 集合都能正常運作。）
+- 看看 `futures` crate 中的 `futures::stream::FuturesUnordered` 類型。使用它與使用 `Vec` 有何不同？（別擔心它來自 crate 的 `stream` 部分；它與任何 futures 集合都能正常運作。）
 
 ## Streams：依序的 Futures
 
-本章到目前為止，我們主要都只討論個別的 futures。一個主要的例外是我們使用的 async channel。回想一下我們在本章稍早的「訊息傳遞」一節中如何使用我們的 async channel 的接收器。Async 的 `recv` 方法隨時間產生一系列項目。這是一個更通用模式的實例，稱為 *stream*。
+本章到目前為止，我們主要都只討論個別的 futures。一個主要的例外是我們使用的 async channel。回想一下我們在本章稍早的「訊息傳遞」一節中如何使用我們的 async channel 的接收器。Async 的 `recv` 方法隨時間產生一系列項目。這是一個更通用模式的實例，稱為 _stream_。
 
 我們在第 13 章的「Iterator Trait 和 `next` 方法」一節中看過一系列項目，但 iterators 和 async channel receiver 之間有兩個差異。第一個差異是時間：iterators 是同步的，而 channel receiver 是非同步的。第二個是 API。當直接使用 `Iterator` 時，我們呼叫其同步的 `next` 方法。特別是在 `trpl::Receiver` stream 中，我們改為呼叫非同步的 `recv` 方法。否則，這些 API 的感覺非常相似，這種相似性並非巧合。Stream 就像是迭代的非同步形式。然而，`trpl::Receiver` 特別等待接收訊息，而通用的 stream API 更廣泛：它像 `Iterator` 一樣提供下一個項目，但是非同步的。
 
@@ -1410,7 +1410,7 @@ help: there is a method `try_next` with a similar name
    |                                        ~~~~~~~~
 ```
 
-正如這個輸出所解釋的，編譯器錯誤的原因是我們需要正確的 trait 在範圍內才能使用 `next` 方法。根據我們到目前為止的討論，您可能會合理地預期該 trait 是 `Stream`，但它實際上是 `StreamExt`。`Ext` 是 Rust 社群中擴展一個 trait 的常見模式，是 *extension* 的縮寫。
+正如這個輸出所解釋的，編譯器錯誤的原因是我們需要正確的 trait 在範圍內才能使用 `next` 方法。根據我們到目前為止的討論，您可能會合理地預期該 trait 是 `Stream`，但它實際上是 `StreamExt`。`Ext` 是 Rust 社群中擴展一個 trait 的常見模式，是 _extension_ 的縮寫。
 
 我們將在本章末尾更詳細地解釋 `Stream` 和 `StreamExt` trait，但現在您只需要知道 `Stream` trait 定義了一個低階介面，它有效地結合了 `Iterator` 和 `Future` trait。`StreamExt` 在 `Stream` 之上提供了一組高階 API，包括 `next` 方法以及其他類似於 `Iterator` trait 提供的實用方法。`Stream` 和 `StreamExt` 尚未成為 Rust 標準函式庫的一部分，但大多數生態系統 crate 都使用相同的定義。
 
@@ -1570,7 +1570,7 @@ fn get_messages() -> impl Stream<Item = String> {
 
 在 `get_messages` 中，我們使用 `enumerate` iterator 方法與 `messages` 陣列，這樣我們就可以獲得每個傳送項目的索引以及項目本身。然後我們對偶數索引項目施加 100 毫秒的延遲，對奇數索引項目施加 300 毫秒的延遲，以模擬我們在實際世界中可能從訊息 stream 看到的不同延遲。因為我們的 timeout 是 200 毫秒，這應該會影響一半的訊息。
 
-為了在 `get_messages` 函數中的訊息之間睡眠而不阻塞，我們需要使用 async。然而，我們不能將 `get_messages` 本身變成一個 async 函數，因為那樣我們將返回一個 `Future<Output = Stream<Item = String>>` 而不是 `Stream<Item = String>>`。呼叫者必須等待 `get_messages` 本身才能存取 stream。但請記住：給定 future 中的所有內容都是線性發生的；concurrency 發生在 futures *之間*。等待 `get_messages` 將要求它發送所有訊息，包括每個訊息之間的睡眠延遲，然後再返回 receiver stream。因此，timeout 將是無用的。stream 本身不會有任何延遲；它們都會在 stream 可用之前發生。
+為了在 `get_messages` 函數中的訊息之間睡眠而不阻塞，我們需要使用 async。然而，我們不能將 `get_messages` 本身變成一個 async 函數，因為那樣我們將返回一個 `Future<Output = Stream<Item = String>>` 而不是 `Stream<Item = String>>`。呼叫者必須等待 `get_messages` 本身才能存取 stream。但請記住：給定 future 中的所有內容都是線性發生的；concurrency 發生在 futures _之間_。等待 `get_messages` 將要求它發送所有訊息，包括每個訊息之間的睡眠延遲，然後再返回 receiver stream。因此，timeout 將是無用的。stream 本身不會有任何延遲；它們都會在 stream 可用之前發生。
 
 相反，我們將 `get_messages` 留作一個返回 stream 的常規函數，並產生一個 task 來處理 async `sleep` 呼叫。
 
@@ -1634,9 +1634,9 @@ fn get_intervals() -> impl Stream<Item = u32> {
 src/main.rs
 
 ```rust
-        let messages = get_messages().timeout(Duration::from_millis(200));
-        let intervals = get_intervals();
-        let merged = messages.merge(intervals);
+let messages = get_messages().timeout(Duration::from_millis(200));
+let intervals = get_intervals();
+let merged = messages.merge(intervals);
 ```
 
 列表 17-37：嘗試合併 `messages` 和 `intervals` streams
@@ -1648,17 +1648,17 @@ src/main.rs
 src/main.rs
 
 ```rust
-        let messages = get_messages().timeout(Duration::from_millis(200));
-        let intervals = get_intervals()
-            .map(|count| format!("Interval: {count}"))
-            .timeout(Duration::from_secs(10));
-        let merged = messages.merge(intervals);
-        let mut stream = pin!(merged);
+let messages = get_messages().timeout(Duration::from_millis(200));
+let intervals = get_intervals()
+    .map(|count| format!("Interval: {count}"))
+    .timeout(Duration::from_secs(10));
+let merged = messages.merge(intervals);
+let mut stream = pin!(merged);
 ```
 
 列表 17-38：將 `intervals` stream 的類型與 `messages` stream 的類型對齊
 
-首先，我們可以使用 `map` 輔助方法將 `intervals` 轉換為字串。其次，我們需要匹配來自 `messages` 的 `Timeout`。然而，因為我們實際上不*需要* `intervals` 的 timeout，我們可以只創建一個比我們正在使用的其他 durations 更長的 timeout。在這裡，我們使用 `Duration::from_secs(10)` 創建一個 10 秒的 timeout。最後，我們需要將 `stream` 設置為 mutable，以便 `while let` 迴圈的 `next` 呼叫可以迭代 stream，並將其 pinning 以確保其安全。這幾乎讓我們達到了目標。所有類型都檢查通過。然而，如果您執行此操作，將會有兩個問題。首先，它永遠不會停止！您需要使用 <span class="keystroke">ctrl-c</span> 將其停止。其次，來自英文字母的訊息將被淹沒在所有間隔計數器訊息中：
+首先，我們可以使用 `map` 輔助方法將 `intervals` 轉換為字串。其次，我們需要匹配來自 `messages` 的 `Timeout`。然而，因為我們實際上不_需要_ `intervals` 的 timeout，我們可以只創建一個比我們正在使用的其他 durations 更長的 timeout。在這裡，我們使用 `Duration::from_secs(10)` 創建一個 10 秒的 timeout。最後，我們需要將 `stream` 設置為 mutable，以便 `while let` 迴圈的 `next` 呼叫可以迭代 stream，並將其 pinning 以確保其安全。這幾乎讓我們達到了目標。所有類型都檢查通過。然而，如果您執行此操作，將會有兩個問題。首先，它永遠不會停止！您需要使用 <span class="keystroke">ctrl-c</span> 將其停止。其次，來自英文字母的訊息將被淹沒在所有間隔計數器訊息中：
 
 ```text
 --snip--
@@ -1677,13 +1677,13 @@ Interval: 43
 src/main.rs
 
 ```rust
-        let messages = get_messages().timeout(Duration::from_millis(200));
-        let intervals = get_intervals()
-            .map(|count| format!("Interval: {count}"))
-            .throttle(Duration::from_millis(100))
-            .timeout(Duration::from_secs(10));
-        let merged = messages.merge(intervals).take(20);
-        let mut stream = pin!(merged);
+let messages = get_messages().timeout(Duration::from_millis(200));
+let intervals = get_intervals()
+    .map(|count| format!("Interval: {count}"))
+    .throttle(Duration::from_millis(100))
+    .timeout(Duration::from_secs(10));
+let merged = messages.merge(intervals).take(20);
+let mut stream = pin!(merged);
 ```
 
 列表 17-39：使用 `throttle` 和 `take` 管理合併的 streams
@@ -1883,9 +1883,9 @@ pub trait Future {
 
 `cx` 參數及其 `Context` 類型是 runtime 實際知道何時檢查任何給定 future 的關鍵，同時仍然保持 lazy。同樣，其運作方式的細節超出了本章的範圍，您通常只有在編寫自訂 `Future` 實現時才需要考慮這個問題。我們將專注於 `self` 的類型，因為這是我們第一次看到 `self` 帶有類型註解的方法。`self` 的類型註解與其他函數參數的類型註解類似，但有兩個關鍵區別：
 
-* 它告訴 Rust 該方法要被呼叫時，`self` 必須是什麼類型。
+- 它告訴 Rust 該方法要被呼叫時，`self` 必須是什麼類型。
 
-* 它不能是任何類型。它僅限於該方法實現的類型、該類型的引用或 smart pointer，或包裝該類型引用的 `Pin`。
+- 它不能是任何類型。它僅限於該方法實現的類型、該類型的引用或 smart pointer，或包裝該類型引用的 `Pin`。
 
 我們將在第 18 章看到更多關於此語法的內容。目前，我們只需要知道，如果我們要 polling 一個 future 以檢查它是 `Pending` 還是 `Ready(Output)`，我們需要一個 `Pin` 包裝的該類型的 mutable 引用。
 
@@ -1909,7 +1909,7 @@ pub trait Future {
 
 圖 17-5：移動自引用資料類型的不安全結果
 
-理論上，Rust 編譯器可以嘗試在每次物件移動時更新其所有引用，但這可能會增加大量的效能 overhead，特別是當整個引用網路需要更新時。如果我們能確保所討論的資料結構*不會在記憶體中移動*，我們就不必更新任何引用。這正是 Rust 的 borrow checker 所要求的：在安全程式碼中，它會阻止您移動任何具有活動引用的項目。
+理論上，Rust 編譯器可以嘗試在每次物件移動時更新其所有引用，但這可能會增加大量的效能 overhead，特別是當整個引用網路需要更新時。如果我們能確保所討論的資料結構_不會在記憶體中移動_，我們就不必更新任何引用。這正是 Rust 的 borrow checker 所要求的：在安全程式碼中，它會阻止您移動任何具有活動引用的項目。
 
 `Pin` 在此基礎上為我們提供了我們所需的精確保證。當我們透過將指向某個值的指標包裝在 `Pin` 中來*pin*該值時，它就無法再移動了。因此，如果您有 `Pin<Box<SomeType>>`，您實際上是 pinning `SomeType` 值，而不是 `Box` 指標。圖 17-6 說明了這個過程。
 
@@ -1917,7 +1917,7 @@ pub trait Future {
 
 圖 17-6：Pinning 一個指向自引用 future 類型的 `Box`。
 
-事實上，`Box` 指標仍然可以自由移動。請記住：我們關心的是確保最終被引用的資料保持在原位。如果指標移動，*但它指向的資料在同一位置*，如圖 17-7 所示，就沒有潛在問題。作為一個獨立練習，請查看這些類型的文件以及 `std::pin` 模組，並嘗試找出如何使用 `Pin` 包裝 `Box` 來實現此功能。）關鍵是自引用類型本身不能移動，因為它仍然是 pinned 的。
+事實上，`Box` 指標仍然可以自由移動。請記住：我們關心的是確保最終被引用的資料保持在原位。如果指標移動，_但它指向的資料在同一位置_，如圖 17-7 所示，就沒有潛在問題。作為一個獨立練習，請查看這些類型的文件以及 `std::pin` 模組，並嘗試找出如何使用 `Pin` 包裝 `Box` 來實現此功能。）關鍵是自引用類型本身不能移動，因為它仍然是 pinned 的。
 
 <img alt="四個方框排列在三個大致的欄位中，與上一個圖表相同，只是第二個欄位有所變化。現在第二個欄位中有兩個方框，標記為「b1」和「b2」，「b1」已灰顯，並且從「Pin」的箭頭穿過「b2」而不是「b1」，表示指標已從「b1」移動到「b2」，但「pinned」中的資料沒有移動。" src="https://doc.rust-lang.org/book/img/trpl17-07.svg" class="center" />
 
@@ -1948,9 +1948,9 @@ pub trait Future {
 `Pin` 和 `Unpin` 主要對於建構低階函式庫或您自己建構 runtime 時才重要，而非用於日常 Rust 程式碼。然而，當您在錯誤訊息中看到這些 trait 時，現在您會更好地了解如何修正您的程式碼！
 
 > 註：`Pin` 和 `Unpin` 的結合使得在 Rust 中安全地實現一整類複雜類型成為可能，否則這些類型會因為自引用而變得具有挑戰性。需要 `Pin` 的類型最常出現在今天的 async Rust 中，但偶爾您也可能會在其他情境中看到它們。
-> 
+>
 > `Pin` 和 `Unpin` 的具體運作方式，以及它們必須遵守的規則，在 `std::pin` 的 API 文件中有詳細介紹，所以如果您有興趣學習更多，那是一個很好的起點。
-> 
+>
 > 如果您想了解更多底層運作方式，請參閱《Rust 非同步程式設計》的[第 2 章](https://rust-lang.github.io/async-book/02_execution/01_chapter.html)和[第 4 章](https://rust-lang.github.io/async-book/04_pinning/01_chapter.html)。
 
 ### Stream Trait
@@ -1979,7 +1979,7 @@ trait Stream {
 
 與此定義非常相似的東西很可能會成為 Rust 標準函式庫的一部分。同時，它是大多數 runtime 的工具組的一部分，所以您可以依賴它，而且我們接下來要涵蓋的所有內容通常都適用！
 
-然而，在我們在 streaming 部分看到的範例中，我們沒有使用 `poll_next` *或* `Stream`，而是使用了 `next` 和 `StreamExt`。當然，我們*可以*透過手動撰寫自己的 `Stream` state machines 來直接以 `poll_next` API 運作，就像我們*可以*直接透過 `poll` 方法處理 futures 一樣。然而，使用 `await` 要好得多，而 `StreamExt` trait 提供了 `next` 方法，這樣我們就可以這樣做了：
+然而，在我們在 streaming 部分看到的範例中，我們沒有使用 `poll_next` _或_ `Stream`，而是使用了 `next` 和 `StreamExt`。當然，我們*可以*透過手動撰寫自己的 `Stream` state machines 來直接以 `poll_next` API 運作，就像我們*可以*直接透過 `poll` 方法處理 futures 一樣。然而，使用 `await` 要好得多，而 `StreamExt` trait 提供了 `next` 方法，這樣我們就可以這樣做了：
 
 ```rust
 trait StreamExt: Stream {
@@ -1992,11 +1992,11 @@ trait StreamExt: Stream {
 ```
 
 > 註：我們在本章稍早使用的實際定義與此略有不同，因為它支援尚未支援在 traits 中使用 async 函數的 Rust 版本。因此，它看起來像這樣：
-> 
-> ````rust,ignore
+>
+> ```rust,ignore
 > fn next(&mut self) -> Next<'_, Self> where Self: Unpin;
-> ````
-> 
+> ```
+>
 > 這個 `Next` 類型是一個實現 `Future` 的 `struct`，它允許我們使用 `Next<'_, Self>` 來命名 `self` 引用的 lifetime，以便 `await` 可以與此方法一起使用。
 
 `StreamExt` trait 也是所有可與 streams 一起使用的有趣方法的所在地。`StreamExt` 會自動為所有實現 `Stream` 的類型實現，但這些 trait 分開定義是為了讓社群能夠迭代方便的 API，而不會影響基礎 trait。
@@ -2007,7 +2007,7 @@ trait StreamExt: Stream {
 
 ## 將所有東西放在一起：Futures、Tasks 和 Threads
 
-如第 16 章所示，threads 提供了一種 concurrency 方法。我們在本章中看到了另一種方法：將 async 與 futures 和 streams 結合使用。如果您想知道何時選擇哪種方法，答案是：這取決於情況！在許多情況下，選擇不是 threads *或* async，而是 threads *和* async。
+如第 16 章所示，threads 提供了一種 concurrency 方法。我們在本章中看到了另一種方法：將 async 與 futures 和 streams 結合使用。如果您想知道何時選擇哪種方法，答案是：這取決於情況！在許多情況下，選擇不是 threads _或_ async，而是 threads _和_ async。
 
 許多作業系統數十年來一直提供基於 threading 的 concurrency 模型，因此許多程式語言都支援它們。然而，這些模型並非沒有權衡。在許多作業系統上，它們為每個 thread 使用了相當多的記憶體，並且在啟動和關閉時會產生一些 overhead。Thread 也只有在您的作業系統和硬體支援它們時才是一個選項。與主流桌面和行動電腦不同，一些 embedded systems 根本沒有作業系統，因此它們也沒有 threads。
 
@@ -2046,18 +2046,18 @@ fn get_intervals() -> impl Stream<Item = u32> {
 
 儘管它們有相似之處，這兩種方法在行為上卻截然不同，儘管我們可能很難在這個非常簡單的範例中衡量出來。我們可以在任何現代個人電腦上產生數百萬個 async task。如果我們嘗試用 thread 來做同樣的事情，我們將會真的耗盡記憶體！
 
-然而，這些 API 如此相似是有原因的。Threads 作為同步操作集的邊界；concurrency 可能發生在 threads *之間*。Tasks 作為*非同步*操作集的邊界；concurrency 可能發生在 tasks *之間*和 *內部*，因為一個 task 可以在其主體中的 futures 之間切換。最後，futures 是 Rust 最精細的 concurrency 單位，每個 future 可能代表一個其他 futures 的樹。runtime — 特別是其 executor — 管理 tasks，而 tasks 管理 futures。在這方面，tasks 類似於輕量級、由 runtime 管理的 thread，並具有由 runtime 而非作業系統管理所帶來的額外功能。
+然而，這些 API 如此相似是有原因的。Threads 作為同步操作集的邊界；concurrency 可能發生在 threads _之間_。Tasks 作為*非同步*操作集的邊界；concurrency 可能發生在 tasks *之間*和 _內部_，因為一個 task 可以在其主體中的 futures 之間切換。最後，futures 是 Rust 最精細的 concurrency 單位，每個 future 可能代表一個其他 futures 的樹。runtime — 特別是其 executor — 管理 tasks，而 tasks 管理 futures。在這方面，tasks 類似於輕量級、由 runtime 管理的 thread，並具有由 runtime 而非作業系統管理所帶來的額外功能。
 
-這並不意味著 async tasks 總是比 thread 更好（反之亦然）。使用 thread 的 concurrency 在某些方面比使用 `async` 的 concurrency 更簡單的程式設計模型。這可能是一個優點也可能是一個缺點。Threads 有點「發射後不管」；它們沒有與 future 等效的 native 概念，所以它們只會執行到完成，除非作業系統本身中斷它們，否則不會被中斷。也就是說，它們沒有像 futures 那樣內建對*任務內 concurrency* 的支援。Rust 中的 threads 也沒有取消機制 — 本章沒有明確涵蓋這個主題，但隱含的意思是每當我們結束一個 future 時，它的狀態都會被正確清理。
+這並不意味著 async tasks 總是比 thread 更好（反之亦然）。使用 thread 的 concurrency 在某些方面比使用 `async` 的 concurrency 更簡單的程式設計模型。這可能是一個優點也可能是一個缺點。Threads 有點「發射後不管」；它們沒有與 future 等效的 native 概念，所以它們只會執行到完成，除非作業系統本身中斷它們，否則不會被中斷。也就是說，它們沒有像 futures 那樣內建對_任務內 concurrency_ 的支援。Rust 中的 threads 也沒有取消機制 — 本章沒有明確涵蓋這個主題，但隱含的意思是每當我們結束一個 future 時，它的狀態都會被正確清理。
 
 這些限制也使得 thread 比 futures 更難以組合。例如，使用 thread 來建構像我們在本章稍早建構的 `timeout` 和 `throttle` 方法要困難得多。futures 是更豐富的資料結構這一事實意味著它們可以更自然地組合在一起，正如我們所見。
 
-那麼，Tasks 賦予我們對 futures 的*額外*控制，讓我們可以選擇在哪裡以及如何將它們分組。事實證明，thread 和 tasks 通常配合得非常好，因為 tasks 可以（至少在某些 runtime 中）在 thread 之間移動。事實上，在底層，我們一直在使用的 runtime — 包括 `spawn_blocking` 和 `spawn_task` 函數 — 預設是 multithreaded 的！許多 runtime 使用一種稱為*work stealing*的方法，透明地在 thread 之間移動 tasks，根據 thread 目前的使用情況，以提高系統的整體效能。這種方法實際上需要 threads *和* tasks，因此也需要 futures。
+那麼，Tasks 賦予我們對 futures 的*額外*控制，讓我們可以選擇在哪裡以及如何將它們分組。事實證明，thread 和 tasks 通常配合得非常好，因為 tasks 可以（至少在某些 runtime 中）在 thread 之間移動。事實上，在底層，我們一直在使用的 runtime — 包括 `spawn_blocking` 和 `spawn_task` 函數 — 預設是 multithreaded 的！許多 runtime 使用一種稱為*work stealing*的方法，透明地在 thread 之間移動 tasks，根據 thread 目前的使用情況，以提高系統的整體效能。這種方法實際上需要 threads _和_ tasks，因此也需要 futures。
 
 思考何時使用哪種方法時，請考慮以下經驗法則：
 
-* 如果工作*非常 parallelizable*，例如處理大量資料，其中每個部分都可以獨立處理，則 thread 是更好的選擇。
-* 如果工作*非常 concurrent*，例如處理來自許多不同來源的訊息，這些訊息可能以不同的間隔或不同的速率傳入，則 async 是更好的選擇。
+- 如果工作_非常 parallelizable_，例如處理大量資料，其中每個部分都可以獨立處理，則 thread 是更好的選擇。
+- 如果工作_非常 concurrent_，例如處理來自許多不同來源的訊息，這些訊息可能以不同的間隔或不同的速率傳入，則 async 是更好的選擇。
 
 如果您同時需要 parallelism 和 concurrency，則不必在 threads 和 async 之間做出選擇。您可以自由地將它們結合使用，讓每個都發揮其最擅長的部分。例如，列表 17-42 顯示了實際 Rust 程式碼中這種混合的相當常見的範例。
 

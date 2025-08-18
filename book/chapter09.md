@@ -10,7 +10,7 @@ directory, so all fixes need to be made in `/src/`.
 
 錯誤在軟體中是無可避免的，因此 Rust 提供了許多功能來處理發生錯誤的情況。在許多情況下，Rust 會要求你在程式碼編譯之前，確認錯誤的可能性並採取一些措施。這個要求讓你的程式更加健壯，確保你能在部署程式碼到 production 之前發現並適當地處理錯誤！
 
-Rust 將錯誤分為兩大類：*可復原 (recoverable)* 錯誤和 *不可復原 (unrecoverable)* 錯誤。對於可復原的錯誤，例如「*找不到檔案 (file not found)*」錯誤，我們很可能只是想向使用者報告問題並重試操作。不可復原的錯誤總是程式碼 bug 的徵兆，例如試圖存取超出陣列末端的位置，因此我們想立即停止程式。
+Rust 將錯誤分為兩大類：_可復原 (recoverable)_ 錯誤和 _不可復原 (unrecoverable)_ 錯誤。對於可復原的錯誤，例如「_找不到檔案 (file not found)_」錯誤，我們很可能只是想向使用者報告問題並重試操作。不可復原的錯誤總是程式碼 bug 的徵兆，例如試圖存取超出陣列末端的位置，因此我們想立即停止程式。
 
 大多數語言不區分這兩種錯誤，並使用例外 (exceptions) 等機制以相同的方式處理它們。Rust 沒有 exceptions。相反地，它為可復原的錯誤提供了 `Result<T, E>` 型別，以及當程式遇到不可復原的錯誤時會停止執行的 `panic!` macro。本章首先會介紹呼叫 `panic!`，然後討論回傳 `Result<T, E>` 值。此外，我們還會探討在決定是嘗試從錯誤中復原還是停止執行時的考量因素。
 
@@ -20,14 +20,14 @@ Rust 將錯誤分為兩大類：*可復原 (recoverable)* 錯誤和 *不可復�
 
 > ### 應對 Panic 時 unwind stack 或 abort
 >
-> 預設情況下，當 panic 發生時，程式會開始 *unwinding*，這表示 Rust 會回溯 stack 並清理它遇到的每個 function 的資料。然而，回溯並清理是非常耗費工作的。因此，Rust 允許你選擇立即 *abort* 的替代方案，這會在不清理的情況下結束程式。
+> 預設情況下，當 panic 發生時，程式會開始 _unwinding_，這表示 Rust 會回溯 stack 並清理它遇到的每個 function 的資料。然而，回溯並清理是非常耗費工作的。因此，Rust 允許你選擇立即 _abort_ 的替代方案，這會在不清理的情況下結束程式。
 >
-> 程式使用的記憶體之後會由 operating system 清理。如果你的專案需要讓產生的 binary 盡可能小，你可以透過在 *Cargo.toml* 檔案中相應的 `[profile]` 部分加入 `panic = 'abort'`，將 panic 時的行為從 unwinding 切換到 aborting。例如，如果你想在 release mode 下發生 panic 時 abort，請加入以下內容：
+> 程式使用的記憶體之後會由 operating system 清理。如果你的專案需要讓產生的 binary 盡可能小，你可以透過在 _Cargo.toml_ 檔案中相應的 `[profile]` 部分加入 `panic = 'abort'`，將 panic 時的行為從 unwinding 切換到 aborting。例如，如果你想在 release mode 下發生 panic 時 abort，請加入以下內容：
 >
-> ````toml
+> ```toml
 > [profile.release]
 > panic = 'abort'
-> ````
+> ```
 
 讓我們試著在一個簡單的程式中呼叫 `panic!`：
 
@@ -52,7 +52,7 @@ crash and burn
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-`panic!` 的呼叫導致了最後兩行中包含的錯誤訊息。第一行顯示了我們的 panic 訊息以及 panic 發生在原始碼中的位置：*src/main.rs:2:5* 表示它位於我們 *src/main.rs* 檔案的第二行第五個字元。
+`panic!` 的呼叫導致了最後兩行中包含的錯誤訊息。第一行顯示了我們的 panic 訊息以及 panic 發生在原始碼中的位置：_src/main.rs:2:5_ 表示它位於我們 _src/main.rs_ 檔案的第二行第五個字元。
 
 在這個例子中，指示的行是我們程式碼的一部分，如果我們到那一行，會看到 `panic!` macro 的呼叫。在其他情況下，`panic!` 的呼叫可能是在我們程式碼呼叫的程式碼中，錯誤訊息報告的檔案名稱和行號會是別人的程式碼中呼叫 `panic!` macro 的位置，而不是最終導致 `panic!` 呼叫的我們的程式碼行。
 
@@ -74,7 +74,7 @@ Listing 9-1: 試圖存取超出 vector 尾端的元素，這會導致呼叫 `pan
 
 在這裡，我們試圖存取 vector 的第 100 個元素（因為索引從零開始，所以是 index 99），但 vector 只有三個元素。在這種情況下，Rust 會 panic。使用 `[]` 應該會回傳一個元素，但如果你傳遞了一個無效的索引，Rust 在這裡沒有任何正確的元素可以回傳。
 
-在 C 語言中，試圖讀取超出 data structure 尾端的位置是 undefined behavior。你可能會得到 memory 中對應於該 data structure 中該元素的位置的任何值，即使該 memory 不屬於該 structure。這被稱為 *buffer overread*，如果攻擊者能夠以某種方式操作索引來讀取不應該被允許的、儲存在 data structure 之後的資料，這可能會導致 security vulnerabilities。
+在 C 語言中，試圖讀取超出 data structure 尾端的位置是 undefined behavior。你可能會得到 memory 中對應於該 data structure 中該元素的位置的任何值，即使該 memory 不屬於該 structure。這被稱為 _buffer overread_，如果攻擊者能夠以某種方式操作索引來讀取不應該被允許的、儲存在 data structure 之後的資料，這可能會導致 security vulnerabilities。
 
 為了保護你的程式免受這類 vulnerability 的影響，如果你嘗試讀取一個不存在的索引上的元素，Rust 將停止執行並拒絕繼續。讓我們試試看：
 
@@ -89,9 +89,9 @@ index out of bounds: the len is 3 but the index is 99
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-這個錯誤指向我們的 *main.rs* 第 4 行，我們試圖存取 `v` 中 vector 的索引 `99`。
+這個錯誤指向我們的 _main.rs_ 第 4 行，我們試圖存取 `v` 中 vector 的索引 `99`。
 
-`note:` 行告訴我們可以設定 `RUST_BACKTRACE` environment variable 來獲取導致錯誤發生的確切 backtrace。*backtrace* 是所有已呼叫的 function 的列表，用於到達這一點。Rust 中的 backtrace 與其他語言中相同：閱讀 backtrace 的關鍵是從頂部開始閱讀，直到你看到你寫的檔案。那就是問題的起源點。該點上方的行是你程式碼呼叫的程式碼；下方的行是呼叫你程式碼的程式碼。這些前後的行可能包括 Rust core 程式碼、standard library 程式碼，或你正在使用的 crates。讓我們試著將 `RUST_BACKTRACE` environment variable 設定為除了 `0` 以外的任何值來獲取 backtrace。Listing 9-2 顯示了你將看到的類似輸出。
+`note:` 行告訴我們可以設定 `RUST_BACKTRACE` environment variable 來獲取導致錯誤發生的確切 backtrace。_backtrace_ 是所有已呼叫的 function 的列表，用於到達這一點。Rust 中的 backtrace 與其他語言中相同：閱讀 backtrace 的關鍵是從頂部開始閱讀，直到你看到你寫的檔案。那就是問題的起源點。該點上方的行是你程式碼呼叫的程式碼；下方的行是呼叫你程式碼的程式碼。這些前後的行可能包括 Rust core 程式碼、standard library 程式碼，或你正在使用的 crates。讓我們試著將 `RUST_BACKTRACE` environment variable 設定為除了 `0` 以外的任何值來獲取 backtrace。Listing 9-2 顯示了你將看到的類似輸出。
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/listing-09-01
@@ -128,7 +128,7 @@ Listing 9-2: 當 environment variable `RUST_BACKTRACE` 設定時，由呼叫 `pa
 
 這有很多輸出！你看到的確切輸出可能會因你的 operating system 和 Rust 版本而異。為了獲得包含此資訊的 backtrace，必須啟用 debug symbols。預設情況下，當我們像這裡一樣使用 `cargo build` 或 `cargo run` 而不帶 `--release` flag 時，debug symbols 是啟用的。
 
-在 Listing 9-2 的輸出中，backtrace 的第 6 行指向我們專案中導致問題的行：*src/main.rs* 的第 4 行。如果我們不想讓程式 panic，我們應該從第一行提到我們寫的檔案的位置開始調查。在 Listing 9-1 中，我們刻意寫了會 panic 的程式碼，修復 panic 的方法是不請求超出 vector 索引範圍的元素。當你的程式未來發生 panic 時，你需要找出程式正在用什麼值執行什麼動作導致 panic，以及程式應該做什麼來替代。
+在 Listing 9-2 的輸出中，backtrace 的第 6 行指向我們專案中導致問題的行：_src/main.rs_ 的第 4 行。如果我們不想讓程式 panic，我們應該從第一行提到我們寫的檔案的位置開始調查。在 Listing 9-1 中，我們刻意寫了會 panic 的程式碼，修復 panic 的方法是不請求超出 vector 索引範圍的元素。當你的程式未來發生 panic 時，你需要找出程式正在用什麼值執行什麼動作導致 panic，以及程式應該做什麼來替代。
 
 我們稍後會在「[要 `panic!` 還是不要 `panic!`](https://doc.rust-lang.org/book/ch09-00-error-handling.html#to-panic-or-not-to-panic)」一節中再次討論 `panic!` 以及何時應該和不應該使用 `panic!` 來處理錯誤狀況。接下來，我們將看看如何使用 `Result` 從錯誤中復原。
 
@@ -188,7 +188,7 @@ Listing 9-4: 使用 `match` expression 來處理可能回傳的 `Result` variant
 
 當結果是 `Ok` 時，這段程式碼會從 `Ok` variant 中回傳內部的 `file` 值，然後我們將該 file handle 值賦給變數 `greeting_file`。在 `match` 之後，我們可以將 file handle 用於讀取或寫入。
 
-`match` 的另一個 arm 處理我們從 `File::open` 得到 `Err` 值的情況。在這個範例中，我們選擇呼叫 `panic!` macro。如果我們目前的目錄中沒有名為 *hello.txt* 的檔案，並且我們執行這段程式碼，我們將會看到來自 `panic!` macro 的以下輸出：
+`match` 的另一個 arm 處理我們從 `File::open` 得到 `Err` 值的情況。在這個範例中，我們選擇呼叫 `panic!` macro。如果我們目前的目錄中沒有名為 _hello.txt_ 的檔案，並且我們執行這段程式碼，我們將會看到來自 `panic!` macro 的以下輸出：
 
 ```
 $ cargo run
@@ -248,7 +248,7 @@ Listing 9-5: 以不同方式處理不同種類的錯誤
 >
 > <!-- CAN'T EXTRACT SEE https://github.com/rust-lang/mdBook/issues/1127 -->
 >
-> ````rust,ignore
+> ```rust,ignore
 > use std::fs::File;
 > use std::io::ErrorKind;
 >
@@ -263,7 +263,7 @@ Listing 9-5: 以不同方式處理不同種類的錯誤
 >         }
 >     });
 > }
-> ````
+> ```
 >
 > 儘管這段程式碼與 Listing 9-5 具有相同的行為，但它不包含任何 `match` expressions，並且更易於閱讀。讀完 Chapter 13 後，請回頭看這個範例，並在 standard library documentation 中查找 `unwrap_or_else` method。還有許多這些 methods 可以在處理錯誤時清理大量的巢狀 `match` expressions。
 
@@ -281,7 +281,7 @@ fn main() {
 }
 ```
 
-如果我們在沒有 *hello.txt* 檔案的情況下執行這段程式碼，我們將會看到 `unwrap` method 所發出的 `panic!` 呼叫產生的錯誤訊息：
+如果我們在沒有 _hello.txt_ 檔案的情況下執行這段程式碼，我們將會看到 `unwrap` method 所發出的 `panic!` 呼叫產生的錯誤訊息：
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/no-listing-04-unwrap
@@ -324,7 +324,7 @@ hello.txt should be included in this project: Os { code: 2, kind: NotFound, mess
 
 ### 錯誤傳播
 
-當 function 的實作呼叫某個可能失敗的操作時，你可以將錯誤回傳給呼叫端程式碼，而不是在 function 本身內處理錯誤，這樣呼叫端程式碼就可以決定如何處理。這稱為錯誤的 *傳播 (propagating)*，並賦予呼叫端程式碼更多的控制權，因為在呼叫端可能會有更多資訊或邏輯來決定如何處理錯誤，而不是在你程式碼的上下文中所能取得的資訊。
+當 function 的實作呼叫某個可能失敗的操作時，你可以將錯誤回傳給呼叫端程式碼，而不是在 function 本身內處理錯誤，這樣呼叫端程式碼就可以決定如何處理。這稱為錯誤的 _傳播 (propagating)_，並賦予呼叫端程式碼更多的控制權，因為在呼叫端可能會有更多資訊或邏輯來決定如何處理錯誤，而不是在你程式碼的上下文中所能取得的資訊。
 
 例如，Listing 9-6 顯示了一個從檔案讀取 username 的 function。如果檔案不存在或無法讀取，此 function 將把這些錯誤回傳給呼叫該 function 的程式碼。
 
@@ -529,7 +529,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 Listing 9-12: 將 `main` 更改為回傳 `Result<(), E>` 允許在 `Result` 值上使用 `?` operator。
 
-`Box<dyn Error>` 型別是一個 *trait object*，我們將在 Chapter 18 的「[使用 trait 物件來允許不同型別的值](https://doc.rust-lang.org/book/ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types)」中討論。目前，你可以將 `Box<dyn Error>` 理解為「任何類型的錯誤」。在 `main` function 中，對錯誤型別為 `Box<dyn Error>` 的 `Result` 值使用 `?` 是允許的，因為它允許任何 `Err` 值提早回傳。儘管這個 `main` function 的主體只會回傳 `std::io::Error` 型別的錯誤，但透過指定 `Box<dyn Error>`，即使在 `main` 的主體中添加了回傳其他錯誤的更多程式碼，這個 signature 仍然會保持正確。
+`Box<dyn Error>` 型別是一個 _trait object_，我們將在 Chapter 18 的「[使用 trait 物件來允許不同型別的值](https://doc.rust-lang.org/book/ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types)」中討論。目前，你可以將 `Box<dyn Error>` 理解為「任何類型的錯誤」。在 `main` function 中，對錯誤型別為 `Box<dyn Error>` 的 `Result` 值使用 `?` 是允許的，因為它允許任何 `Err` 值提早回傳。儘管這個 `main` function 的主體只會回傳 `std::io::Error` 型別的錯誤，但透過指定 `Box<dyn Error>`，即使在 `main` 的主體中添加了回傳其他錯誤的更多程式碼，這個 signature 仍然會保持正確。
 
 當 `main` function 回傳 `Result<(), E>` 時，如果 `main` 回傳 `Ok(())`，則 executable 將以值 `0` 退出；如果 `main` 回傳 `Err` 值，則以非零值退出。以 C 語言編寫的 executable 在退出時會回傳整數：成功退出的程式回傳整數 `0`，而錯誤退出的程式回傳非 `0` 的整數。Rust 也從 executables 回傳整數以與此慣例相容。
 
@@ -567,19 +567,19 @@ Listing 9-12: 將 `main` 更改為回傳 `Result<(), E>` 允許在 `Result` 值�
 
 ### 錯誤處理的準則
 
-建議讓你的程式碼在可能進入 *不健全狀態 (bad state)* 時 panic。在這種情況下，*不健全狀態* 是指某些假設、保證、契約或 invariant 被破壞，例如當無效值、矛盾值或缺失值被傳遞給你的程式碼時——加上以下一或多個情況：
+建議讓你的程式碼在可能進入 _不健全狀態 (bad state)_ 時 panic。在這種情況下，_不健全狀態_ 是指某些假設、保證、契約或 invariant 被破壞，例如當無效值、矛盾值或缺失值被傳遞給你的程式碼時——加上以下一或多個情況：
 
-*   不健全狀態是意料之外的情況，而不是偶爾會發生的情況，例如使用者輸入了錯誤格式的資料。
-*   程式碼在此之後需要依賴於不處於這種不健全狀態，而不是在每個步驟都檢查問題。
-*   沒有一個好的方法可以將這些資訊編碼到你使用的型別中。我們將在 Chapter 18 的「[將狀態與行為編碼為型別](https://doc.rust-lang.org/book/ch17-03-advanced-traits.html#encoding-states-and-behavior-as-types)」中透過範例解釋我們的意思。
+- 不健全狀態是意料之外的情況，而不是偶爾會發生的情況，例如使用者輸入了錯誤格式的資料。
+- 程式碼在此之後需要依賴於不處於這種不健全狀態，而不是在每個步驟都檢查問題。
+- 沒有一個好的方法可以將這些資訊編碼到你使用的型別中。我們將在 Chapter 18 的「[將狀態與行為編碼為型別](https://doc.rust-lang.org/book/ch17-03-advanced-traits.html#encoding-states-and-behavior-as-types)」中透過範例解釋我們的意思。
 
 如果有人呼叫你的程式碼並傳入沒有意義的值，如果可以的話，最好回傳一個錯誤，這樣 library 的使用者就可以決定在這種情況下他們想做什麼。然而，在繼續執行可能會不安全或有害的情況下，最好的選擇可能是呼叫 `panic!` 並提醒使用你 library 的人他們程式碼中的 bug，以便他們在開發過程中修復它。同樣地，如果你呼叫外部程式碼，而它超出了你的控制，並且它回傳了一個你無法修復的無效狀態，那麼 `panic!` 通常是適當的。
 
 然而，當失敗是預期中的情況時，回傳 `Result` 比呼叫 `panic!` 更為合適。範例包括 parser 收到格式錯誤的資料，或者 HTTP request 回傳一個表示你已達到 rate limit 的 status。在這些情況下，回傳 `Result` 表示失敗是一種預期的可能性，呼叫端程式碼必須決定如何處理。
 
-當你的程式碼執行一個操作，如果使用無效值呼叫它可能會使用戶處於風險之中時，你的程式碼應該首先驗證值的有效性，如果值無效則 panic。這主要是出於安全原因：嘗試對無效資料進行操作可能會使你的程式碼面臨 vulnerabilities。這是 standard library 會在你嘗試記憶體越界存取時呼叫 `panic!` 的主要原因：試圖存取不屬於目前 data structure 的記憶體是一個常見的 security problem。Functions 通常有 *contracts*：只有當輸入符合特定要求時，它們的行為才得到保證。當 contract 被違反時發生 panicking 是有道理的，因為 contract 違反總是表示呼叫端 bug，而且這不是你希望呼叫端程式碼必須明確處理的錯誤。事實上，呼叫端程式碼沒有合理的恢復方法；呼叫端 *programmer* 需要修復程式碼。function 的 contracts，特別是當違反會導致 panic 時，應在 function 的 API documentation 中解釋。
+當你的程式碼執行一個操作，如果使用無效值呼叫它可能會使用戶處於風險之中時，你的程式碼應該首先驗證值的有效性，如果值無效則 panic。這主要是出於安全原因：嘗試對無效資料進行操作可能會使你的程式碼面臨 vulnerabilities。這是 standard library 會在你嘗試記憶體越界存取時呼叫 `panic!` 的主要原因：試圖存取不屬於目前 data structure 的記憶體是一個常見的 security problem。Functions 通常有 _contracts_：只有當輸入符合特定要求時，它們的行為才得到保證。當 contract 被違反時發生 panicking 是有道理的，因為 contract 違反總是表示呼叫端 bug，而且這不是你希望呼叫端程式碼必須明確處理的錯誤。事實上，呼叫端程式碼沒有合理的恢復方法；呼叫端 _programmer_ 需要修復程式碼。function 的 contracts，特別是當違反會導致 panic 時，應在 function 的 API documentation 中解釋。
 
-然而，在所有 function 中進行大量的錯誤檢查會很冗長且令人煩惱。幸運的是，你可以使用 Rust 的型別系統（以及 compiler 完成的 type checking）為你完成許多檢查。如果你的 function 有一個特定型別作為 parameter，你可以繼續你的程式碼邏輯，因為你知道 compiler 已經確保你擁有一個有效值。例如，如果你有一個型別而不是 `Option`，你的程式預期會有*某個東西 (something)* 而不是*沒有東西 (nothing)*。你的程式碼就不必處理 `Some` 和 `None` variants 的兩種情況：它只會有一種情況，即明確地擁有一個值。試圖向你的 function 傳遞 nothing 的程式碼甚至無法編譯，所以你的 function 不必在 runtime 檢查這種情況。另一個範例是使用 unsigned integer 型別，例如 `u32`，這確保 parameter 永遠不會是負數。
+然而，在所有 function 中進行大量的錯誤檢查會很冗長且令人煩惱。幸運的是，你可以使用 Rust 的型別系統（以及 compiler 完成的 type checking）為你完成許多檢查。如果你的 function 有一個特定型別作為 parameter，你可以繼續你的程式碼邏輯，因為你知道 compiler 已經確保你擁有一個有效值。例如，如果你有一個型別而不是 `Option`，你的程式預期會有_某個東西 (something)_ 而不是_沒有東西 (nothing)_。你的程式碼就不必處理 `Some` 和 `None` variants 的兩種情況：它只會有一種情況，即明確地擁有一個值。試圖向你的 function 傳遞 nothing 的程式碼甚至無法編譯，所以你的 function 不必在 runtime 檢查這種情況。另一個範例是使用 unsigned integer 型別，例如 `u32`，這確保 parameter 永遠不會是負數。
 
 ### 建立用於驗證的自訂型別
 
@@ -642,7 +642,7 @@ Listing 9-13: 一個只處理 1 到 100 之間的值的 `Guess` 型別
 
 然後我們在 `Guess` 上實作一個名為 `new` 的 associated function，它會建立 `Guess` 值的實例。`new` function 被定義為有一個名為 `value` 的 parameter，其型別為 `i32`，並回傳一個 `Guess`。`new` function 主體中的程式碼會測試 `value`，以確保它介於 1 到 100 之間。如果 `value` 未通過此測試，我們就會發出 `panic!` 呼叫，這會提醒編寫呼叫端程式碼的 programmer，他們有一個需要修復的 bug，因為建立一個 `value` 超出此範圍的 `Guess` 將會違反 `Guess::new` 所依賴的 contract。`Guess::new` 可能會 panic 的條件應該在其 public-facing API documentation 中討論；我們將在 Chapter 14 中涵蓋你在 API documentation 中建立表示可能 `panic!` 的文件慣例。如果 `value` 通過測試，我們就會建立一個新的 `Guess`，將其 `value` field 設定為 `value` parameter，並回傳 `Guess`。
 
-接下來，我們實作一個名為 `value` 的 method，它借用 `self`，沒有任何其他 parameters，並回傳一個 `i32`。這種 method 有時被稱為 *getter*，因為其目的是從其 fields 中獲取一些 data 並回傳。這個 public method 是必要的，因為 `Guess` struct 的 `value` field 是 private 的。`value` field 必須是 private 的這一點很重要，這樣使用 `Guess` struct 的程式碼就不允許直接設定 `value`：`guessing_game` module 外部的程式碼*必須*使用 `Guess::new` function 來建立 `Guess` 的實例，從而確保 `Guess` 不會有未經 `Guess::new` function 中條件檢查的 `value`。
+接下來，我們實作一個名為 `value` 的 method，它借用 `self`，沒有任何其他 parameters，並回傳一個 `i32`。這種 method 有時被稱為 _getter_，因為其目的是從其 fields 中獲取一些 data 並回傳。這個 public method 是必要的，因為 `Guess` struct 的 `value` field 是 private 的。`value` field 必須是 private 的這一點很重要，這樣使用 `Guess` struct 的程式碼就不允許直接設定 `value`：`guessing_game` module 外部的程式碼*必須*使用 `Guess::new` function 來建立 `Guess` 的實例，從而確保 `Guess` 不會有未經 `Guess::new` function 中條件檢查的 `value`。
 
 那麼，一個參數只接受或回傳介於 1 到 100 之間的數字的 function，可以在其 signature 中聲明它接受或回傳 `Guess` 而不是 `i32`，並且不需要在其主體中進行任何額外的檢查。
 

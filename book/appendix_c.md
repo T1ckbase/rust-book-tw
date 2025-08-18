@@ -12,11 +12,11 @@ directory, so all fixes need to be made in `/src/`.
 
 在本附錄中，我們提供了標準函式庫中所有可與 `derive` 搭配使用的 trait 的參考。每個章節涵蓋：
 
-*   derive 這個 trait 會啟用哪些 operator 和 method
-*   由 `derive` 提供的 trait 實作做了什麼
-*   實作該 trait 對於該 type 意味著什麼
-*   允許或不允許實作該 trait 的條件
-*   需要該 trait 的操作範例
+- derive 這個 trait 會啟用哪些 operator 和 method
+- 由 `derive` 提供的 trait 實作做了什麼
+- 實作該 trait 對於該 type 意味著什麼
+- 允許或不允許實作該 trait 的條件
+- 需要該 trait 的操作範例
 
 如果您希望有與 `derive` attribute 提供的行為不同的行為，請查閱每個 trait 的標準函式庫 documentation，以了解如何手動實作它們的詳細資訊。
 
@@ -38,7 +38,7 @@ directory, so all fixes need to be made in `/src/`.
 
 `PartialEq` trait 允許您比較 type 的 instance 以檢查 equality，並啟用 `==` 和 `!=` operator 的使用。
 
-Derive `PartialEq` 會實作 `eq` method。當 `PartialEq` 在 struct 上 derive 時，只有當*所有* field 都相等時，兩個 instance 才相等；如果有任何 field 不相等，則 instance 不相等。當在 enum 上 derive 時，每個 variant 與其自身相等，而不與其他 variant 相等。
+Derive `PartialEq` 會實作 `eq` method。當 `PartialEq` 在 struct 上 derive 時，只有當_所有_ field 都相等時，兩個 instance 才相等；如果有任何 field 不相等，則 instance 不相等。當在 enum 上 derive 時，每個 variant 與其自身相等，而不與其他 variant 相等。
 
 例如，在使用 `assert_eq!` macro 時，`PartialEq` trait 是必需的，因為它需要能夠比較兩個 type 的 instance 是否相等。
 

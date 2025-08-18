@@ -2,26 +2,26 @@
 
 # 常見的 Collections
 
-Rust 的 `standard library` 包含許多非常有用的 `data structures`，稱之為 *`collections`*。大多數其他 `data types` 代表一個特定值，但 `collections` 可以包含多個值。與內建的 `array` 和 `tuple` 類型不同，這些 `collections` 所指向的 `data` 儲存在 `heap` 上，這意味著 `data` 的數量不需要在 `compile time` 知道，並且可以隨著 `program` 的執行而增長或縮小。每種 `collection` 都有不同的能力和成本，選擇適合您當前情況的 `collection` 是一項您會隨著時間發展的技能。在本章中，我們將討論在 Rust `program` 中非常常用到的三種 `collections`：
+Rust 的 `standard library` 包含許多非常有用的 `data structures`，稱之為 _`collections`_。大多數其他 `data types` 代表一個特定值，但 `collections` 可以包含多個值。與內建的 `array` 和 `tuple` 類型不同，這些 `collections` 所指向的 `data` 儲存在 `heap` 上，這意味著 `data` 的數量不需要在 `compile time` 知道，並且可以隨著 `program` 的執行而增長或縮小。每種 `collection` 都有不同的能力和成本，選擇適合您當前情況的 `collection` 是一項您會隨著時間發展的技能。在本章中，我們將討論在 Rust `program` 中非常常用到的三種 `collections`：
 
-* *`vector`* 允許您將可變數量的值彼此相鄰地儲存。
-* *`string`* 是一種字元 `collection`。我們之前提過 `String` `type`，但在本章中，我們將深入討論它。
-* *`hash map`* 允許您將值與特定 `key` 關聯起來。它是更一般 `data structure` *`map`* 的一個特定實作。
+- _`vector`_ 允許您將可變數量的值彼此相鄰地儲存。
+- _`string`_ 是一種字元 `collection`。我們之前提過 `String` `type`，但在本章中，我們將深入討論它。
+- _`hash map`_ 允許您將值與特定 `key` 關聯起來。它是更一般 `data structure` _`map`_ 的一個特定實作。
 
-要了解 `standard library` 提供的其他類型 `collections`，請參閱 *[https://doc.rust-lang.org/book/std/collections/index.html](https://doc.rust-lang.org/book/std/collections/index.html)* 的文件。
+要了解 `standard library` 提供的其他類型 `collections`，請參閱 _[https://doc.rust-lang.org/book/std/collections/index.html](https://doc.rust-lang.org/book/std/collections/index.html)_ 的文件。
 
 我們將討論如何建立和更新 `vectors`、`strings` 和 `hash maps`，以及它們各自的特殊之處。
 
 ## 使用 Vectors 儲存值列表
 
-我們將要看的第一個 `collection type` 是 `Vec<T>`，也稱為 *`vector`*。`Vectors` 允許您在單一 `data structure` 中儲存多個值，這些值在 `memory` 中彼此相鄰。`Vectors` 只能儲存相同類型的值。當您有一系列項目時，例如檔案中的文字行或購物車中的商品價格，它們非常有用。
+我們將要看的第一個 `collection type` 是 `Vec<T>`，也稱為 _`vector`_。`Vectors` 允許您在單一 `data structure` 中儲存多個值，這些值在 `memory` 中彼此相鄰。`Vectors` 只能儲存相同類型的值。當您有一系列項目時，例如檔案中的文字行或購物車中的商品價格，它們非常有用。
 
 ### 建立一個新的 Vector
 
 要建立一個新的空 `vector`，我們呼叫 `Vec::new` `function`，如 Listing 8-1 所示。
 
 ```rust
-    let v: Vec<i32> = Vec::new();
+let v: Vec<i32> = Vec::new();
 ```
 
 Listing 8-1：建立一個新的空 `vector` 來儲存 `i32` 類型的值
@@ -31,7 +31,7 @@ Listing 8-1：建立一個新的空 `vector` 來儲存 `i32` 類型的值
 更常見的情況是，您會使用初始值建立 `Vec<T>`，Rust 會推斷您要儲存的值的 `type`，因此您很少需要進行這種 `type annotation`。Rust 方便地提供了 `vec!` `macro`，它將建立一個包含您給定值的新 `vector`。Listing 8-2 建立了一個新的 `Vec<i32>`，它包含值 `1`、`2` 和 `3`。整數 `type` 是 `i32`，因為這是預設的整數 `type`，我們在 Chapter 3 的「Data Types」部分討論過。
 
 ```rust
-    let v = vec![1, 2, 3];
+let v = vec![1, 2, 3];
 ```
 
 Listing 8-2：建立一個包含值的新 `vector`
@@ -130,17 +130,17 @@ error: could not compile `collections` (bin "collections") due to 1 previous err
 
 Listing 8-6 中的程式碼看起來應該可以工作：為什麼指向第一個 `element` 的 `reference` 會關心 `vector` 末尾的變化？這個錯誤是由於 `vectors` 的工作方式：因為 `vectors` 將值在 `memory` 中彼此相鄰放置，如果 `vector` 當前儲存的地方沒有足夠的空間將所有 `elements` 彼此相鄰放置，那麼在 `vector` 的末尾添加一個新 `element` 可能需要分配新的 `memory` 並將舊的 `elements` 複製到新的空間。在這種情況下，指向第一個 `element` 的 `reference` 將指向已解除分配的 `memory`。`borrowing rules` 防止 `programs` 陷入這種情況。
 
-> Note: 有關 `Vec<T>` `type` 的實作細節，請參閱 *[https://doc.rust-lang.org/book/nomicon/vec/vec.html](https://doc.rust-lang.org/book/nomicon/vec/vec.html)* 的「The Rustonomicon」。
+> Note: 有關 `Vec<T>` `type` 的實作細節，請參閱 _[https://doc.rust-lang.org/book/nomicon/vec/vec.html](https://doc.rust-lang.org/book/nomicon/vec/vec.html)_ 的「The Rustonomicon」。
 
 ### 迭代 Vector 中的值
 
 要依次存取 `vector` 中的每個 `element`，我們會遍歷所有 `elements`，而不是一次一個地使用 `indices` 存取。Listing 8-7 顯示了如何使用 `for` `loop` 來取得 `i32` 值的 `vector` 中每個 `element` 的 `immutable references` 並列印它們。
 
 ```rust
-    let v = vec![100, 32, 57];
-    for i in &v {
-        println!("{i}");
-    }
+let v = vec![100, 32, 57];
+for i in &v {
+    println!("{i}");
+}
 ```
 
 Listing 8-7：透過使用 `for` `loop` 迭代 `elements` 來列印 `vector` 中的每個 `element`
@@ -148,10 +148,10 @@ Listing 8-7：透過使用 `for` `loop` 迭代 `elements` 來列印 `vector` 中
 我們還可以迭代 `mutable vector` 中每個 `element` 的 `mutable references`，以便更改所有 `elements`。Listing 8-8 中的 `for` `loop` 將為每個 `element` 加上 `50`。
 
 ```rust
-    let mut v = vec![100, 32, 57];
-    for i in &mut v {
-        *i += 50;
-    }
+let mut v = vec![100, 32, 57];
+for i in &mut v {
+    *i += 50;
+}
 ```
 
 Listing 8-8：迭代 `vector` 中 `elements` 的 `mutable references`
@@ -214,7 +214,7 @@ Listing 8-10：顯示 `vector` 及其 `elements` 在何處被丟棄
 
 ### 什麼是 String？
 
-我們首先定義術語 *`string`* 的含義。Rust 的核心語言中只有一種 `string type`，即 `string slice` `str`，它通常以其 `borrowed form` `&str` 呈現。在 Chapter 4 中，我們討論了 *`string slices`*，它們是 `references` 到儲存在其他地方的 `UTF-8` 編碼 `string data`。例如，`String literals` 儲存在 `program’s binary` 中，因此它們是 `string slices`。
+我們首先定義術語 _`string`_ 的含義。Rust 的核心語言中只有一種 `string type`，即 `string slice` `str`，它通常以其 `borrowed form` `&str` 呈現。在 Chapter 4 中，我們討論了 _`string slices`_，它們是 `references` 到儲存在其他地方的 `UTF-8` 編碼 `string data`。例如，`String literals` 儲存在 `program’s binary` 中，因此它們是 `string slices`。
 
 `String` `type` 由 Rust 的 `standard library` 提供，而不是編寫到核心語言中，它是一種可增長、`mutable`、`owned` 的 `UTF-8` `encoded string type`。當 Rustacean 在 Rust 中提到「`strings`」時，他們可能指的是 `String` 或 `string slice` `&str` `types`，而不僅僅是其中一種 `type`。儘管本節主要關於 `String`，但在 Rust 的 `standard library` 中這兩種 `types` 都被大量使用，而且 `String` 和 `string slices` 都是 `UTF-8` 編碼的。
 
@@ -223,7 +223,7 @@ Listing 8-10：顯示 `vector` 及其 `elements` 在何處被丟棄
 許多 `Vec<T>` 可用的操作在 `String` 中也可用，因為 `String` 實際上是作為 `bytes` `vector` 的 `wrapper` 實作的，並帶有一些額外的保證、限制和功能。一個與 `Vec<T>` 和 `String` 以相同方式工作的 `function` 範例是 `new` `function`，用於建立一個實例，如 Listing 8-11 所示。
 
 ```rust
-    let mut s = String::new();
+let mut s = String::new();
 ```
 
 Listing 8-11：建立一個新的空 `String`
@@ -246,7 +246,7 @@ Listing 8-12：使用 `to_string` `method` 從 `string literal` 建立一個 `St
 我們也可以使用 `String::from` `function` 從 `string literal` 建立 `String`。Listing 8-13 中的程式碼與 Listing 8-12 中使用 `to_string` 的程式碼等效。
 
 ```rust
-    let s = String::from("initial contents");
+let s = String::from("initial contents");
 ```
 
 Listing 8-13：使用 `String::from` `function` 從 `string literal` 建立 `String`
@@ -256,17 +256,17 @@ Listing 8-13：使用 `String::from` `function` 從 `string literal` 建立 `Str
 請記住 `strings` 是 `UTF-8` 編碼的，因此我們可以包含任何正確編碼的 `data` 在其中，如 Listing 8-14 所示。
 
 ```rust
-    let hello = String::from("السلام عليكم");
-    let hello = String::from("Dobrý den");
-    let hello = String::from("Hello");
-    let hello = String::from("שלום");
-    let hello = String::from("नमस्ते");
-    let hello = String::from("こんにちは");
-    let hello = String::from("안녕하세요");
-    let hello = String::from("你好");
-    let hello = String::from("Olá");
-    let hello = String::from("Здравствуйте");
-    let hello = String::from("Hola");
+let hello = String::from("السلام عليكم");
+let hello = String::from("Dobrý den");
+let hello = String::from("Hello");
+let hello = String::from("שלום");
+let hello = String::from("नमस्ते");
+let hello = String::from("こんにちは");
+let hello = String::from("안녕하세요");
+let hello = String::from("你好");
+let hello = String::from("Olá");
+let hello = String::from("Здравствуйте");
+let hello = String::from("Hola");
 ```
 
 Listing 8-14：將不同語言的問候語儲存在 `strings` 中
@@ -282,8 +282,8 @@ Listing 8-14：將不同語言的問候語儲存在 `strings` 中
 我們可以使用 `push_str` `method` 追加 `string slice` 來增長 `String`，如 Listing 8-15 所示。
 
 ```rust
-    let mut s = String::from("foo");
-    s.push_str("bar");
+let mut s = String::from("foo");
+s.push_str("bar");
 ```
 
 Listing 8-15：使用 `push_str` `method` 將 `string slice` 追加到 `String`
@@ -291,21 +291,21 @@ Listing 8-15：使用 `push_str` `method` 將 `string slice` 追加到 `String`
 在這兩行之後，`s` 將包含 `foobar`。`push_str` `method` 接受一個 `string slice`，因為我們不一定想取得參數的 `ownership`。例如，在 Listing 8-16 的程式碼中，我們希望在將 `s2` 的內容追加到 `s1` 之後，仍能使用 `s2`。
 
 ```rust
-    let mut s1 = String::from("foo");
-    let s2 = "bar";
-    s1.push_str(s2);
-    println!("s2 is {s2}");
+let mut s1 = String::from("foo");
+let s2 = "bar";
+s1.push_str(s2);
+println!("s2 is {s2}");
 ```
 
 Listing 8-16：在將 `string slice` 的內容追加到 `String` 後使用它
 
 如果 `push_str` `method` 取得了 `s2` 的 `ownership`，我們將無法在最後一行列印其值。然而，這段程式碼卻如我們預期地工作！
 
-`push` `method` 接受單個 `character` 作為參數並將其添加到 `String`。Listing 8-17 使用 `push` `method` 將字母 *l* 添加到 `String`。
+`push` `method` 接受單個 `character` 作為參數並將其添加到 `String`。Listing 8-17 使用 `push` `method` 將字母 _l_ 添加到 `String`。
 
 ```rust
-    let mut s = String::from("lo");
-    s.push('l');
+let mut s = String::from("lo");
+s.push('l');
 ```
 
 Listing 8-17：使用 `push` 將一個 `character` 添加到 `String` 值
@@ -317,9 +317,9 @@ Listing 8-17：使用 `push` 將一個 `character` 添加到 `String` 值
 通常，您會想組合兩個現有的 `strings`。一種方法是使用 `+` `operator`，如 Listing 8-18 所示。
 
 ```rust
-    let s1 = String::from("Hello, ");
-    let s2 = String::from("world!");
-    let s3 = s1 + &s2; // note s1 has been moved here and can no longer be used
+let s1 = String::from("Hello, ");
+let s2 = String::from("world!");
+let s3 = s1 + &s2; // note s1 has been moved here and can no longer be used
 ```
 
 Listing 8-18：使用 `+` `operator` 將兩個 `String` 值組合成一個新的 `String` 值
@@ -332,11 +332,11 @@ fn add(self, s: &str) -> String {
 
 在 `standard library` 中，您會看到使用 `generics` 和 `associated types` 定義的 `add`。在這裡，我們替換了具體的 `concrete types`，這就是我們使用 `String` `values` 呼叫此 `method` 時發生的情況。我們將在 Chapter 10 討論 `generics`。這個 `signature` 提供了我們理解 `+` `operator` 棘手部分所需的線索。
 
-首先，`s2` 有一個 `&`，這表示我們正在將第二個 `string` 的 *`reference`* 添加到第一個 `string`。這是因為 `add` `function` 中的 `s` 參數：我們只能將 `&str` 添加到 `String`；我們不能將兩個 `String` `values` 添加在一起。但是等等——`&s2` 的 `type` 是 `&String`，而不是 `&str`，這在 `add` 的第二個參數中指定。那麼為什麼 Listing 8-18 會編譯成功呢？
+首先，`s2` 有一個 `&`，這表示我們正在將第二個 `string` 的 _`reference`_ 添加到第一個 `string`。這是因為 `add` `function` 中的 `s` 參數：我們只能將 `&str` 添加到 `String`；我們不能將兩個 `String` `values` 添加在一起。但是等等——`&s2` 的 `type` 是 `&String`，而不是 `&str`，這在 `add` 的第二個參數中指定。那麼為什麼 Listing 8-18 會編譯成功呢？
 
-我們能夠在呼叫 `add` 時使用 `&s2` 的原因是 `compiler` 可以將 `&String` 參數 *`coerce`* 為 `&str`。當我們呼叫 `add` `method` 時，Rust 使用 *`deref coercion`*，它會將 `&s2` 轉換為 `&s2[..]`。我們將在 Chapter 15 更深入地討論 `deref coercion`。因為 `add` 不會取得 `s` 參數的 `ownership`，所以在這個操作之後 `s2` 仍然是一個有效的 `String`。
+我們能夠在呼叫 `add` 時使用 `&s2` 的原因是 `compiler` 可以將 `&String` 參數 _`coerce`_ 為 `&str`。當我們呼叫 `add` `method` 時，Rust 使用 _`deref coercion`_，它會將 `&s2` 轉換為 `&s2[..]`。我們將在 Chapter 15 更深入地討論 `deref coercion`。因為 `add` 不會取得 `s` 參數的 `ownership`，所以在這個操作之後 `s2` 仍然是一個有效的 `String`。
 
-其次，我們可以在 `signature` 中看到 `add` 會取得 `self` 的 `ownership`，因為 `self` *沒有* `&`。這意味著 Listing 8-18 中的 `s1` 將被移入 `add` 呼叫中，並且在此之後將不再有效。因此，儘管 `let s3 = s1 + &s2;` 看起來會複製兩個 `strings` 並建立一個新的，但此語句實際上是取得 `s1` 的 `ownership`，追加 `s2` 內容的副本，然後返回結果的 `ownership`。換句話說，它看起來像是進行了大量的複製，但實際上並沒有；其 `implementation` 比複製更有效率。
+其次，我們可以在 `signature` 中看到 `add` 會取得 `self` 的 `ownership`，因為 `self` _沒有_ `&`。這意味著 Listing 8-18 中的 `s1` 將被移入 `add` 呼叫中，並且在此之後將不再有效。因此，儘管 `let s3 = s1 + &s2;` 看起來會複製兩個 `strings` 並建立一個新的，但此語句實際上是取得 `s1` 的 `ownership`，追加 `s2` 內容的副本，然後返回結果的 `ownership`。換句話說，它看起來像是進行了大量的複製，但實際上並沒有；其 `implementation` 比複製更有效率。
 
 如果我們需要連接多個 `strings`，`+` `operator` 的行為會變得難以控制：
 
@@ -365,8 +365,8 @@ fn add(self, s: &str) -> String {
 在許多其他 `programming languages` 中，透過 `index` 引用來存取 `string` 中的單個 `characters` 是一種有效且常見的操作。然而，如果您嘗試在 Rust 中使用 `indexing` `syntax` 存取 `String` 的部分，您將會得到一個錯誤。考慮 Listing 8-19 中的無效程式碼。
 
 ```rust
-    let s1 = String::from("hi");
-    let h = s1[0];
+let s1 = String::from("hi");
+let h = s1[0];
 ```
 
 Listing 8-19：嘗試對 `String` 使用 `indexing` `syntax`
@@ -400,13 +400,13 @@ error: could not compile `collections` (bin "collections") due to 1 previous err
 `String` 是 `Vec<u8>` 的 `wrapper`。讓我們看看 Listing 8-14 中一些正確編碼的 `UTF-8` 範例 `strings`。首先，這個：
 
 ```rust
-    let hello = String::from("Hola");
+let hello = String::from("Hola");
 ```
 
-在這種情況下，`len` 將是 `4`，這意味著儲存 `string` `"Hola"` 的 `vector` 長度為 4 `bytes`。這些字母中的每一個在 `UTF-8` 編碼時佔用一個 `byte`。然而，下面這行可能會讓您驚訝（請注意，這個 `string` 以西里爾大寫字母 *Ze* 開頭，而不是數字 3）：
+在這種情況下，`len` 將是 `4`，這意味著儲存 `string` `"Hola"` 的 `vector` 長度為 4 `bytes`。這些字母中的每一個在 `UTF-8` 編碼時佔用一個 `byte`。然而，下面這行可能會讓您驚訝（請注意，這個 `string` 以西里爾大寫字母 _Ze_ 開頭，而不是數字 3）：
 
 ```rust
-    let hello = String::from("Здравствуйте");
+let hello = String::from("Здравствуйте");
 ```
 
 如果問您 `string` 的長度是多少，您可能會說 12。事實上，Rust 的答案是 24：這是在 `UTF-8` 中編碼「Здравствуйте」所需的 `bytes` 數量，因為該 `string` 中的每個 `Unicode scalar value` 需要 2 `bytes` 的儲存空間。因此，對 `string` 的 `bytes` 進行 `index` 不會總是與有效的 `Unicode scalar value` 相關聯。為了演示，考慮這個無效的 Rust 程式碼：
@@ -422,7 +422,7 @@ let answer = &hello[0];
 
 #### Bytes、Scalar Values 和 Grapheme Clusters！我的天啊！
 
-關於 `UTF-8` 的另一個重點是，從 Rust 的角度來看 `strings` 實際上可以透過三種相關方式來檢視：作為 `bytes`、`scalar values` 和 `grapheme clusters`（最接近我們所謂的 *`letters`*）。
+關於 `UTF-8` 的另一個重點是，從 Rust 的角度來看 `strings` 實際上可以透過三種相關方式來檢視：作為 `bytes`、`scalar values` 和 `grapheme clusters`（最接近我們所謂的 _`letters`_）。
 
 如果我們看一下用天城體文字書寫的印地語單詞「नमस्ते」，它以 `u8` `values` 的 `vector` 儲存，看起來像這樣：
 
@@ -524,7 +524,7 @@ for b in "Зд".bytes() {
 
 ## 在 Hash Maps 中儲存具有關聯值的 Keys
 
-我們常見的 `collections` 中最後一個是 *`hash map`*。`type` `HashMap<K, V>` 使用 *`hashing function`* 儲存 `type K` 的 `keys` 到 `type V` 的 `values` 的映射，它決定了如何將這些 `keys` 和 `values` 放置到 `memory` 中。許多 `programming languages` 都支援這類 `data structure`，但它們通常使用不同的名稱，例如 *`hash`*、*`map`*、*`object`*、*`hash table`*、*`dictionary`* 或 *`associative array`* 等等。
+我們常見的 `collections` 中最後一個是 _`hash map`_。`type` `HashMap<K, V>` 使用 _`hashing function`_ 儲存 `type K` 的 `keys` 到 `type V` 的 `values` 的映射，它決定了如何將這些 `keys` 和 `values` 放置到 `memory` 中。許多 `programming languages` 都支援這類 `data structure`，但它們通常使用不同的名稱，例如 _`hash`_、_`map`_、_`object`_、_`hash table`_、_`dictionary`_ 或 _`associative array`_ 等等。
 
 `Hash maps` 在您不使用 `index`（像 `vectors` 那樣）而是使用任何 `type` 的 `key` 來查詢 `data` 時非常有用。例如，在遊戲中，您可以在 `hash map` 中追蹤每個團隊的分數，其中每個 `key` 是團隊的名稱，`values` 是每個團隊的分數。給定團隊名稱，您可以檢索其分數。
 
@@ -532,7 +532,7 @@ for b in "Зд".bytes() {
 
 ### 建立一個新的 Hash Map
 
-建立空 `hash map` 的一種方法是使用 `new` 並使用 `insert` 添加 `elements`。在 Listing 8-20 中，我們正在追蹤兩個隊伍（*Blue* 和 *Yellow*）的分數。Blue 隊以 10 分開始，Yellow 隊以 50 分開始。
+建立空 `hash map` 的一種方法是使用 `new` 並使用 `insert` 添加 `elements`。在 Listing 8-20 中，我們正在追蹤兩個隊伍（_Blue_ 和 _Yellow_）的分數。Blue 隊以 10 分開始，Yellow 隊以 50 分開始。
 
 ```rust
     use std::collections::HashMap;
@@ -617,7 +617,7 @@ Listing 8-22：顯示 `keys` 和 `values` 一旦插入，便由 `hash map` `owne
 
 儘管 `key` 和 `value` `pairs` 的數量是可增長的，但每個唯一的 `key` 一次只能有一個 `value` 與之關聯（但反之則不然：例如，Blue 隊和 Yellow 隊都可以在 `scores` `hash map` 中儲存 `value` `10`）。
 
-當您想要更改 `hash map` 中的 `data` 時，您必須決定如何處理 `key` 已經有 `value` 被賦值的狀況。您可以將舊的 `value` 替換為新的 `value`，完全不顧舊的 `value`。您可以保留舊的 `value` 並忽略新的 `value`，只有當 `key` *沒有* 已經有 `value` 時才添加新的 `value`。或者您可以組合舊的 `value` 和新的 `value`。讓我們看看如何執行這些操作！
+當您想要更改 `hash map` 中的 `data` 時，您必須決定如何處理 `key` 已經有 `value` 被賦值的狀況。您可以將舊的 `value` 替換為新的 `value`，完全不顧舊的 `value`。您可以保留舊的 `value` 並忽略新的 `value`，只有當 `key` _沒有_ 已經有 `value` 時才添加新的 `value`。或者您可以組合舊的 `value` 和新的 `value`。讓我們看看如何執行這些操作！
 
 #### 覆寫 Value
 
@@ -691,14 +691,14 @@ Listing 8-25：使用儲存單詞和計數的 `hash map` 計算單詞出現次�
 
 ### 雜湊 Function
 
-預設情況下，`HashMap` 使用一個稱為 *`SipHash`* 的 `hashing function`，它可以提供對涉及 `hash tables` 的阻斷服務 (DoS) 攻擊的抵抗力[^siphash]<!-- ignore -->。這不是最快的 `hashing algorithm`，但為了更好的安全性而犧牲 `performance` 是值得的。如果您分析您的程式碼並發現預設的 `hash function` 對您的目的來說太慢，您可以透過指定不同的 `hasher` 來切換到另一個 `function`。*`hasher`* 是一種實作 `BuildHasher` `trait` 的 `type`。我們將在 Chapter 10 中討論 `traits` 以及如何實作它們。您不一定需要從頭開始實作自己的 `hasher`；`crates.io` 上有其他 Rust 使用者分享的 `libraries`，它們提供了實作許多常見 `hashing algorithms` 的 `hashers`。
+預設情況下，`HashMap` 使用一個稱為 _`SipHash`_ 的 `hashing function`，它可以提供對涉及 `hash tables` 的阻斷服務 (DoS) 攻擊的抵抗力[^siphash]<!-- ignore -->。這不是最快的 `hashing algorithm`，但為了更好的安全性而犧牲 `performance` 是值得的。如果您分析您的程式碼並發現預設的 `hash function` 對您的目的來說太慢，您可以透過指定不同的 `hasher` 來切換到另一個 `function`。_`hasher`_ 是一種實作 `BuildHasher` `trait` 的 `type`。我們將在 Chapter 10 中討論 `traits` 以及如何實作它們。您不一定需要從頭開始實作自己的 `hasher`；`crates.io` 上有其他 Rust 使用者分享的 `libraries`，它們提供了實作許多常見 `hashing algorithms` 的 `hashers`。
 
 ## 總結
 
 `Vectors`、`strings` 和 `hash maps` 將在您需要儲存、存取和修改 `data` 的 `programs` 中提供大量必要的功能。以下是一些您現在應該具備解決能力的練習：
 
 1. 給定一個 `integers` 列表，使用 `vector` 並返回該列表的 median（排序後，中間位置的 `value`）和 mode（最常出現的 `value`；這裡 `hash map` 會很有幫助）。
-1. 將 `strings` 轉換為豬拉丁語。每個單詞的第一個子音會移到單詞的末尾並添加 *ay*，所以 *first* 變成 *irst-fay*。以母音開頭的單詞則在末尾添加 *hay*（*apple* 變成 *apple-hay*）。請記住 `UTF-8 encoding` 的細節！
+1. 將 `strings` 轉換為豬拉丁語。每個單詞的第一個子音會移到單詞的末尾並添加 _ay_，所以 _first_ 變成 _irst-fay_。以母音開頭的單詞則在末尾添加 _hay_（_apple_ 變成 _apple-hay_）。請記住 `UTF-8 encoding` 的細節！
 1. 使用 `hash map` 和 `vectors`，建立一個文字介面，允許使用者將員工姓名添加到公司的部門；例如，「將 Sally 添加到 Engineering」或「將 Amir 添加到 Sales」。然後讓使用者按部門或公司部門獲取所有人員列表，按字母順序排序。
 
 `standard library API documentation` 描述了 `vectors`、`strings` 和 `hash maps` 所擁有的 `methods`，這些對於這些練習會很有幫助！

@@ -3,6 +3,7 @@
 This file is periodically generated from the content in the `/src/`
 directory, so all fixes need to be made in `/src/`.
 -->
+
 ## 關於作者
 
 Carol Nichols 是 Rust Crates.io Team 成員，也是 Rust Core Team 的前成員。她是 Integer 32, LLC 的共同創辦人，這是世界上第一家專注於 Rust 的軟體諮詢公司。Nichols 也曾組織 Rust Belt Rust Conference。
@@ -19,7 +20,7 @@ JT 是 Rust core team 成員，也是 Rust error message format、Rust Language 
 
 ## 前言
 
-雖然過去並不明顯，但 Rust programming language 本質上是關於 *賦能*：無論你現在撰寫哪種程式碼，Rust 都能讓你觸及更遠，在比以往更廣泛的 domains 中自信地編程。
+雖然過去並不明顯，但 Rust programming language 本質上是關於 _賦能_：無論你現在撰寫哪種程式碼，Rust 都能讓你觸及更遠，在比以往更廣泛的 domains 中自信地編程。
 
 舉例來說，處理 memory management、data representation 和 concurrency 等低階細節的「systems-level」工作。傳統上，這個 programming 領域被視為深奧難懂，只有少數投入多年學習以避免其惡名昭彰 pitfalls 的人才能接觸。即使是那些從事這項工作的人，也小心翼翼，唯恐他們的程式碼容易遭受 exploits、crashes 或 corruption。
 
@@ -43,15 +44,15 @@ Carol is grateful for the opportunity to work on this book。She thanks her fami
 
 ## 前言
 
-本文版本假定你正在使用 Rust 1.62.0（發布於 2022-06-30）或更新版本，並且所有專案的 *Cargo.toml* 檔案中都包含 `edition="2021"`，以將其配置為使用 Rust 2021 edition idioms。有關安裝或更新 Rust 的說明，請參閱 XX 頁的「安裝」章節，有關 editions 的資訊，請參閱 Appendix E。
+本文版本假定你正在使用 Rust 1.62.0（發布於 2022-06-30）或更新版本，並且所有專案的 _Cargo.toml_ 檔案中都包含 `edition="2021"`，以將其配置為使用 Rust 2021 edition idioms。有關安裝或更新 Rust 的說明，請參閱 XX 頁的「安裝」章節，有關 editions 的資訊，請參閱 Appendix E。
 
 Rust language 的 2021 edition 包含多項 improvements，這些 improvements 讓 Rust 更符合 ergonomic，並修正了一些 inconsistencies。除了反映這些 improvements 的 general update 外，本書的此 rendition 有多項 improvements，以 address specific feedback：
 
-*   Chapter 7 包含一個關於如何使用 modules 將程式碼組織成 multiple files 的 new quick reference section。
-*   Chapter 13 有 new and improved closure examples，更 clearly illustrate captures、`move` keyword 和 `Fn` traits。
-*   我們修正了本書中 number of small errors 和 imprecise wording。Thank you to the readers who reported them！
+- Chapter 7 包含一個關於如何使用 modules 將程式碼組織成 multiple files 的 new quick reference section。
+- Chapter 13 有 new and improved closure examples，更 clearly illustrate captures、`move` keyword 和 `Fn` traits。
+- 我們修正了本書中 number of small errors 和 imprecise wording。Thank you to the readers who reported them！
 
-Note that any code from earlier renditions of this book that compiled will continue to compile with the relevant edition in the project’s *Cargo.toml*，even as you update the Rust compiler version you’re using。That’s Rust’s backward-compatibility guarantees at work！
+Note that any code from earlier renditions of this book that compiled will continue to compile with the relevant edition in the project’s _Cargo.toml_，even as you update the Rust compiler version you’re using。That’s Rust’s backward-compatibility guarantees at work！
 
 ## 導論
 
@@ -67,9 +68,9 @@ Rust is proving to be a productive tool for collaborating among large teams of d
 
 Rust also brings contemporary developer tools to the systems programming world：
 
-*   Cargo，the included dependency manager and build tool，makes adding、compiling，and managing dependencies painless and consistent across the Rust ecosystem。
-*   The `rustfmt` formatting tool ensures a consistent coding style across developers。
-*   The Rust Language Server powers integrated development environment (IDE) integration for code completion and inline error messages。
+- Cargo，the included dependency manager and build tool，makes adding、compiling，and managing dependencies painless and consistent across the Rust ecosystem。
+- The `rustfmt` formatting tool ensures a consistent coding style across developers。
+- The Rust Language Server powers integrated development environment (IDE) integration for code completion and inline error messages。
 
 By using these and other tools in the Rust ecosystem，developers can be productive while writing systems-level code。
 
@@ -89,11 +90,11 @@ Rust is for people who want to build the Rust programming language、community�
 
 Rust is for people who crave speed and stability in a language。By speed，we mean both how quickly Rust code can run and the speed at which Rust lets you write programs。The Rust compiler’s checks ensure stability through feature additions and refactoring。This is in contrast to the brittle legacy code in languages without these checks，which developers are often afraid to modify。By striving for zero-cost abstractions，higher-level features that compile to lower-level code as fast as code written manually，Rust endeavors to make safe code be fast code as well。
 
-The Rust language hopes to support many other users as well；those mentioned here are merely some of the biggest stakeholders。Overall，Rust’s greatest ambition is to eliminate the trade-offs that programmers have accepted for decades by providing safety *and* productivity、speed *and* ergonomics。Give Rust a try and see if its choices work for you。
+The Rust language hopes to support many other users as well；those mentioned here are merely some of the biggest stakeholders。Overall，Rust’s greatest ambition is to eliminate the trade-offs that programmers have accepted for decades by providing safety _and_ productivity、speed _and_ ergonomics。Give Rust a try and see if its choices work for you。
 
 ## 本書適用對象
 
-本書 assumes that you’ve written code in another programming language，but doesn’t make any assumptions about which one。We’ve tried to make the material broadly accessible to those from a wide variety of programming backgrounds。We don’t spend a lot of time talking about what programming *is* or how to think about it。If you’re entirely new to programming，you would be better served by reading a book that specifically provides an introduction to programming。
+本書 assumes that you’ve written code in another programming language，but doesn’t make any assumptions about which one。We’ve tried to make the material broadly accessible to those from a wide variety of programming backgrounds。We don’t spend a lot of time talking about what programming _is_ or how to think about it。If you’re entirely new to programming，you would be better served by reading a book that specifically provides an introduction to programming。
 
 ## 如何使用本書
 
@@ -125,6 +126,6 @@ An important part of the process of learning Rust is learning how to read the er
 
 ## 資源以及如何為本書做出貢獻
 
-本書為 open source。如果你發現 error，please don’t hesitate to file an issue or send a pull request on GitHub at *https://github.com/rust-lang/book*。Please see *https://doc.rust-lang.org/book/CONTRIBUTING.md* at *https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md* for more details。
+本書為 open source。如果你發現 error，please don’t hesitate to file an issue or send a pull request on GitHub at _https://github.com/rust-lang/book_。Please see _https://doc.rust-lang.org/book/CONTRIBUTING.md_ at _https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md_ for more details。
 
-The source code for the examples in this book、errata，and other information are available at *https://www.nostarch.com/Rust2021*。
+The source code for the examples in this book、errata，and other information are available at _https://www.nostarch.com/Rust2021_。

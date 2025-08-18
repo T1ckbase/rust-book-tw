@@ -20,7 +20,7 @@ Rust 安裝預設包含 `rustfmt`，所以你的系統上應該已經有 `rustfm
 $ cargo fmt
 ```
 
-執行此指令會重新排版目前 crate 中的所有 Rust 程式碼。這應該只會改變程式碼風格，而不是程式碼語意。有關 `rustfmt` 的更多資訊，請參閱其文件：*https://github.com/rust-lang/rustfmt*。
+執行此指令會重新排版目前 crate 中的所有 Rust 程式碼。這應該只會改變程式碼風格，而不是程式碼語意。有關 `rustfmt` 的更多資訊，請參閱其文件：_https://github.com/rust-lang/rustfmt_。
 
 ## 使用 rustfix 修正你的程式碼
 
@@ -60,7 +60,7 @@ $ cargo fix
     Finished dev [unoptimized + debuginfo] target(s) in 0.59s
 ```
 
-當我們再次查看 *src/main.rs* 時，我們會看到 `cargo fix` 已經改變了程式碼：
+當我們再次查看 _src/main.rs_ 時，我們會看到 `cargo fix` 已經改變了程式碼：
 
 檔案名稱：src/main.rs
 
@@ -126,10 +126,10 @@ fn main() {
 }
 ```
 
-有關 Clippy 的更多資訊，請參閱其文件：*https://github.com/rust-lang/rust-clippy*。
+有關 Clippy 的更多資訊，請參閱其文件：_https://github.com/rust-lang/rust-clippy_。
 
 ## 使用 rust-analyzer 整合 IDE
 
-為了幫助 IDE 整合，Rust 社群建議使用 `rust-analyzer`。此工具是一組以編譯器為中心的公用程式，它們使用 Language Server Protocol 進行通訊，該協定是 IDE 和程式語言之間通訊的規範。不同的客戶端可以使用 `rust-analyzer`，例如 Visual Studio Code 的 Rust analyzer 插件：*https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer*。
+為了幫助 IDE 整合，Rust 社群建議使用 `rust-analyzer`。此工具是一組以編譯器為中心的公用程式，它們使用 Language Server Protocol 進行通訊，該協定是 IDE 和程式語言之間通訊的規範。不同的客戶端可以使用 `rust-analyzer`，例如 Visual Studio Code 的 Rust analyzer 插件：_https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer_。
 
-請造訪 `rust-analyzer` 專案的首頁 *https://rust-analyzer.github.io* 以獲取安裝說明，然後在你特定的 IDE 中安裝語言伺服器支援。你的 IDE 將獲得諸如 autocompletion、jump to definition 和 inline errors 等功能。
+請造訪 `rust-analyzer` 專案的首頁 _https://rust-analyzer.github.io_ 以獲取安裝說明，然後在你特定的 IDE 中安裝語言伺服器支援。你的 IDE 將獲得諸如 autocompletion、jump to definition 和 inline errors 等功能。

@@ -8,7 +8,7 @@ directory, so all fixes need to be made in `/src/`.
 
 # 物件導向程式設計功能
 
-物件導向程式設計（OOP）是一種程式建模方式。物件作為程式概念在 1960 年代於程式語言 Simula 中被引入。這些物件影響了 Alan Kay 的程式架構，其中物件彼此傳遞訊息。為描述這種架構，他在 1967 年創造了「*物件導向程式設計*」一詞。許多相互競爭的定義描述了什麼是 OOP，根據其中一些定義，Rust 是物件導向的，但根據另一些定義則不是。在本章中，我們將探討一些通常被認為是物件導向的特性，以及這些特性如何轉化為慣用的 Rust。然後，我們將向您展示如何在 Rust 中實作物件導向的設計模式，並討論這樣做的權衡，相較於使用 Rust 的某些優勢來實作解決方案。
+物件導向程式設計（OOP）是一種程式建模方式。物件作為程式概念在 1960 年代於程式語言 Simula 中被引入。這些物件影響了 Alan Kay 的程式架構，其中物件彼此傳遞訊息。為描述這種架構，他在 1967 年創造了「_物件導向程式設計_」一詞。許多相互競爭的定義描述了什麼是 OOP，根據其中一些定義，Rust 是物件導向的，但根據另一些定義則不是。在本章中，我們將探討一些通常被認為是物件導向的特性，以及這些特性如何轉化為慣用的 Rust。然後，我們將向您展示如何在 Rust 中實作物件導向的設計模式，並討論這樣做的權衡，相較於使用 Rust 的某些優勢來實作解決方案。
 
 ## 物件導向語言的特性
 
@@ -16,15 +16,15 @@ directory, so all fixes need to be made in `/src/`.
 
 ### 物件包含資料和行為
 
-Erich Gamma、Richard Helm、Ralph Johnson 和 John Vlissides 所著的《*設計模式：可重用物件導向軟體元素*》（Addison-Wesley, 1994），俗稱《*四人幫*》一書，是物件導向設計模式的目錄。它以這種方式定義 OOP：
+Erich Gamma、Richard Helm、Ralph Johnson 和 John Vlissides 所著的《_設計模式：可重用物件導向軟體元素_》（Addison-Wesley, 1994），俗稱《_四人幫_》一書，是物件導向設計模式的目錄。它以這種方式定義 OOP：
 
 > 物件導向程式由 objects 組成。一個 **object** 將 data 和對該 data 進行操作的 procedures 打包在一起。這些 procedures 通常稱為 **methods** 或 **operations**。
 
-根據這個定義，Rust 是物件導向的：structs 和 enums 擁有 data，而 `impl` blocks 則為 structs 和 enums 提供 methods。儘管帶有 methods 的 structs 和 enums 並不*稱為* objects，但根據 Gang of Four 對 objects 的定義，它們提供相同的功能。
+根據這個定義，Rust 是物件導向的：structs 和 enums 擁有 data，而 `impl` blocks 則為 structs 和 enums 提供 methods。儘管帶有 methods 的 structs 和 enums 並不_稱為_ objects，但根據 Gang of Four 對 objects 的定義，它們提供相同的功能。
 
 ### 隱藏實作細節的 encapsulation
 
-另一個通常與 OOP 相關聯的方面是 *encapsulation* 的概念，這表示 object 的實作細節不應被使用該 object 的程式碼存取。因此，與 object 互動的唯一方式是透過其 public API；使用該 object 的程式碼不應該能夠直接深入 object 的內部並更改 data 或 behavior。這使得程式設計師可以更改和重構 object 的內部，而無需更改使用該 object 的程式碼。
+另一個通常與 OOP 相關聯的方面是 _encapsulation_ 的概念，這表示 object 的實作細節不應被使用該 object 的程式碼存取。因此，與 object 互動的唯一方式是透過其 public API；使用該 object 的程式碼不應該能夠直接深入 object 的內部並更改 data 或 behavior。這使得程式設計師可以更改和重構 object 的內部，而無需更改使用該 object 的程式碼。
 
 我們在[第 7 章](https://doc.rust-lang.org/book/ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html)中討論了如何控制 encapsulation：我們可以使用 `pub` keyword 來決定程式碼中哪些 modules、types、functions 和 methods 應該是 public 的，預設情況下，其他所有內容都是 private 的。例如，我們可以定義一個 `AveragedCollection` struct，它有一個包含 `i32` 值 vector 的 field。該 struct 還可以有一個包含 vector 中值平均值的 field，這表示每次有人需要時，都不必按需計算平均值。換句話說，`AveragedCollection` 將為我們快取計算出的平均值。Listing 18-1 顯示了 `AveragedCollection` struct 的定義。
 
@@ -84,7 +84,7 @@ public methods `add`、`remove` 和 `average` 是存取或修改 `AveragedCollec
 
 ### 作為型別系統和程式碼共享的 inheritance
 
-*Inheritance* 是一種機制，透過它，一個 object 可以從另一個 object 的定義中繼承 elements，從而獲得父 object 的 data 和 behavior，而無需您再次定義它們。
+_Inheritance_ 是一種機制，透過它，一個 object 可以從另一個 object 的定義中繼承 elements，從而獲得父 object 的 data 和 behavior，而無需您再次定義它們。
 
 如果一個語言必須擁有 inheritance 才能成為物件導向，那麼 Rust 就不是這樣的語言。在 Rust 中，沒有辦法定義一個 struct，使其在不使用 macro 的情況下繼承父 struct 的 fields 和 method 實作。
 
@@ -92,15 +92,15 @@ public methods `add`、`remove` 和 `average` 是存取或修改 `AveragedCollec
 
 您選擇 inheritance 的主要原因有兩個。一個是程式碼的重用：您可以為一種 type 實作特定的 behavior，而 inheritance 使您能夠將該實作重用於不同的 type。您可以使用 default trait method implementations 在 Rust 程式碼中以有限的方式做到這一點，您在 Listing 10-14 中看到了這一點，當時我們在 `Summary` trait 上新增了 `summarize` method 的 default 實作。任何實作 `Summary` trait 的 type 都將擁有 `summarize` method，而無需任何進一步的程式碼。這類似於父 class 擁有 method 的實作，而繼承的子 class 也擁有 method 的實作。我們也可以在實作 `Summary` trait 時 override `summarize` method 的 default 實作，這類似於子 class override 從父 class 繼承的 method 的實作。
 
-使用 inheritance 的另一個原因與 type system 有關：為了使 child type 可以在與 parent type 相同的位置使用。這也稱為 *polymorphism*，這表示您可以在 runtime 相互替換多個 objects，如果它們共享某些特性。
+使用 inheritance 的另一個原因與 type system 有關：為了使 child type 可以在與 parent type 相同的位置使用。這也稱為 _polymorphism_，這表示您可以在 runtime 相互替換多個 objects，如果它們共享某些特性。
 
 > ### Polymorphism
 >
 > 對於許多人來說，polymorphism 與 inheritance 是同義詞。但它實際上是一個更通泛的概念，指的是可以處理多種 types 資料的程式碼。對於 inheritance 而言，這些 types 通常是 subclasses。
 >
-> Rust 則使用 generics 來抽象化不同的可能 types，並使用 trait bounds 來對這些 types 必須提供的內容施加限制。這有時被稱為 *bounded parametric polymorphism*。
+> Rust 則使用 generics 來抽象化不同的可能 types，並使用 trait bounds 來對這些 types 必須提供的內容施加限制。這有時被稱為 _bounded parametric polymorphism_。
 
-Rust 透過不提供 inheritance 選擇了一組不同的 trade-offs。Inheritance 常常有共用超出必要程式碼的風險。Subclasses 不應該總是共用其 parent class 的所有特性，但透過 inheritance 會如此。這會使程式的設計靈活性降低。它還引入了在 subclasses 上呼叫不合理或導致錯誤的 methods 的可能性，因為這些 methods 不適用於 subclass。此外，有些語言只允許 *單一繼承* (meaning 一個 subclass 只能繼承一個 class)，這進一步限制了程式設計的靈活性。
+Rust 透過不提供 inheritance 選擇了一組不同的 trade-offs。Inheritance 常常有共用超出必要程式碼的風險。Subclasses 不應該總是共用其 parent class 的所有特性，但透過 inheritance 會如此。這會使程式的設計靈活性降低。它還引入了在 subclasses 上呼叫不合理或導致錯誤的 methods 的可能性，因為這些 methods 不適用於 subclass。此外，有些語言只允許 _單一繼承_ (meaning 一個 subclass 只能繼承一個 class)，這進一步限制了程式設計的靈活性。
 
 基於這些原因，Rust 採用了不同的方法，即使用 trait objects 而不是 inheritance 來實現 polymorphism。讓我們看看 trait objects 是如何運作的。
 
@@ -120,7 +120,7 @@ Rust 透過不提供 inheritance 選擇了一組不同的 trade-offs。Inheritan
 
 ### 定義通用行為的 Trait
 
-為了實作我們希望 `gui` 擁有的行為，我們將定義一個名為 `Draw` 的 trait，它將有一個名為 `draw` 的 method。然後我們可以定義一個接受 trait object 的 vector。*trait object* 同時指向一個實作我們指定 trait 的 type 實例，以及一個在 runtime 用於查詢該 type 上 trait methods 的 table。我們透過指定某種 pointer，例如 `&` reference 或 `Box<T>` smart pointer，然後是 `dyn` keyword，然後指定相關的 trait 來建立 trait object。（我們將在[第 20 章](https://doc.rust-lang.org/book/ch20-00-final-project.html)的「動態大小型別與 `Sized` Trait」中討論 trait objects 必須使用 pointer 的原因。）我們可以使用 trait objects 來代替 generic 或 concrete type。無論我們在哪裡使用 trait object，Rust 的 type system 都會在 compile time 確保在此 context 中使用的任何 value 都會實作 trait object 的 trait。因此，我們不需要在 compile time 知道所有可能的 types。
+為了實作我們希望 `gui` 擁有的行為，我們將定義一個名為 `Draw` 的 trait，它將有一個名為 `draw` 的 method。然後我們可以定義一個接受 trait object 的 vector。_trait object_ 同時指向一個實作我們指定 trait 的 type 實例，以及一個在 runtime 用於查詢該 type 上 trait methods 的 table。我們透過指定某種 pointer，例如 `&` reference 或 `Box<T>` smart pointer，然後是 `dyn` keyword，然後指定相關的 trait 來建立 trait object。（我們將在[第 20 章](https://doc.rust-lang.org/book/ch20-00-final-project.html)的「動態大小型別與 `Sized` Trait」中討論 trait objects 必須使用 pointer 的原因。）我們可以使用 trait objects 來代替 generic 或 concrete type。無論我們在哪裡使用 trait object，Rust 的 type system 都會在 compile time 確保在此 context 中使用的任何 value 都會實作 trait object 的 trait。因此，我們不需要在 compile time 知道所有可能的 types。
 
 我們曾提到，在 Rust 中，我們避免將 structs 和 enums 稱為「objects」，以將它們與其他語言的 objects 區分開來。在 struct 或 enum 中，struct fields 中的 data 和 `impl` blocks 中的 behavior 是分離的，而在其他語言中，data 和 behavior 組合為一個概念通常被標記為 object。Trait objects 與其他語言的 objects 不同之處在於我們無法將 data 新增到 trait object。Trait objects 不像其他語言的 objects 那樣普遍有用：它們的特定目的是允許跨通用行為進行 abstraction。
 
@@ -272,7 +272,7 @@ Listing 18-9：使用 trait objects 儲存實作相同 trait 的不同 types 值
 
 當我們編寫 library 時，我們不知道有人可能會新增 `SelectBox` type，但我們的 `Screen` 實作能夠對新 type 進行操作並繪製它，因為 `SelectBox` 實作了 `Draw` trait，這表示它實作了 `draw` method。
 
-這個概念——只關心 value 回應的 message，而不是 value 的 concrete type——類似於 dynamically typed languages 中的 *duck typing* 概念：如果它像鴨子一樣走路，像鴨子一樣呱呱叫，那麼它一定是鴨子！在 Listing 18-5 中 `Screen` 上 `run` 的實作中，`run` 不需要知道每個 component 的 concrete type 是什麼。它不檢查 component 是否是 `Button` 或 `SelectBox` 的實例，它只是在 component 上呼叫 `draw` method。透過將 `Box<dyn Draw>` 指定為 `components` vector 中值的 type，我們已經定義 `Screen` 需要可以呼叫 `draw` method 的值。
+這個概念——只關心 value 回應的 message，而不是 value 的 concrete type——類似於 dynamically typed languages 中的 _duck typing_ 概念：如果它像鴨子一樣走路，像鴨子一樣呱呱叫，那麼它一定是鴨子！在 Listing 18-5 中 `Screen` 上 `run` 的實作中，`run` 不需要知道每個 component 的 concrete type 是什麼。它不檢查 component 是否是 `Button` 或 `SelectBox` 的實例，它只是在 component 上呼叫 `draw` method。透過將 `Box<dyn Draw>` 指定為 `components` vector 中值的 type，我們已經定義 `Screen` 需要可以呼叫 `draw` method 的值。
 
 使用 trait objects 和 Rust 的 type system 編寫類似於使用 duck typing 的程式碼的優點是，我們永遠不必在 runtime 檢查 value 是否實作了特定 method，也不必擔心如果 value 沒有實作 method 但我們仍然呼叫它會導致錯誤。如果 values 沒有實作 trait objects 所需的 traits，Rust 將不會編譯我們的程式碼。
 
@@ -316,13 +316,13 @@ error: could not compile `gui` (bin "gui") due to 1 previous error
 
 ### Trait Objects 執行 Dynamic Dispatch
 
-回想一下[第 10 章](https://doc.rust-lang.org/book/ch10-02-traits.html#performance-of-code-using-generics)中「使用泛型程式碼的效能」討論的，compiler 對泛型執行 monomorphization 過程：compiler 為我們用於替換泛型 type parameter 的每個 concrete type 生成非泛型函數和 method 實作。monomorphization 產生的程式碼執行的是 *static dispatch*，也就是 compiler 在 compile time 就知道您正在呼叫哪個 method。這與 *dynamic dispatch* 相反，後者是 compiler 在 compile time 無法判斷您正在呼叫哪個 method。在 dynamic dispatch 的情況下，compiler 會發出在 runtime 才知道要呼叫哪個 method 的程式碼。
+回想一下[第 10 章](https://doc.rust-lang.org/book/ch10-02-traits.html#performance-of-code-using-generics)中「使用泛型程式碼的效能」討論的，compiler 對泛型執行 monomorphization 過程：compiler 為我們用於替換泛型 type parameter 的每個 concrete type 生成非泛型函數和 method 實作。monomorphization 產生的程式碼執行的是 _static dispatch_，也就是 compiler 在 compile time 就知道您正在呼叫哪個 method。這與 _dynamic dispatch_ 相反，後者是 compiler 在 compile time 無法判斷您正在呼叫哪個 method。在 dynamic dispatch 的情況下，compiler 會發出在 runtime 才知道要呼叫哪個 method 的程式碼。
 
-當我們使用 trait objects 時，Rust 必須使用 dynamic dispatch。compiler 不知道所有可能與使用 trait objects 的程式碼一起使用的 types，因此它不知道要呼叫哪個 type 上實作的哪個 method。相反，在 runtime，Rust 使用 trait object 內部的 pointers 來知道要呼叫哪個 method。這種查詢會產生 runtime cost，而 static dispatch 則不會。Dynamic dispatch 也阻止 compiler 選擇 inline method 的程式碼，這反過來又阻止了一些優化，並且 Rust 對於您可以在哪裡以及不能在哪裡使用 dynamic dispatch 有一些規則，稱為 *dyn compatibility*，網址為 *https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility*。然而，我們確實從 Listing 18-5 中編寫的程式碼中獲得了額外的靈活性，並且能夠在 Listing 18-9 中支援，所以這是一個需要考慮的 trade-off。
+當我們使用 trait objects 時，Rust 必須使用 dynamic dispatch。compiler 不知道所有可能與使用 trait objects 的程式碼一起使用的 types，因此它不知道要呼叫哪個 type 上實作的哪個 method。相反，在 runtime，Rust 使用 trait object 內部的 pointers 來知道要呼叫哪個 method。這種查詢會產生 runtime cost，而 static dispatch 則不會。Dynamic dispatch 也阻止 compiler 選擇 inline method 的程式碼，這反過來又阻止了一些優化，並且 Rust 對於您可以在哪裡以及不能在哪裡使用 dynamic dispatch 有一些規則，稱為 _dyn compatibility_，網址為 _https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility_。然而，我們確實從 Listing 18-5 中編寫的程式碼中獲得了額外的靈活性，並且能夠在 Listing 18-9 中支援，所以這是一個需要考慮的 trade-off。
 
 ## 實作物件導向設計模式
 
-*State pattern* 是一種物件導向的設計模式。該模式的關鍵在於我們定義了 value 在內部可以擁有一組 states。這些 states 由一組 *state objects* 表示，而 value 的 behavior 會根據其 state 改變。我們將透過一個部落格文章 struct 的範例來進行，該 struct 有一個 field 用於儲存其 state，該 state 將是來自「草稿 (draft)」、「審核中 (review)」或「已發布 (published)」集合的 state object。
+_State pattern_ 是一種物件導向的設計模式。該模式的關鍵在於我們定義了 value 在內部可以擁有一組 states。這些 states 由一組 _state objects_ 表示，而 value 的 behavior 會根據其 state 改變。我們將透過一個部落格文章 struct 的範例來進行，該 struct 有一個 field 用於儲存其 state，該 state 將是來自「草稿 (draft)」、「審核中 (review)」或「已發布 (published)」集合的 state object。
 
 state objects 共享功能：在 Rust 中，我們當然使用 structs 和 traits，而不是 objects 和 inheritance。每個 state object 負責自己的 behavior，並管理何時應轉換到另一個 state。持有 state object 的 value 對 states 的不同 behavior 或何時在 states 之間轉換一無所知。
 
@@ -632,9 +632,9 @@ Listing 18-18：將 `content` method 新增到 `State` trait
 
 使用 state pattern 的實作很容易擴展以新增更多功能。為了了解維護使用 state pattern 的程式碼的簡單性，請嘗試以下幾個建議：
 
-* 新增一個 `reject` method，將貼文的狀態從 `PendingReview` 變回 `Draft`。
-* 要求兩次呼叫 `approve` 後狀態才能更改為 `Published`。
-* 允許使用者僅在貼文處於 `Draft` 狀態時新增文字內容。提示：讓 state object 負責內容可能發生的變化，但不負責修改 `Post`。
+- 新增一個 `reject` method，將貼文的狀態從 `PendingReview` 變回 `Draft`。
+- 要求兩次呼叫 `approve` 後狀態才能更改為 `Published`。
+- 允許使用者僅在貼文處於 `Draft` 狀態時新增文字內容。提示：讓 state object 負責內容可能發生的變化，但不負責修改 `Post`。
 
 state pattern 的一個缺點是，由於 states 實作了 states 之間的轉換，因此某些 states 彼此耦合。如果我們在 `PendingReview` 和 `Published` 之間新增另一個 state，例如 `Scheduled`，我們就必須更改 `PendingReview` 中的程式碼以轉換為 `Scheduled`。如果 `PendingReview` 不需要隨著新 state 的新增而改變，那麼工作量會更少，但這意味著要切換到另一種設計模式。
 

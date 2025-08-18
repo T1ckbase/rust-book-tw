@@ -8,73 +8,73 @@ directory, so all fixes need to be made in `/src/`.
 
 ## 附錄 A: 關鍵字
 
-以下列表包含了 Rust 語言目前或未來保留使用的關鍵字。因此，它們不能用作 identifiers（除非是 raw identifiers，我們將在「原始識別字」頁面 XX 中討論）。*Identifiers* 是函式、變數、參數、struct 欄位、模組、crate、常數、macro、static 值、屬性、型別、trait 或 lifetime 的名稱。
+以下列表包含了 Rust 語言目前或未來保留使用的關鍵字。因此，它們不能用作 identifiers（除非是 raw identifiers，我們將在「原始識別字」頁面 XX 中討論）。_Identifiers_ 是函式、變數、參數、struct 欄位、模組、crate、常數、macro、static 值、屬性、型別、trait 或 lifetime 的名稱。
 
 ## 目前使用的關鍵字
 
 以下是目前使用的關鍵字列表，並描述其功能。
 
-* **`as` **: 執行 primitive casting、消除包含某個項目的特定 trait 的歧義，或在 `use` 敘述中重新命名項目
-* **`async` **: 返回一個 `Future` 而不是阻塞當前執行緒
-* **`await` **: 暫停執行直到 `Future` 的結果準備就緒
-* **`break` **: 立即結束迴圈
-* **`const` **: 定義常數項目或常數原始指標
-* **`continue` **: 繼續下一個迴圈迭代
-* **`crate` **: 在模組路徑中，指稱 crate 根目錄
-* **`dyn` **: 對 trait object 進行動態分派
-* **`else` **: `if` 和 `if let` 控制流程結構的備用選項
-* **`enum` **: 定義一個列舉
-* **`extern` **: 連結外部函式或變數
-* **`false` **: 布林值 false 字面值
-* **`fn` **: 定義函式或函式指標型別
-* **`for` **: 迭代器中的項目進行迴圈、實作一個 trait，或指定更高階的 lifetime
-* **`if` **: 根據條件表達式結果進行分支
-* **`impl` **: 實作固有或 trait 功能
-* **`in` **: `for` 迴圈語法的一部分
-* **`let` **: 繫結變數
-* **`loop` **: 無條件迴圈
-* **`match` **: 將值與模式匹配
-* **`mod` **: 定義一個模組
-* **`move` **: 使 closure 取得其所有捕獲值的 ownership
-* **`mut` **: 表示參照、原始指標或模式繫結的 mutability
-* **`pub` **: 表示 struct 欄位、`impl` 區塊或模組的 public visibility
-* **`ref` **: 透過參照繫結
-* **`return` **: 從函式返回
-* **`Self` **: 我們正在定義或實作的型別的型別別名
-* **`self` **: 方法的主體或當前模組
-* **`static` **: 全域變數或持續整個程式執行期間的 lifetime
-* **`struct` **: 定義一個結構
-* **`super` **: 當前模組的父模組
-* **`trait` **: 定義一個 trait
-* **`true` **: 布林值 true 字面值
-* **`type` **: 定義型別別名或關聯型別
-* **`union` **: 定義一個 union；只有在 union 宣告中使用時才是關鍵字
-* **`unsafe` **: 表示 unsafe 程式碼、函式、trait 或實作
-* **`use` **: 將符號引入作用域
-* **`where` **: 表示約束型別的子句
-* **`while` **: 根據表達式結果有條件地迴圈
+- **`as` **: 執行 primitive casting、消除包含某個項目的特定 trait 的歧義，或在 `use` 敘述中重新命名項目
+- **`async` **: 返回一個 `Future` 而不是阻塞當前執行緒
+- **`await` **: 暫停執行直到 `Future` 的結果準備就緒
+- **`break` **: 立即結束迴圈
+- **`const` **: 定義常數項目或常數原始指標
+- **`continue` **: 繼續下一個迴圈迭代
+- **`crate` **: 在模組路徑中，指稱 crate 根目錄
+- **`dyn` **: 對 trait object 進行動態分派
+- **`else` **: `if` 和 `if let` 控制流程結構的備用選項
+- **`enum` **: 定義一個列舉
+- **`extern` **: 連結外部函式或變數
+- **`false` **: 布林值 false 字面值
+- **`fn` **: 定義函式或函式指標型別
+- **`for` **: 迭代器中的項目進行迴圈、實作一個 trait，或指定更高階的 lifetime
+- **`if` **: 根據條件表達式結果進行分支
+- **`impl` **: 實作固有或 trait 功能
+- **`in` **: `for` 迴圈語法的一部分
+- **`let` **: 繫結變數
+- **`loop` **: 無條件迴圈
+- **`match` **: 將值與模式匹配
+- **`mod` **: 定義一個模組
+- **`move` **: 使 closure 取得其所有捕獲值的 ownership
+- **`mut` **: 表示參照、原始指標或模式繫結的 mutability
+- **`pub` **: 表示 struct 欄位、`impl` 區塊或模組的 public visibility
+- **`ref` **: 透過參照繫結
+- **`return` **: 從函式返回
+- **`Self` **: 我們正在定義或實作的型別的型別別名
+- **`self` **: 方法的主體或當前模組
+- **`static` **: 全域變數或持續整個程式執行期間的 lifetime
+- **`struct` **: 定義一個結構
+- **`super` **: 當前模組的父模組
+- **`trait` **: 定義一個 trait
+- **`true` **: 布林值 true 字面值
+- **`type` **: 定義型別別名或關聯型別
+- **`union` **: 定義一個 union；只有在 union 宣告中使用時才是關鍵字
+- **`unsafe` **: 表示 unsafe 程式碼、函式、trait 或實作
+- **`use` **: 將符號引入作用域
+- **`where` **: 表示約束型別的子句
+- **`while` **: 根據表達式結果有條件地迴圈
 
 ## 保留供未來使用的關鍵字
 
 以下關鍵字目前沒有任何功能，但 Rust 已將它們保留供未來潛在用途：
 
-* `abstract`
-* `become`
-* `box`
-* `do`
-* `final`
-* `macro`
-* `override`
-* `priv`
-* `try`
-* `typeof`
-* `unsized`
-* `virtual`
-* `yield`
+- `abstract`
+- `become`
+- `box`
+- `do`
+- `final`
+- `macro`
+- `override`
+- `priv`
+- `try`
+- `typeof`
+- `unsized`
+- `virtual`
+- `yield`
 
 ## 原始識別字
 
-*原始識別字* 是一種語法，讓您可以在通常不允許的地方使用關鍵字。您可以使用 `r#` 作為關鍵字的前綴來使用原始識別字。
+_原始識別字_ 是一種語法，讓您可以在通常不允許的地方使用關鍵字。您可以使用 `r#` 作為關鍵字的前綴來使用原始識別字。
 
 例如，`match` 是一個關鍵字。如果您嘗試編譯以下使用 `match` 作為其名稱的函式：
 

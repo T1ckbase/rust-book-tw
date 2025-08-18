@@ -8,13 +8,13 @@ directory, so all fixes need to be made in `/src/`.
 
 # 模式與匹配
 
-*模式* (Patterns) 是 Rust 中用於匹配複雜與簡單型別結構的特殊語法。結合 `match` 運算式與其他構造，使用模式能讓你對程式的控制流程有更多掌握。一個模式由以下項目組合而成：
+_模式_ (Patterns) 是 Rust 中用於匹配複雜與簡單型別結構的特殊語法。結合 `match` 運算式與其他構造，使用模式能讓你對程式的控制流程有更多掌握。一個模式由以下項目組合而成：
 
-*   常值 (Literals)
-*   解構 (Destructured) 陣列 (arrays)、列舉 (enums)、結構 (structs) 或元組 (tuples)
-*   變數 (Variables)
-*   萬用字元 (Wildcards)
-*   佔位符 (Placeholders)
+- 常值 (Literals)
+- 解構 (Destructured) 陣列 (arrays)、列舉 (enums)、結構 (structs) 或元組 (tuples)
+- 變數 (Variables)
+- 萬用字元 (Wildcards)
+- 佔位符 (Placeholders)
 
 一些模式範例包括 `x`、`(a, 3)` 和 `Some(Color::Red)`。在模式有效的上下文中，這些組件描述了資料的形狀。然後我們的程式將值與模式進行匹配，以判斷資料形狀是否正確，以便繼續執行特定的程式碼片段。
 
@@ -52,7 +52,7 @@ match x {
 
 這個 `match` 運算式中的模式是每個箭頭左側的 `None` 和 `Some(i)`。
 
-`match` 運算式的一個要求是它們必須是*窮盡的* (exhaustive)，這意味著 `match` 運算式中值的所有可能性都必須被考慮在內。確保你涵蓋了所有可能性的一種方法是為最後一個匹配分支設定一個全匹配模式 (catch-all pattern)：例如，匹配任何值的變數名稱永遠不會失敗，因此涵蓋了所有剩餘的情況。
+`match` 運算式的一個要求是它們必須是_窮盡的_ (exhaustive)，這意味著 `match` 運算式中值的所有可能性都必須被考慮在內。確保你涵蓋了所有可能性的一種方法是為最後一個匹配分支設定一個全匹配模式 (catch-all pattern)：例如，匹配任何值的變數名稱永遠不會失敗，因此涵蓋了所有剩餘的情況。
 
 特定的模式 `_` 會匹配任何內容，但它從不綁定到變數，因此它通常用於最後的匹配分支。當你想忽略任何未指定的值時，`_` 模式會很有用。我們將在本章後面的「在模式中忽略值」中更詳細地介紹 `_` 模式。
 
@@ -80,7 +80,7 @@ let x = 5;
 為了更清楚地看到 `let` 的模式匹配方面，請考慮[範例 19-1](https://doc.rust-lang.org/book/ch19-01-all-the-places-patterns-can-be-used.html#listing-19-1)，它使用帶有 `let` 的模式來解構一個元組。
 
 ```rust
-    let (x, y, z) = (1, 2, 3);
+let (x, y, z) = (1, 2, 3);
 ```
 
 範例 19-1：使用模式解構元組並一次創建三個變數
@@ -90,7 +90,7 @@ let x = 5;
 如果模式中的元素數量與元組中的元素數量不匹配，則總體型別將不匹配，我們將會得到一個編譯器錯誤。例如，[範例 19-2](https://doc.rust-lang.org/book/ch19-01-all-the-places-patterns-can-be-used.html#listing-19-2) 顯示了嘗試將一個包含三個元素的元組解構為兩個變數，這將不起作用。
 
 ```rust
-    let (x, y) = (1, 2, 3);
+let (x, y) = (1, 2, 3);
 ```
 
 範例 19-2：錯誤地建構模式，其變數不匹配元組中的元素數量
@@ -182,7 +182,7 @@ fn main() {
 
 ### for 迴圈
 
-在 `for` 迴圈中，`for` 關鍵字後面的值是一個模式。例如，在 `for x in y` 中，`x` 就是模式。[範例 19-5](https://doc.rust-lang.org/book/ch19-01-all-the-places-patterns-can-be-used.html#listing-19-5) 演示了如何在 `for` 迴圈中使用模式來*解構* (destructure) 或拆解 (break apart) 元組，作為 `for` 迴圈的一部分。
+在 `for` 迴圈中，`for` 關鍵字後面的值是一個模式。例如，在 `for x in y` 中，`x` 就是模式。[範例 19-5](https://doc.rust-lang.org/book/ch19-01-all-the-places-patterns-can-be-used.html#listing-19-5) 演示了如何在 `for` 迴圈中使用模式來_解構_ (destructure) 或拆解 (break apart) 元組，作為 `for` 迴圈的一部分。
 
 ```rust
     let v = vec!['a', 'b', 'c'];
@@ -245,7 +245,7 @@ fn main() {
 
 ## 可拒絕性：模式是否可能匹配失敗
 
-模式有兩種形式：可拒絕的 (refutable) 和不可拒絕的 (irrefutable)。對於任何可能傳入的值都會匹配的模式是*不可拒絕的*。例如，陳述式 `let x = 5;` 中的 `x` 就是一個例子，因為 `x` 匹配任何內容，因此不可能匹配失敗。對於某些可能的值可能會匹配失敗的模式是*可拒絕的*。例如，運算式 `if let Some(x) = a_value` 中的 `Some(x)` 就是一個例子，因為如果 `a_value` 變數中的值是 `None` 而不是 `Some`，則 `Some(x)` 模式將不匹配。
+模式有兩種形式：可拒絕的 (refutable) 和不可拒絕的 (irrefutable)。對於任何可能傳入的值都會匹配的模式是_不可拒絕的_。例如，陳述式 `let x = 5;` 中的 `x` 就是一個例子，因為 `x` 匹配任何內容，因此不可能匹配失敗。對於某些可能的值可能會匹配失敗的模式是_可拒絕的_。例如，運算式 `if let Some(x) = a_value` 中的 `Some(x)` 就是一個例子，因為如果 `a_value` 變數中的值是 `None` 而不是 `Some`，則 `Some(x)` 模式將不匹配。
 
 函數參數、`let` 陳述式和 `for` 迴圈只能接受不可拒絕的模式，因為當值不匹配時，程式無法做任何有意義的事情。`if let` 和 `while let` 運算式以及 `let...else` 陳述式接受可拒絕和不可拒絕的模式，但編譯器會針對不可拒絕的模式發出警告，因為根據定義，它們旨在處理可能的失敗：條件的功能在於它能夠根據成功或失敗執行不同的操作。
 
@@ -254,7 +254,7 @@ fn main() {
 讓我們看一個例子，當我們嘗試在 Rust 要求不可拒絕模式的地方使用可拒絕模式，反之亦然時會發生什麼。 [範例 19-8](https://doc.rust-lang.org/book/ch19-02-refutability.html#listing-19-8) 顯示了一個 `let` 陳述式，但在模式方面，我們指定了 `Some(x)`，這是一個可拒絕的模式。正如你可能預期的那樣，這段程式碼將無法編譯。
 
 ```rust
-    let Some(x) = some_option_value;
+let Some(x) = some_option_value;
 ```
 
 範例 19-8：嘗試將可拒絕模式與 `let` 一起使用
@@ -287,9 +287,9 @@ error: could not compile `patterns` (bin "patterns") due to 1 previous error
 如果我們在需要不可拒絕模式的地方有一個可拒絕模式，我們可以透過更改使用該模式的程式碼來修復它：我們可以使用 `let else` 而不是 `let`。然後，如果模式不匹配，程式碼將跳過大括號中的程式碼，從而使其能夠有效繼續。 [範例 19-9](https://doc.rust-lang.org/book/ch19-02-refutability.html#listing-19-9) 顯示了如何修復[範例 19-8](https://doc.rust-lang.org/book/ch19-02-refutability.html#listing-19-8) 中的程式碼。
 
 ```rust
-    let Some(x) = some_option_value else {
-        return;
-    };
+let Some(x) = some_option_value else {
+    return;
+};
 ```
 
 範例 19-9：使用 `let...else` 和帶有可拒絕模式的區塊取代 `let`
@@ -297,9 +297,9 @@ error: could not compile `patterns` (bin "patterns") due to 1 previous error
 我們給了程式碼一個出路！這段程式碼完全有效，儘管這意味著我們無法在不收到警告的情況下使用不可拒絕模式。如果我們給 `let...else` 一個總是會匹配的模式，例如 `x`，如[範例 19-10](https://doc.rust-lang.org/book/ch19-02-refutability.html#listing-19-10) 所示，編譯器將給出警告。
 
 ```rust
-    let x = 5 else {
-        return;
-    };
+let x = 5 else {
+    return;
+};
 ```
 
 範例 19-10：嘗試將不可拒絕模式與 `let...else` 一起使用
@@ -592,7 +592,7 @@ fn main() {
 我們可以以更複雜的方式混合、匹配和嵌套解構模式。以下範例顯示了一個複雜的解構，我們將結構和元組嵌套在一個元組中，並將所有基本值解構出來：
 
 ```rust
-    let ((feet, inches), Point { x, y }) = ((3, 10), Point { x: 3, y: -10 });
+let ((feet, inches), Point { x, y }) = ((3, 10), Point { x: 3, y: -10 });
 ```
 
 這段程式碼讓我們將複雜的型別分解成它們的組成部分，這樣我們就可以單獨使用我們感興趣的值。
@@ -805,7 +805,7 @@ Rust 無法判斷在匹配 `second` 之前要忽略元組中的多少個值，�
 
 ### 使用 Match Guards 的額外條件
 
-*匹配守衛* (match guard) 是一個額外的 `if` 條件，在 `match` 分支的模式之後指定，也必須匹配才能選擇該分支。匹配守衛對於表達比單獨模式允許的更複雜的想法很有用。但請注意，它們僅在 `match` 運算式中可用，而不適用於 `if let` 或 `while let` 運算式。
+_匹配守衛_ (match guard) 是一個額外的 `if` 條件，在 `match` 分支的模式之後指定，也必須匹配才能選擇該分支。匹配守衛對於表達比單獨模式允許的更複雜的想法很有用。但請注意，它們僅在 `match` 運算式中可用，而不適用於 `if let` 或 `while let` 運算式。
 
 該條件可以使用模式中創建的變數。[範例 19-26](https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html#listing-19-26) 顯示了一個 `match`，其中第一個分支的模式是 `Some(x)`，並且還有一個 `if x % 2 == 0` 的匹配守衛（如果數字是偶數，則為 `true`）。
 
@@ -852,7 +852,7 @@ fn main() {
 
 匹配守衛 `if n == y` 不是一個模式，因此不會引入新變數。這個 `y` *是*外部 `y`，而不是一個新的 `y` 遮蔽它，我們可以透過比較 `n` 與 `y` 來尋找與外部 `y` 具有相同值的值。
 
-你也可以在匹配守衛中使用*或*運算子 `|` 來指定多個模式；匹配守衛條件將適用於所有模式。[範例 19-28](https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html#listing-19-28) 顯示了結合使用 `|` 的模式與匹配守衛時的優先級。這個範例的重要部分是 `if y` 匹配守衛適用於 `4`、`5` *和* `6`，儘管它可能看起來 `if y` 只適用於 `6`。
+你也可以在匹配守衛中使用*或*運算子 `|` 來指定多個模式；匹配守衛條件將適用於所有模式。[範例 19-28](https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html#listing-19-28) 顯示了結合使用 `|` 的模式與匹配守衛時的優先級。這個範例的重要部分是 `if y` 匹配守衛適用於 `4`、`5` _和_ `6`，儘管它可能看起來 `if y` 只適用於 `6`。
 
 ```rust
     let x = 4;
@@ -866,7 +866,7 @@ fn main() {
 
 範例 19-28：將多個模式與匹配守衛結合使用
 
-匹配條件表示該分支只有在 `x` 的值等於 `4`、`5` 或 `6` *並且* `y` 為 `true` 時才匹配。當這段程式碼執行時，第一個分支的模式匹配，因為 `x` 是 `4`，但匹配守衛 `if y` 為 `false`，所以沒有選擇第一個分支。程式碼轉到第二個分支，該分支確實匹配，並且此程式印出 `no`。原因是 `if` 條件適用於整個模式 `4 | 5 | 6`，而不僅僅是最後一個值 `6`。換句話說，匹配守衛相對於模式的優先級行為如下：
+匹配條件表示該分支只有在 `x` 的值等於 `4`、`5` 或 `6` _並且_ `y` 為 `true` 時才匹配。當這段程式碼執行時，第一個分支的模式匹配，因為 `x` 是 `4`，但匹配守衛 `if y` 為 `false`，所以沒有選擇第一個分支。程式碼轉到第二個分支，該分支確實匹配，並且此程式印出 `no`。原因是 `if` 條件適用於整個模式 `4 | 5 | 6`，而不僅僅是最後一個值 `6`。換句話說，匹配守衛相對於模式的優先級行為如下：
 
 ```
 (4 | 5 | 6) if y => ...
@@ -882,7 +882,7 @@ fn main() {
 
 ### @ 綁定
 
-*at* 運算子 `@` 讓我們的同時測試一個值是否匹配模式時，建立一個持有該值的變數。在[範例 19-29](https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html#listing-19-29) 中，我們想測試 `Message::Hello` 的 `id` 欄位是否在 `3..=7` 範圍內。我們還想將該值綁定到變數 `id`，以便在與該分支相關的程式碼中使用它。
+_at_ 運算子 `@` 讓我們的同時測試一個值是否匹配模式時，建立一個持有該值的變數。在[範例 19-29](https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html#listing-19-29) 中，我們想測試 `Message::Hello` 的 `id` 欄位是否在 `3..=7` 範圍內。我們還想將該值綁定到變數 `id`，以便在與該分支相關的程式碼中使用它。
 
 ```rust
     enum Message {

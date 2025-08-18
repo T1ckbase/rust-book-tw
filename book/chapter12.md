@@ -18,11 +18,11 @@ Rust 的速度、安全性、單一 binary 輸出以及跨平台支援，使其�
 
 我們的 `grep` 專案將結合你到目前為止學到的許多概念：
 
-*   組織程式碼 (第 7 章)
-*   使用 vector 和字串 (第 8 章)
-*   處理錯誤 (第 9 章)
-*   適當地使用 trait 和 lifetime (第 10 章)
-*   編寫測試 (第 11 章)
+- 組織程式碼 (第 7 章)
+- 使用 vector 和字串 (第 8 章)
+- 處理錯誤 (第 9 章)
+- 適當地使用 trait 和 lifetime (第 10 章)
+- 編寫測試 (第 11 章)
 
 我們還將簡要介紹 closure、iterator 和 trait object，這些內容將在第 13 章和第 18 章中詳細介紹。
 
@@ -42,7 +42,7 @@ $ cd minigrep
 $ cargo run -- searchstring example-filename.txt
 ```
 
-目前，`cargo new` 產生的程式無法處理我們給它的參數。`crates.io` 上現有的函式庫，網址為 *https://crates.io/*，可以幫助編寫接受命令列參數的程式，但因為你才剛學習這個概念，所以讓我們自己來實作這個功能。
+目前，`cargo new` 產生的程式無法處理我們給它的參數。`crates.io` 上現有的函式庫，網址為 _https://crates.io/_，可以幫助編寫接受命令列參數的程式，但因為你才剛學習這個概念，所以讓我們自己來實作這個功能。
 
 ### 讀取參數值
 
@@ -136,7 +136,7 @@ In file sample.txt
 
 ## 讀取檔案
 
-現在我們將新增功能來讀取 `file_path` 參數中指定的檔案。首先，我們需要一個範例檔案來測試：我們將使用一個包含少量多行文字和一些重複單字的檔案。清單 12-3 中有一首 Emily Dickinson 的詩，它會很適合！在你的專案根目錄下建立一個名為 *poem.txt* 的檔案，並輸入詩歌「I'm Nobody! Who are you?」。
+現在我們將新增功能來讀取 `file_path` 參數中指定的檔案。首先，我們需要一個範例檔案來測試：我們將使用一個包含少量多行文字和一些重複單字的檔案。清單 12-3 中有一首 Emily Dickinson 的詩，它會很適合！在你的專案根目錄下建立一個名為 _poem.txt_ 的檔案，並輸入詩歌「I'm Nobody! Who are you?」。
 
 poem.txt
 
@@ -154,7 +154,7 @@ To an admiring bog!
 
 清單 12-3：Emily Dickinson 的詩是一個很好的測試案例。
 
-準備好文字後，編輯 *src/main.rs* 並新增讀取檔案的程式碼，如清單 12-4 所示。
+準備好文字後，編輯 _src/main.rs_ 並新增讀取檔案的程式碼，如清單 12-4 所示。
 
 src/main.rs
 
@@ -181,7 +181,7 @@ fn main() {
 
 之後，我們再次新增一個暫時的 `println!` 宣告，在讀取檔案後列印 `contents` 的值，以便我們可以檢查程式目前是否正常運作。
 
-讓我們執行這段程式碼，將任何字串作為第一個命令列參數（因為我們尚未實作搜尋部分），並將 *poem.txt* 檔案作為第二個參數：
+讓我們執行這段程式碼，將任何字串作為第一個命令列參數（因為我們尚未實作搜尋部分），並將 _poem.txt_ 檔案作為第二個參數：
 
 ```
 $ cargo run -- the poem.txt
@@ -200,7 +200,6 @@ How dreary to be somebody!
 How public, like a frog
 To tell your name the livelong day
 To an admiring bog!
-
 ```
 
 太棒了！程式碼讀取並列印了檔案內容。但是程式碼有一些缺陷。目前，`main` 函式有多重職責：通常，如果每個函式只負責一個概念，函式會更清晰且更容易維護。另一個問題是我們沒有盡可能地處理錯誤。程式碼仍然很小，所以這些缺陷不是大問題，但隨著程式碼的增長，要乾淨地修復它們會更困難。在開發程式時，儘早開始重構是個好習慣，因為重構少量程式碼會容易得多。我們接下來會這樣做。
@@ -221,22 +220,22 @@ To an admiring bog!
 
 將多個任務的職責分配給 `main` 函式的組織問題在許多 binary 專案中很常見。因此，當 `main` 函式開始變大時，許多 Rust 開發者發現將 binary 程式的各個關注點分開很有用。此過程包含以下步驟：
 
-*   將你的程式分割成 *main.rs* 檔案和 *lib.rs* 檔案，並將你的程式邏輯移到 *lib.rs*。
-*   只要你的命令列解析邏輯很小，它就可以保留在 `main` 函式中。
-*   當命令列解析邏輯開始變得複雜時，將它從 `main` 函式中提取到其他函式或型別中。
+- 將你的程式分割成 _main.rs_ 檔案和 _lib.rs_ 檔案，並將你的程式邏輯移到 _lib.rs_。
+- 只要你的命令列解析邏輯很小，它就可以保留在 `main` 函式中。
+- 當命令列解析邏輯開始變得複雜時，將它從 `main` 函式中提取到其他函式或型別中。
 
 此過程後仍保留在 `main` 函式中的職責應僅限於以下內容：
 
-*   使用參數值呼叫命令列解析邏輯
-*   設定任何其他配置
-*   呼叫 *lib.rs* 中的 `run` 函式
-*   處理 `run` 回傳錯誤的情況
+- 使用參數值呼叫命令列解析邏輯
+- 設定任何其他配置
+- 呼叫 _lib.rs_ 中的 `run` 函式
+- 處理 `run` 回傳錯誤的情況
 
-這種模式是關於關注點分離的：*main.rs* 處理程式的執行，而 *lib.rs* 處理手頭任務的所有邏輯。由於你無法直接測試 `main` 函式，這種結構可以讓你將所有程式邏輯移出 `main` 函式，從而測試所有程式邏輯。保留在 `main` 函式中的程式碼將足夠小，可以透過閱讀來驗證其正確性。讓我們按照這個過程重新編寫我們的程式。
+這種模式是關於關注點分離的：_main.rs_ 處理程式的執行，而 _lib.rs_ 處理手頭任務的所有邏輯。由於你無法直接測試 `main` 函式，這種結構可以讓你將所有程式邏輯移出 `main` 函式，從而測試所有程式邏輯。保留在 `main` 函式中的程式碼將足夠小，可以透過閱讀來驗證其正確性。讓我們按照這個過程重新編寫我們的程式。
 
 #### 提取參數解析器
 
-我們將把解析參數的功能提取到一個函式中，供 `main` 函式呼叫。清單 12-5 顯示了 `main` 函式的新開頭，它呼叫了一個新的函式 `parse_config`，我們將在 *src/main.rs* 中定義它。
+我們將把解析參數的功能提取到一個函式中，供 `main` 函式呼叫。清單 12-5 顯示了 `main` 函式的新開頭，它呼叫了一個新的函式 `parse_config`，我們將在 _src/main.rs_ 中定義它。
 
 src/main.rs
 
@@ -372,12 +371,12 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 src/main.rs
 
 ```rust
+// --snip--
+fn new(args: &[String]) -> Config {
+    if args.len() < 3 {
+        panic!("not enough arguments");
+    }
     // --snip--
-    fn new(args: &[String]) -> Config {
-        if args.len() < 3 {
-            panic!("not enough arguments");
-        }
-        // --snip--
 ```
 
 清單 12-8：增加參數數量的檢查
@@ -426,7 +425,7 @@ impl Config {
 
 我們在這裡做了三個重大更改。首先，我們將 `run` 函式的回傳型別更改為 `Result<(), Box<dyn Error>>`。這個函式以前回傳 unit 型別 `()`，我們將它保留為 `Ok` 情況下回傳的值。
 
-對於錯誤型別，我們使用了 trait object `Box<dyn Error>` (並且我們已在頂部使用 `use` 宣告將 `std::error::Error` 引入作用域)。我們將在第 18 章中介紹 trait object。目前，你只需要知道 `Box<dyn Error>` 表示函式將回傳一個實現 `Error` trait 的型別，但我們不必指定回傳值將是哪種特定型別。這賦予我們靈活性，可以在不同的錯誤情況下回傳不同型別的錯誤值。`dyn` 關鍵字是 *dynamic* 的縮寫。
+對於錯誤型別，我們使用了 trait object `Box<dyn Error>` (並且我們已在頂部使用 `use` 宣告將 `std::error::Error` 引入作用域)。我們將在第 18 章中介紹 trait object。目前，你只需要知道 `Box<dyn Error>` 表示函式將回傳一個實現 `Error` trait 的型別，但我們不必指定回傳值將是哪種特定型別。這賦予我們靈活性，可以在不同的錯誤情況下回傳不同型別的錯誤值。`dyn` 關鍵字是 _dynamic_ 的縮寫。
 
 其次，我們移除了對 `expect` 的呼叫，改用 `?` 運算子，正如我們在第 9 章中所討論的。`?` 不會在發生錯誤時 `panic!`，而是將錯誤值從目前函式中回傳給呼叫者處理。
 
@@ -465,7 +464,6 @@ How dreary to be somebody!
 How public, like a frog
 To tell your name the livelong day
 To an admiring bog!
-
 ```
 
 Rust 告訴我們程式碼忽略了 `Result` 值，而且 `Result` 值可能表示發生了錯誤。但是我們沒有檢查是否發生錯誤，編譯器提醒我們可能應該在這裡有一些錯誤處理程式碼！讓我們現在就糾正這個問題。
@@ -496,11 +494,11 @@ fn main() {
 
 ### 將程式碼分割成 library crate
 
-我們的 `minigrep` 專案到目前為止看起來不錯！現在我們將分割 *src/main.rs* 檔案，並將一些程式碼放入 *src/lib.rs* 檔案中。這樣，我們可以測試程式碼，並且擁有一個職責較少的 *src/main.rs* 檔案。
+我們的 `minigrep` 專案到目前為止看起來不錯！現在我們將分割 _src/main.rs_ 檔案，並將一些程式碼放入 _src/lib.rs_ 檔案中。這樣，我們可以測試程式碼，並且擁有一個職責較少的 _src/main.rs_ 檔案。
 
-讓我們將負責搜尋文字的程式碼定義在 *src/lib.rs* 中，而不是 *src/main.rs* 中，這將允許我們（或任何其他使用我們 `minigrep` 函式庫的人）從比我們的 `minigrep` binary 更多的上下文中呼叫搜尋函式。
+讓我們將負責搜尋文字的程式碼定義在 _src/lib.rs_ 中，而不是 _src/main.rs_ 中，這將允許我們（或任何其他使用我們 `minigrep` 函式庫的人）從比我們的 `minigrep` binary 更多的上下文中呼叫搜尋函式。
 
-首先，讓我們如清單 12-13 所示在 *src/lib.rs* 中定義 `search` 函式的簽章，其主體呼叫 `unimplemented!` macro。我們將在填入實作時更詳細地解釋簽章。
+首先，讓我們如清單 12-13 所示在 _src/lib.rs_ 中定義 `search` 函式的簽章，其主體呼叫 `unimplemented!` macro。我們將在填入實作時更詳細地解釋簽章。
 
 src/lib.rs
 
@@ -510,11 +508,11 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 }
 ```
 
-清單 12-13：在 *src/lib.rs* 中定義 `search` 函式
+清單 12-13：在 _src/lib.rs_ 中定義 `search` 函式
 
 我們在函式定義上使用了 `pub` 關鍵字，將 `search` 指定為我們 library crate 的公開 API 的一部分。我們現在有一個 library crate，可以從我們的 binary crate 中使用並進行測試！
 
-現在我們需要將 *src/lib.rs* 中定義的程式碼引入 *src/main.rs* 中 binary crate 的作用域，並呼叫它，如清單 12-14 所示。
+現在我們需要將 _src/lib.rs_ 中定義的程式碼引入 _src/main.rs_ 中 binary crate 的作用域，並呼叫它，如清單 12-14 所示。
 
 src/main.rs
 
@@ -549,26 +547,26 @@ fn run(config: Config) -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-清單 12-14：在 *src/main.rs* 中使用 `minigrep` library crate 的 `search` 函式
+清單 12-14：在 _src/main.rs_ 中使用 `minigrep` library crate 的 `search` 函式
 
 我們新增了 `use minigrep::search` 這行程式碼，將 library crate 中的 `search` 函式引入 binary crate 的作用域。然後，在 `run` 函式中，我們不再列印檔案內容，而是呼叫 `search` 函式並傳遞 `config.query` 值和 `contents` 作為參數。接著，`run` 將使用 `for` 迴圈列印從 `search` 回傳的每一行，這些行都與查詢匹配。現在也是一個好時機，可以移除 `main` 函式中顯示查詢和檔案路徑的 `println!` 呼叫，這樣我們的程式就只會列印搜尋結果（如果沒有發生錯誤的話）。
 
 請注意，`search` 函式在列印任何結果之前，會將所有結果收集到它回傳的 vector 中。當搜尋大檔案時，這種實作可能會導致結果顯示緩慢，因為結果不會在找到時立即列印；我們將在第 13 章中討論使用 iterator 解決此問題的可能方法。
 
-哇！這真是一項艱鉅的任務，但我們已經為未來的成功做好了準備。現在處理錯誤變得更加容易，而且我們也讓程式碼更具模組化。從現在開始，我們幾乎所有的工作都將在 *src/lib.rs* 中完成。
+哇！這真是一項艱鉅的任務，但我們已經為未來的成功做好了準備。現在處理錯誤變得更加容易，而且我們也讓程式碼更具模組化。從現在開始，我們幾乎所有的工作都將在 _src/lib.rs_ 中完成。
 
 讓我們利用這種新發現的模組化，做一些以前用舊程式碼會很困難，但現在用新程式碼卻很簡單的事情：我們將編寫一些測試！
 
 ## 使用測試驅動開發來開發函式庫功能
 
-現在我們將搜尋邏輯從 `main` 函式中分離出來，放在 *src/lib.rs* 中，這樣為程式碼的核心功能編寫測試就容易得多了。我們可以直接使用各種參數呼叫函式，並檢查回傳值，而無需從命令列呼叫我們的 binary。
+現在我們將搜尋邏輯從 `main` 函式中分離出來，放在 _src/lib.rs_ 中，這樣為程式碼的核心功能編寫測試就容易得多了。我們可以直接使用各種參數呼叫函式，並檢查回傳值，而無需從命令列呼叫我們的 binary。
 
 在本節中，我們將使用測試驅動開發 (TDD) 流程向 `minigrep` 程式新增搜尋邏輯，其步驟如下：
 
-1.  編寫一個會失敗的測試，並執行它以確保它因你預期的原因而失敗。
-2.  編寫或修改剛好足夠的程式碼以使新測試通過。
-3.  重構你剛新增或更改的程式碼，並確保測試持續通過。
-4.  從步驟 1 重複！
+1. 編寫一個會失敗的測試，並執行它以確保它因你預期的原因而失敗。
+2. 編寫或修改剛好足夠的程式碼以使新測試通過。
+3. 重構你剛新增或更改的程式碼，並確保測試持續通過。
+4. 從步驟 1 重複！
 
 儘管 TDD 只是編寫軟體的眾多方法之一，但它可以幫助驅動程式碼設計。在編寫使測試通過的程式碼之前編寫測試有助於在整個過程中保持高測試覆蓋率。
 
@@ -576,7 +574,7 @@ fn run(config: Config) -> Result<(), Box<dyn std::error::Error>> {
 
 ### 編寫一個失敗的測試
 
-在 *src/lib.rs* 中，我們將新增一個 `tests` 模組，其中包含一個測試函式，就像我們在第 11 章中所做的那樣。該測試函式指定了我們希望 `search` 函式具有的行為：它將接受一個查詢和要搜尋的文本，並且它只會從文本中回傳包含查詢的行。清單 12-15 顯示了這個測試。
+在 _src/lib.rs_ 中，我們將新增一個 `tests` 模組，其中包含一個測試函式，就像我們在第 11 章中所做的那樣。該測試函式指定了我們希望 `search` 函式具有的行為：它將接受一個查詢和要搜尋的文本，並且它只會從文本中回傳包含查詢的行。清單 12-15 顯示了這個測試。
 
 src/lib.rs
 
@@ -649,11 +647,11 @@ Rust 無法知道輸出需要哪兩個參數，所以我們需要明確地告訴
 
 目前，我們的測試失敗是因為我們總是回傳一個空 vector。為了解決這個問題並實作 `search`，我們的程式需要遵循這些步驟：
 
-1.  遍歷內容的每一行。
-2.  檢查該行是否包含我們的查詢字串。
-3.  如果包含，則將其新增到我們回傳的值列表中。
-4.  如果不包含，則不執行任何操作。
-5.  回傳匹配的結果列表。
+1. 遍歷內容的每一行。
+2. 檢查該行是否包含我們的查詢字串。
+3. 如果包含，則將其新增到我們回傳的值列表中。
+4. 如果不包含，則不執行任何操作。
+5. 回傳匹配的結果列表。
 
 讓我們逐步完成每個步驟，從遍歷行開始。
 
@@ -743,14 +741,13 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 我們的測試通過了，所以我們知道它有效！
 
 此時，我們可以考慮重構 `search` 函式的實作，同時保持測試通過以維持相同的功能。`search` 函式中的程式碼還不錯，但它沒有利用 iterator 的一些有用功能。我們將在第 13 章中回到這個範例，屆時我們將詳細探索 iterator，並研究如何改進它。
 
-現在整個程式應該可以運作了！讓我們來試試看，首先是一個應該從 Emily Dickinson 詩中回傳恰好一行的單字：*frog*。
+現在整個程式應該可以運作了！讓我們來試試看，首先是一個應該從 Emily Dickinson 詩中回傳恰好一行的單字：_frog_。
 
 ```
 $ cargo run -- frog poem.txt
@@ -760,7 +757,7 @@ $ cargo run -- frog poem.txt
 How public, like a frog
 ```
 
-太棒了！現在讓我們嘗試一個會匹配多行的單字，例如 *body*：
+太棒了！現在讓我們嘗試一個會匹配多行的單字，例如 _body_：
 
 ```
 $ cargo run -- body poem.txt
@@ -772,7 +769,7 @@ Are you nobody, too?
 How dreary to be somebody!
 ```
 
-最後，讓我們確保當我們搜尋詩中不存在的單字時（例如 *monomorphization*），我們不會得到任何行：
+最後，讓我們確保當我們搜尋詩中不存在的單字時（例如 _monomorphization_），我們不會得到任何行：
 
 ```
 $ cargo run -- monomorphization poem.txt
@@ -831,9 +828,9 @@ Trust me.";
 
 清單 12-20：為我們即將增加的不區分大小寫函式增加一個新的失敗測試
 
-請注意，我們也編輯了舊測試的 `contents`。我們新增了一行包含文本 `"Duct tape."`，其中 *D* 是大寫，當我們以區分大小寫的方式搜尋時，它不應與查詢 `"duct"` 匹配。以這種方式更改舊測試有助於確保我們不會意外破壞已經實作的區分大小寫搜尋功能。這個測試現在應該會通過，並且在我們處理不區分大小寫搜尋時應該會繼續通過。
+請注意，我們也編輯了舊測試的 `contents`。我們新增了一行包含文本 `"Duct tape."`，其中 _D_ 是大寫，當我們以區分大小寫的方式搜尋時，它不應與查詢 `"duct"` 匹配。以這種方式更改舊測試有助於確保我們不會意外破壞已經實作的區分大小寫搜尋功能。這個測試現在應該會通過，並且在我們處理不區分大小寫搜尋時應該會繼續通過。
 
-不區分大小寫搜尋的新測試使用 `"rUsT"` 作為其查詢。在我們即將新增的 `search_case_insensitive` 函式中，查詢 `"rUsT"` 應該匹配包含大寫 *R* 的 `"Rust:"` 行，並且匹配 `"Trust me."` 行，即使它們的字母大小寫與查詢不同。這就是我們失敗的測試，它將因我們尚未定義 `search_case_insensitive` 函式而無法編譯。你可以自由地新增一個總是回傳空 vector 的骨架實作，類似於我們在清單 12-16 中為 `search` 函式所做的那樣，以查看測試編譯和失敗。
+不區分大小寫搜尋的新測試使用 `"rUsT"` 作為其查詢。在我們即將新增的 `search_case_insensitive` 函式中，查詢 `"rUsT"` 應該匹配包含大寫 _R_ 的 `"Rust:"` 行，並且匹配 `"Trust me."` 行，即使它們的字母大小寫與查詢不同。這就是我們失敗的測試，它將因我們尚未定義 `search_case_insensitive` 函式而無法編譯。你可以自由地新增一個總是回傳空 vector 的骨架實作，類似於我們在清單 12-16 中為 `search` 函式所做的那樣，以查看測試編譯和失敗。
 
 ### 實作 `search_case_insensitive` 函式
 
@@ -892,7 +889,6 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 太棒了！它們通過了。現在，讓我們從 `run` 函式中呼叫新的 `search_case_insensitive` 函式。首先，我們將一個配置選項新增到 `Config` struct 中，以在區分大小寫和不區分大小寫搜尋之間切換。新增此欄位將導致編譯器錯誤，因為我們尚未在任何地方初始化此欄位：
@@ -937,7 +933,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
 清單 12-22：根據 `config.ignore_case` 中的值呼叫 `search` 或 `search_case_insensitive`
 
-最後，我們需要檢查環境變數。處理環境變數的函式位於標準函式庫的 `env` 模組中，該模組已在 *src/main.rs* 頂部的作用域中。我們將使用 `env` 模組中的 `var` 函式來檢查名為 `IGNORE_CASE` 的環境變數是否已設定任何值，如清單 12-23 所示。
+最後，我們需要檢查環境變數。處理環境變數的函式位於標準函式庫的 `env` 模組中，該模組已在 _src/main.rs_ 頂部的作用域中。我們將使用 `env` 模組中的 `var` 函式來檢查名為 `IGNORE_CASE` 的環境變數是否已設定任何值，如清單 12-23 所示。
 
 src/main.rs
 
@@ -973,11 +969,11 @@ impl Config {
 
 在這裡，我們建立了一個新的變數 `ignore_case`。為了設定它的值，我們呼叫 `env::var` 函式並傳遞 `IGNORE_CASE` 環境變數的名稱。`env::var` 函式回傳一個 `Result`，如果環境變數被設定為任何值，它將是成功的 `Ok` 變體，其中包含環境變數的值。如果環境變數未設定，它將回傳 `Err` 變體。
 
-我們使用 `Result` 上的 `is_ok` 方法來檢查環境變數是否已設定，這表示程式應該執行不區分大小寫的搜尋。如果 `IGNORE_CASE` 環境變數未設定任何值，`is_ok` 將回傳 `false`，程式將執行區分大小寫的搜尋。我們不關心環境變數的 *值*，只關心它是否已設定或未設定，因此我們檢查 `is_ok` 而不是使用 `unwrap`、`expect` 或我們在 `Result` 上看到的任何其他方法。
+我們使用 `Result` 上的 `is_ok` 方法來檢查環境變數是否已設定，這表示程式應該執行不區分大小寫的搜尋。如果 `IGNORE_CASE` 環境變數未設定任何值，`is_ok` 將回傳 `false`，程式將執行區分大小寫的搜尋。我們不關心環境變數的 _值_，只關心它是否已設定或未設定，因此我們檢查 `is_ok` 而不是使用 `unwrap`、`expect` 或我們在 `Result` 上看到的任何其他方法。
 
 我們將 `ignore_case` 變數中的值傳遞給 `Config` 實例，以便 `run` 函式可以讀取該值並決定是呼叫 `search_case_insensitive` 還是 `search`，正如我們在清單 12-22 中實作的那樣。
 
-讓我們試試看！首先，我們將在未設定環境變數的情況下運行我們的程式，並使用查詢 `to`，它應該匹配包含小寫單字 *to* 的任何行：
+讓我們試試看！首先，我們將在未設定環境變數的情況下運行我們的程式，並使用查詢 `to`，它應該匹配包含小寫單字 _to_ 的任何行：
 
 ```
 $ cargo run -- to poem.txt
@@ -988,7 +984,7 @@ Are you nobody, too?
 How dreary to be somebody!
 ```
 
-看起來仍然有效！現在，讓我們在將 `IGNORE_CASE` 設定為 `1` 的情況下運行程式，但使用相同的查詢 *to*：
+看起來仍然有效！現在，讓我們在將 `IGNORE_CASE` 設定為 `1` 的情況下運行程式，但使用相同的查詢 _to_：
 
 ```
 $ IGNORE_CASE=1 cargo run -- to poem.txt
@@ -1006,7 +1002,7 @@ PS> $Env:IGNORE_CASE=1; cargo run -- to poem.txt
 PS> Remove-Item Env:IGNORE_CASE
 ```
 
-我們應該會得到包含 *to*（可能帶有大寫字母）的行：
+我們應該會得到包含 _to_（可能帶有大寫字母）的行：
 
 ```
 Are you nobody, too?
@@ -1015,7 +1011,7 @@ To tell your name the livelong day
 To an admiring bog!
 ```
 
-太棒了，我們也得到了包含 *To* 的行！我們的 `minigrep` 程式現在可以根據環境變數執行不區分大小寫的搜尋。現在你知道如何管理使用命令列參數或環境變數設定的選項。
+太棒了，我們也得到了包含 _To_ 的行！我們的 `minigrep` 程式現在可以根據環境變數執行不區分大小寫的搜尋。現在你知道如何管理使用命令列參數或環境變數設定的選項。
 
 有些程式允許對相同配置同時使用參數和環境變數。在這些情況下，程式會決定其中一個具有優先權。作為你自己的另一個練習，嘗試透過命令列參數或環境變數來控制大小寫敏感度。決定如果程式在一個設定為區分大小寫，另一個設定為忽略大小寫的情況下執行，命令列參數或環境變數應該優先。
 
@@ -1023,7 +1019,7 @@ To an admiring bog!
 
 ## 將錯誤訊息寫入標準錯誤而不是標準輸出
 
-目前，我們使用 `println!` macro 將所有輸出寫入終端機。在大多數終端機中，有兩種輸出：用於一般資訊的*標準輸出* (`stdout`) 和用於錯誤訊息的*標準錯誤* (`stderr`)。這種區分讓使用者可以選擇將程式的成功輸出導向到檔案，同時仍將錯誤訊息列印到螢幕上。
+目前，我們使用 `println!` macro 將所有輸出寫入終端機。在大多數終端機中，有兩種輸出：用於一般資訊的_標準輸出_ (`stdout`) 和用於錯誤訊息的_標準錯誤_ (`stderr`)。這種區分讓使用者可以選擇將程式的成功輸出導向到檔案，同時仍將錯誤訊息列印到螢幕上。
 
 `println!` macro 只能列印到標準輸出，因此我們必須使用其他方法來列印到標準錯誤。
 
@@ -1033,13 +1029,13 @@ To an admiring bog!
 
 命令列程式預期會將錯誤訊息傳送到標準錯誤串流，這樣即使我們將標準輸出串流重新導向到檔案，我們仍然可以在螢幕上看到錯誤訊息。我們的程式目前行為不佳：我們即將看到它將錯誤訊息輸出儲存到檔案中！
 
-為了演示這種行為，我們將使用 `>` 和我們想要將標準輸出串流重新導向的檔案路徑 *output.txt* 執行程式。我們不會傳遞任何參數，這應該會導致錯誤：
+為了演示這種行為，我們將使用 `>` 和我們想要將標準輸出串流重新導向的檔案路徑 _output.txt_ 執行程式。我們不會傳遞任何參數，這應該會導致錯誤：
 
 ```
 $ cargo run > output.txt
 ```
 
-`>` 語法告訴 shell 將標準輸出的內容寫入 *output.txt* 而不是螢幕。我們沒有看到預期的錯誤訊息列印到螢幕上，這意味著它一定在檔案中。*output.txt* 的內容如下：
+`>` 語法告訴 shell 將標準輸出的內容寫入 _output.txt_ 而不是螢幕。我們沒有看到預期的錯誤訊息列印到螢幕上，這意味著它一定在檔案中。_output.txt_ 的內容如下：
 
 ```
 Problem parsing arguments: not enough arguments
@@ -1078,7 +1074,7 @@ $ cargo run > output.txt
 Problem parsing arguments: not enough arguments
 ```
 
-現在我們在螢幕上看到錯誤，而 *output.txt* 則沒有內容，這就是我們期望命令列程式應有的行為。
+現在我們在螢幕上看到錯誤，而 _output.txt_ 則沒有內容，這就是我們期望命令列程式應有的行為。
 
 讓我們再次執行程式，使用不會導致錯誤的參數，但仍將標準輸出重新導向到檔案，如下所示：
 
@@ -1086,7 +1082,7 @@ Problem parsing arguments: not enough arguments
 $ cargo run -- to poem.txt > output.txt
 ```
 
-我們不會在終端機看到任何輸出，而 *output.txt* 將包含我們的結果：
+我們不會在終端機看到任何輸出，而 _output.txt_ 將包含我們的結果：
 
 Filename: output.txt
 

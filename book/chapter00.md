@@ -8,7 +8,7 @@ directory, so all fixes need to be made in `/src/`.
 
 # 介紹
 
-> 備註：本書籍版本與 *https://nostarch.com/rust-programming-language-2nd-edition* 上《The Rust Programming Language》一書的內容相同，該書的印刷版和電子書版本可在 No Starch Press 的 *https://nostarch.com/* 取得。
+> 備註：本書籍版本與 _https://nostarch.com/rust-programming-language-2nd-edition_ 上《The Rust Programming Language》一書的內容相同，該書的印刷版和電子書版本可在 No Starch Press 的 _https://nostarch.com/_ 取得。
 
 歡迎閱讀《The Rust Programming Language》，這是一本關於 Rust 的入門書。Rust 程式語言可以幫助你編寫更快、更可靠的軟體。高層次的人體工學（ergonomics）和低層次控制在程式語言設計中經常相互衝突；Rust 挑戰了這種衝突。透過平衡強大的技術能力和出色的開發者體驗，Rust 讓你能夠控制低層次細節（例如記憶體使用），同時避免了傳統上與此類控制相關的所有麻煩。
 
@@ -22,9 +22,9 @@ Rust 被證明是一種高效的工具，可用於擁有不同系統程式設計
 
 Rust 也為系統程式設計世界帶來了現代化的開發工具：
 
-* 內建的 dependency manager 和 build tool `Cargo`，讓在整個 Rust ecosystem 中新增、編譯和管理 dependency 變得輕鬆且一致。
-* `Rustfmt` 格式化工具確保開發人員之間有著一致的 coding style。
-* `rust-analyzer` 支援 Integrated Development Environment (IDE) 整合，提供 code completion 和 inline error messages。
+- 內建的 dependency manager 和 build tool `Cargo`，讓在整個 Rust ecosystem 中新增、編譯和管理 dependency 變得輕鬆且一致。
+- `Rustfmt` 格式化工具確保開發人員之間有著一致的 coding style。
+- `rust-analyzer` 支援 Integrated Development Environment (IDE) 整合，提供 code completion 和 inline error messages。
 
 透過使用這些以及 Rust ecosystem 中的其他工具，開發人員在編寫系統級程式碼時可以保持高效。
 
@@ -82,14 +82,14 @@ Rust 語言也希望支援許多其他使用者；這裡提到的只是其中一
 
 學習 Rust 過程的一個重要部分是學習如何閱讀 compiler 顯示的 error messages：這些將引導你編寫出可運行的程式碼。因此，我們將提供許多無法編譯的範例以及 compiler 在每種情況下將顯示的 error message。請記住，如果你輸入並運行一個隨機範例，它可能無法編譯！請務必閱讀周圍的文字，以查看你嘗試運行的範例是否預期會出錯。Ferris 也會幫助你區分不預期能正常運行的程式碼：
 
-|Ferris|含義|
-|------|-------|
-|<img src="https://doc.rust-lang.org/book/img/ferris/does_not_compile.svg" class="ferris-explain" alt="帶有問號的 Ferris"/>|這段程式碼無法編譯！|
-|<img src="https://doc.rust-lang.org/book/img/ferris/panics.svg" class="ferris-explain" alt="雙手向上舉的 Ferris"/>|這段程式碼會 panic！|
-|<img src="https://doc.rust-lang.org/book/img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="一隻爪子抬起，聳肩的 Ferris"/>|這段程式碼不會產生預期的行為。|
+| Ferris                                                                                                                                   | 含義                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| <img src="https://doc.rust-lang.org/book/img/ferris/does_not_compile.svg" class="ferris-explain" alt="帶有問號的 Ferris"/>               | 這段程式碼無法編譯！           |
+| <img src="https://doc.rust-lang.org/book/img/ferris/panics.svg" class="ferris-explain" alt="雙手向上舉的 Ferris"/>                       | 這段程式碼會 panic！           |
+| <img src="https://doc.rust-lang.org/book/img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="一隻爪子抬起，聳肩的 Ferris"/> | 這段程式碼不會產生預期的行為。 |
 
 在大多數情況下，我們將引導你找到任何無法編譯程式碼的正確版本。
 
 ## 原始碼
 
-本書的原始檔可在 GitHub 上找到：*https://github.com/rust-lang/book/tree/main/src*。
+本書的原始檔可在 GitHub 上找到：_https://github.com/rust-lang/book/tree/main/src_。

@@ -8,16 +8,16 @@ directory, so all fixes need to be made in `/src/`.
 
 # 函數式語言特性：Iterators 與 Closures
 
-Rust 的設計從許多現有的語言和技術中汲取了靈感，其中一個重要的影響是*函數式程式設計*（functional programming）。以函數式風格編程通常包括將函數作為值來使用，例如將它們作為參數傳遞、從其他函數中返回它們、將它們賦值給變數以供稍後執行等等。
+Rust 的設計從許多現有的語言和技術中汲取了靈感，其中一個重要的影響是_函數式程式設計_（functional programming）。以函數式風格編程通常包括將函數作為值來使用，例如將它們作為參數傳遞、從其他函數中返回它們、將它們賦值給變數以供稍後執行等等。
 
 在本章中，我們將不討論 functional programming 是什麼或不是什麼的問題，而是討論 Rust 中與許多常被稱為函數式語言的特性相似的一些功能。
 
 更具體地說，我們將涵蓋：
 
-*   *Closures*：一種可以儲存在變數中的類函數結構
-*   *Iterators*：一種處理一系列元素的方式
-*   如何使用 closures 和 iterators 來改進第 12 章的 I/O project
-*   closures 和 iterators 的 performance（劇透：它們比你想像的還要快！）
+- _Closures_：一種可以儲存在變數中的類函數結構
+- _Iterators_：一種處理一系列元素的方式
+- 如何使用 closures 和 iterators 來改進第 12 章的 I/O project
+- closures 和 iterators 的 performance（劇透：它們比你想像的還要快！）
 
 我們已經涵蓋了 Rust 的其他一些功能，例如 pattern matching 和 enums，這些也受到函數式風格的影響。由於掌握 closures 和 iterators 是編寫慣用且快速的 Rust 程式碼的重要部分，我們將整個章節專注於它們。
 
@@ -130,11 +130,11 @@ Closures 通常很簡短，並且只在狹窄的 context 中相關，而不是�
 src/main.rs
 
 ```rust
-    let expensive_closure = |num: u32| -> u32 {
-        println!("calculating slowly...");
-        thread::sleep(Duration::from_secs(2));
-        num
-    };
+let expensive_closure = |num: u32| -> u32 {
+    println!("calculating slowly...");
+    thread::sleep(Duration::from_secs(2));
+    num
+};
 ```
 
 Listing 13-2：在 closure 中新增參數和回傳值類型的可選類型註解
@@ -296,15 +296,15 @@ Listing 13-6：使用 `move` 強制 thread 的 closure 取得 `list` 的所有�
 
 ### 將捕捉到的值移出 Closures 與 Fn Trait
 
-一旦 closure 從定義 closure 的環境中捕捉到一個 reference 或捕捉到值的所有權（因此影響了什麼，如果有的話，被移*入* closure），closure 主體中的程式碼定義了當 closure 稍後被評估時 reference 或值的去向（因此影響了什麼，如果有的話，被移*出* closure）。
+一旦 closure 從定義 closure 的環境中捕捉到一個 reference 或捕捉到值的所有權（因此影響了什麼，如果有的話，被移_入_ closure），closure 主體中的程式碼定義了當 closure 稍後被評估時 reference 或值的去向（因此影響了什麼，如果有的話，被移_出_ closure）。
 
 closure 主體可以執行以下任何操作：將捕捉到的值移出 closure、變更捕捉到的值、既不移動也不變更值，或者一開始就沒有從環境中捕捉任何東西。
 
 closure 捕捉和處理環境中值的方式會影響 closure 實作哪些 traits，而 traits 是 functions 和 structs 用來指定它們可以使用哪種 closures 的方式。Closures 將自動實現這三個 `Fn` traits 中的一個、兩個或全部，以累加的方式，具體取決於 closure 的主體如何處理這些值：
 
-*   `FnOnce` 適用於可以被呼叫一次的 closures。所有 closures 至少都實現這個 trait，因為所有 closures 都可以被呼叫。一個將捕捉到的值從其主體移出的 closure 將只實作 `FnOnce`，而不實作其他 `Fn` traits，因為它只能被呼叫一次。
-*   `FnMut` 適用於不將捕捉到的值移出其主體，但可能會變更捕捉到的值的 closures。這些 closures 可以被呼叫多次。
-*   `Fn` 適用於不將捕捉到的值移出其主體且不變更捕捉到的值的 closures，以及不從其環境中捕捉任何東西的 closures。這些 closures 可以被呼叫多次而不會變更其環境，這在多個 closure 同時被呼叫的情況下很重要。
+- `FnOnce` 適用於可以被呼叫一次的 closures。所有 closures 至少都實現這個 trait，因為所有 closures 都可以被呼叫。一個將捕捉到的值從其主體移出的 closure 將只實作 `FnOnce`，而不實作其他 `Fn` traits，因為它只能被呼叫一次。
+- `FnMut` 適用於不將捕捉到的值移出其主體，但可能會變更捕捉到的值的 closures。這些 closures 可以被呼叫多次。
+- `Fn` 適用於不將捕捉到的值移出其主體且不變更捕捉到的值的 closures，以及不從其環境中捕捉任何東西的 closures。這些 closures 可以被呼叫多次而不會變更其環境，這在多個 closure 同時被呼叫的情況下很重要。
 
 讓我們看看 `Option<T>` 上 `unwrap_or_else` 方法的定義，我們在 Listing 13-1 中使用了它：
 
@@ -471,7 +471,7 @@ Listing 13-9：允許使用 `FnMut` closure 與 `sort_by_key`
 
 iterator pattern 允許你依序對一系列項目執行某些任務。iterator 負責迭代每個項目並確定序列何時結束的邏輯。當你使用 iterators 時，你不必自己重新實作該邏輯。
 
-在 Rust 中，iterators 是*惰性的*（lazy），這意味著它們在你呼叫消耗 iterator 的方法以使用它之前不會產生任何效果。例如，Listing 13-10 中的程式碼透過呼叫定義在 `Vec<T>` 上的 `iter` 方法，為 vector `v1` 中的項目建立了一個 iterator。這段程式碼本身沒有做任何有用的事情。
+在 Rust 中，iterators 是_惰性的_（lazy），這意味著它們在你呼叫消耗 iterator 的方法以使用它之前不會產生任何效果。例如，Listing 13-10 中的程式碼透過呼叫定義在 `Vec<T>` 上的 `iter` 方法，為 vector `v1` 中的項目建立了一個 iterator。這段程式碼本身沒有做任何有用的事情。
 
 src/main.rs
 
@@ -519,7 +519,7 @@ pub trait Iterator {
 }
 ```
 
-請注意，這個定義使用了一些新的語法：`type Item` 和 `Self::Item`，它們正在為這個 trait 定義一個*關聯類型*（associated type）。我們將在第 20 章深入討論 associated types。目前，你只需要知道這段程式碼表示實作 `Iterator` trait 要求你同時定義一個 `Item` 類型，並且這個 `Item` 類型用於 `next` 方法的回傳類型。換句話說，`Item` 類型將是從 iterator 返回的類型。
+請注意，這個定義使用了一些新的語法：`type Item` 和 `Self::Item`，它們正在為這個 trait 定義一個_關聯類型_（associated type）。我們將在第 20 章深入討論 associated types。目前，你只需要知道這段程式碼表示實作 `Iterator` trait 要求你同時定義一個 `Item` 類型，並且這個 `Item` 類型用於 `next` 方法的回傳類型。換句話說，`Item` 類型將是從 iterator 返回的類型。
 
 `Iterator` trait 只要求實作方定義一個方法：`next` 方法，它一次返回 iterator 的一個項目，包裝在 `Some` 中，當迭代結束時，返回 `None`。
 
@@ -551,7 +551,7 @@ Listing 13-12：在 iterator 上呼叫 `next` 方法
 
 `Iterator` trait 有許多不同的方法，並由標準函式庫提供預設實作；你可以透過查閱標準函式庫 `Iterator` trait 的 API documentation 來了解這些方法。其中一些方法在它們的定義中呼叫了 `next` 方法，這就是為什麼在實作 `Iterator` trait 時需要實作 `next` 方法。
 
-呼叫 `next` 的方法稱為*消耗性轉接器*（consuming adapters），因為呼叫它們會用盡 iterator。一個例子是 `sum` 方法，它取得 iterator 的所有權，並透過重複呼叫 `next` 來迭代項目，從而消耗 iterator。當它迭代時，它將每個項目加到一個累計總數中，並在迭代完成時返回總數。Listing 13-13 有一個測試說明了 `sum` 方法的用法。
+呼叫 `next` 的方法稱為_消耗性轉接器_（consuming adapters），因為呼叫它們會用盡 iterator。一個例子是 `sum` 方法，它取得 iterator 的所有權，並透過重複呼叫 `next` 來迭代項目，從而消耗 iterator。當它迭代時，它將每個項目加到一個累計總數中，並在迭代完成時返回總數。Listing 13-13 有一個測試說明了 `sum` 方法的用法。
 
 src/lib.rs
 
@@ -574,7 +574,7 @@ Listing 13-13：呼叫 `sum` 方法以取得 iterator 中所有項目的總和
 
 ### 產生其他 Iterators 的方法
 
-*Iterator adapters* 是定義在 `Iterator` trait 上的方法，它們不會消耗 iterator。相反，它們透過改變原始 iterator 的某些方面來產生不同的 iterators。
+_Iterator adapters_ 是定義在 `Iterator` trait 上的方法，它們不會消耗 iterator。相反，它們透過改變原始 iterator 的某些方面來產生不同的 iterators。
 
 Listing 13-14 顯示了呼叫 iterator adapter 方法 `map` 的範例，該方法接受一個 closure，在項目被迭代時對每個項目呼叫。`map` 方法返回一個新的 iterator，它產生修改後的項目。這裡的 closure 建立了一個新的 iterator，其中 vector 中的每個項目都將遞增 1。
 
@@ -747,7 +747,7 @@ Listing 13-17：重現 Listing 12-23 中 `Config::build` function 的實作
 
 #### 直接使用返回的 Iterator
 
-開啟你的 I/O project 的 *src/main.rs* 檔案，它應該如下所示：
+開啟你的 I/O project 的 _src/main.rs_ 檔案，它應該如下所示：
 
 Filename: src/main.rs
 
@@ -880,7 +880,7 @@ Listing 13-22：在 `search` function 的實作中使用 iterator adapter 方法
 
 為了決定是使用迴圈還是 iterators，你需要知道哪種實作更快：使用顯式 `for` 迴圈的 `search` function 版本，還是使用 iterators 的版本。
 
-我們透過將 Sir Arthur Conan Doyle 的 *The Adventures of Sherlock Holmes* 的全部內容載入到一個 `String` 中，並在內容中尋找單字 *the* 來運行了一項基準測試。以下是使用 `for` 迴圈的 `search` 版本和使用 iterators 的版本的基準測試結果：
+我們透過將 Sir Arthur Conan Doyle 的 _The Adventures of Sherlock Holmes_ 的全部內容載入到一個 `String` 中，並在內容中尋找單字 _the_ 來運行了一項基準測試。以下是使用 `for` 迴圈的 `search` 版本和使用 iterators 的版本的基準測試結果：
 
 ```
 test bench_search_for  ... bench:  19,620,300 ns/iter (+/- 915,700)
@@ -889,7 +889,7 @@ test bench_search_iter ... bench:  19,234,900 ns/iter (+/- 657,200)
 
 這兩種實作具有相似的 performance！我們在這裡不解釋基準測試程式碼，因為重點不是證明這兩個版本是等效的，而是為了大致了解這兩種實作在 performance 方面的比較。
 
-對於更全面的基準測試，你應該使用各種大小的文本作為 `contents`，不同的單字和不同長度的單字作為 `query`，以及各種其他變體進行檢查。重點是：iterators 儘管是一種高層次的 abstraction，但它們被編譯成大致相同的程式碼，就好像你自己手寫了低層次程式碼一樣。Iterators 是 Rust 的*零成本抽象*（zero-cost abstractions）之一，我們的意思是，使用這種 abstraction 不會產生額外的 runtime overhead。這與 C++ 的原始設計者和實作者 Bjarne Stroustrup 在《Foundations of C++》（2012）中定義*零開銷*（zero-overhead）的方式類似：
+對於更全面的基準測試，你應該使用各種大小的文本作為 `contents`，不同的單字和不同長度的單字作為 `query`，以及各種其他變體進行檢查。重點是：iterators 儘管是一種高層次的 abstraction，但它們被編譯成大致相同的程式碼，就好像你自己手寫了低層次程式碼一樣。Iterators 是 Rust 的_零成本抽象_（zero-cost abstractions）之一，我們的意思是，使用這種 abstraction 不會產生額外的 runtime overhead。這與 C++ 的原始設計者和實作者 Bjarne Stroustrup 在《Foundations of C++》（2012）中定義_零開銷_（zero-overhead）的方式類似：
 
 > 總體而言，C++ 實作遵守零開銷原則：你沒有使用的，你無需支付。更進一步：你所使用的，你無法手寫出更好的程式碼。
 

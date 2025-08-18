@@ -14,15 +14,15 @@ directory, so all fixes need to be made in `/src/`.
 
 > #### 關鍵字 (Keywords)
 >
-> 與其他語言一樣，Rust 語言有一組*關鍵字* (keywords) 專供語言本身使用。請記住，你不能將這些詞用作變數或函數的名稱。大多數關鍵字都有特殊含義，你將在 Rust 程式中使用它們來執行各種任務；少數關鍵字目前沒有相關功能，但已保留用於未來可能添加到 Rust 中的功能。你可以在附錄 A 中找到關鍵字列表。
+> 與其他語言一樣，Rust 語言有一組_關鍵字_ (keywords) 專供語言本身使用。請記住，你不能將這些詞用作變數或函數的名稱。大多數關鍵字都有特殊含義，你將在 Rust 程式中使用它們來執行各種任務；少數關鍵字目前沒有相關功能，但已保留用於未來可能添加到 Rust 中的功能。你可以在附錄 A 中找到關鍵字列表。
 
 ## 變數與可變性 (Variables and Mutability)
 
 如「[用變數儲存數值](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#storing-values-with-variables)」章節所述，變數預設是 immutable（不可變）的。這是 Rust 鼓勵你以一種方式編寫程式碼，從而利用 Rust 所提供的安全性和易於併發性的眾多提示之一。然而，你仍然可以選擇將你的變數設為 mutable（可變）。讓我們探討 Rust 如何以及為何鼓勵你偏好 immutability，以及有時你為何可能希望選擇不使用它。
 
-當一個變數是 immutable 時，一旦一個值被綁定到一個名稱，你就不能改變那個值。為了說明這一點，在你的 *projects* 目錄中，使用 `cargo new variables` 來建立一個名為 *variables* 的新專案。
+當一個變數是 immutable 時，一旦一個值被綁定到一個名稱，你就不能改變那個值。為了說明這一點，在你的 _projects_ 目錄中，使用 `cargo new variables` 來建立一個名為 _variables_ 的新專案。
 
-然後，在你新的 *variables* 目錄中，打開 *src/main.rs* 並將其程式碼替換為以下程式碼，這段程式碼目前還無法編譯：
+然後，在你新的 _variables_ 目錄中，打開 _src/main.rs_ 並將其程式碼替換為以下程式碼，這段程式碼目前還無法編譯：
 
 檔案名稱：src/main.rs
 
@@ -66,7 +66,7 @@ error: could not compile `variables` (bin "variables") due to 1 previous error
 
 但 mutability 非常有用，並且可以讓程式碼更方便編寫。儘管變數預設是 immutable 的，但你可以透過在變數名稱前加上 `mut` 來使其成為 mutable，就像你在[第二章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html)中所做的那樣。加上 `mut` 也向未來的程式碼讀者傳達意圖，表明程式碼的其他部分將會改變這個變數的值。
 
-例如，讓我們將 *src/main.rs* 更改為以下內容：
+例如，讓我們將 _src/main.rs_ 更改為以下內容：
 
 檔案名稱：src/main.rs
 
@@ -94,7 +94,7 @@ The value of x is: 6
 
 ### 常數 (Constants)
 
-與 immutable 變數一樣，*常數* (constants) 是綁定到名稱且不允許更改的值，但常數和變數之間存在一些差異。
+與 immutable 變數一樣，_常數_ (constants) 是綁定到名稱且不允許更改的值，但常數和變數之間存在一些差異。
 
 首先，你不允許將 `mut` 與常數一起使用。常數不僅預設是 immutable 的——它們總是 immutable 的。你使用 `const` 關鍵字而不是 `let` 關鍵字來宣告常數，並且值的型別*必須*被註釋。我們將在下一節「[資料型別](https://doc.rust-lang.org/book/ch03-02-data-types.html)」中介紹型別和型別註釋，所以現在不用擔心細節。你只需要知道你必須始終註釋型別。
 
@@ -116,7 +116,7 @@ const THREE_HOURS_IN_SECONDS: u32 = 60 * 60 * 3;
 
 ### 遮蔽 (Shadowing)
 
-正如你在[第二章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html)的猜數字遊戲教學中看到的那樣，你可以宣告一個與先前變數同名的新變數。Rustaceans 稱第一個變數被第二個變數*遮蔽* (shadowed)，這表示當你使用該變數的名稱時，編譯器將會看到第二個變數。實際上，第二個變數會覆蓋第一個變數，獨佔該變數名稱的所有使用，直到它自己被遮蔽或其作用域結束。我們可以透過使用相同的變數名稱並重複使用 `let` 關鍵字來遮蔽變數，如下所示：
+正如你在[第二章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html)的猜數字遊戲教學中看到的那樣，你可以宣告一個與先前變數同名的新變數。Rustaceans 稱第一個變數被第二個變數_遮蔽_ (shadowed)，這表示當你使用該變數的名稱時，編譯器將會看到第二個變數。實際上，第二個變數會覆蓋第一個變數，獨佔該變數名稱的所有使用，直到它自己被遮蔽或其作用域結束。我們可以透過使用相同的變數名稱並重複使用 `let` 關鍵字來遮蔽變數，如下所示：
 
 檔案名稱：src/main.rs
 
@@ -151,15 +151,15 @@ The value of x is: 6
 `mut` 和 shadowing 之間的其他區別是，因為我們在使用 `let` 關鍵字時實際上是建立了一個新變數，所以我們可以改變值的型別，但重複使用相同的名稱。例如，假設我們的程式要求使用者透過輸入空格字元來顯示他們希望文本之間有多少空格，然後我們希望將該輸入儲存為數字：
 
 ```
-    let spaces = "   ";
-    let spaces = spaces.len();
+let spaces = "   ";
+let spaces = spaces.len();
 ```
 
 第一個 `spaces` 變數是字串型別，第二個 `spaces` 變數是數字型別。因此，遮蔽讓我們不必想出不同的名稱，例如 `spaces_str` 和 `spaces_num`；相反，我們可以重複使用更簡單的 `spaces` 名稱。但是，如果我們嘗試像這裡所示那樣使用 `mut`，我們將會得到編譯時錯誤：
 
 ```
-    let mut spaces = "   ";
-    spaces = spaces.len();
+let mut spaces = "   ";
+spaces = spaces.len();
 ```
 
 錯誤訊息指出我們不允許改變變數的型別：
@@ -183,9 +183,9 @@ error: could not compile `variables` (bin "variables") due to 1 previous error
 
 ## 資料型別 (Data Types)
 
-Rust 中的每個值都具有特定的*資料型別* (data type)，這告訴 Rust 所指定的資料類型，以便它知道如何處理該資料。我們將介紹兩種資料型別子集：純量 (scalar) 和複合 (compound)。
+Rust 中的每個值都具有特定的_資料型別_ (data type)，這告訴 Rust 所指定的資料類型，以便它知道如何處理該資料。我們將介紹兩種資料型別子集：純量 (scalar) 和複合 (compound)。
 
-請記住，Rust 是一種*靜態型別* (statically typed) 的語言，這意味著它必須在編譯時知道所有變數的型別。編譯器通常可以根據值及其使用方式來推斷我們想要使用的型別。在許多型別都可能的情況下，例如在[第二章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number)「[比較猜測與秘密數字](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number)」章節中，我們將 `String` 轉換為數字型別時使用了 `parse`，我們必須添加型別註釋 (type annotation)，如下所示：
+請記住，Rust 是一種_靜態型別_ (statically typed) 的語言，這意味著它必須在編譯時知道所有變數的型別。編譯器通常可以根據值及其使用方式來推斷我們想要使用的型別。在許多型別都可能的情況下，例如在[第二章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number)「[比較猜測與秘密數字](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number)」章節中，我們將 `String` 轉換為數字型別時使用了 `parse`，我們必須添加型別註釋 (type annotation)，如下所示：
 
 ```rust
 let guess: u32 = "42".parse().expect("Not a number!");
@@ -216,26 +216,26 @@ error: could not compile `no_type_annotations` (bin "no_type_annotations") due t
 
 ### 純量型別 (Scalar Types)
 
-*純量* (scalar) 型別表示單一值。Rust 有四種主要的純量型別：整數 (integers)、浮點數 (floating-point numbers)、布林值 (Booleans) 和字元 (characters)。你可能從其他程式語言中認得這些型別。讓我們深入探討它們在 Rust 中的運作方式。
+_純量_ (scalar) 型別表示單一值。Rust 有四種主要的純量型別：整數 (integers)、浮點數 (floating-point numbers)、布林值 (Booleans) 和字元 (characters)。你可能從其他程式語言中認得這些型別。讓我們深入探討它們在 Rust 中的運作方式。
 
 #### 整數型別 (Integer Types)
 
-*整數* (integer) 是沒有分數部分的數字。我們在第二章中使用了一種整數型別，`u32` 型別。這個型別宣告表示它所關聯的值應該是一個 unsigned integer（無符號整數）（signed integer 型別以 `i` 而非 `u` 開頭），並佔用 32 bits 的空間。表 3-1 顯示了 Rust 中內建的整數型別。我們可以使用這些變體中的任何一個來宣告整數值的型別。
+_整數_ (integer) 是沒有分數部分的數字。我們在第二章中使用了一種整數型別，`u32` 型別。這個型別宣告表示它所關聯的值應該是一個 unsigned integer（無符號整數）（signed integer 型別以 `i` 而非 `u` 開頭），並佔用 32 bits 的空間。表 3-1 顯示了 Rust 中內建的整數型別。我們可以使用這些變體中的任何一個來宣告整數值的型別。
 
 表 3-1：Rust 中的整數型別
 
-|長度 (Length)|有符號 (Signed)|無符號 (Unsigned)|
-|------|------|--------|
-|8-bit|`i8`|`u8`|
-|16-bit|`i16`|`u16`|
-|32-bit|`i32`|`u32`|
-|64-bit|`i64`|`u64`|
-|128-bit|`i128`|`u128`|
-|依賴架構 (architecture dependent)|`isize`|`usize`|
+| 長度 (Length)                     | 有符號 (Signed) | 無符號 (Unsigned) |
+| --------------------------------- | --------------- | ----------------- |
+| 8-bit                             | `i8`            | `u8`              |
+| 16-bit                            | `i16`           | `u16`             |
+| 32-bit                            | `i32`           | `u32`             |
+| 64-bit                            | `i64`           | `u64`             |
+| 128-bit                           | `i128`          | `u128`            |
+| 依賴架構 (architecture dependent) | `isize`         | `usize`           |
 
 每個變體都可以是有符號 (signed) 或無符號 (unsigned)，並且具有明確的大小。*有符號*和*無符號*指的是數字是否可以是負數——換句話說，數字是否需要帶有符號（有符號）或是否只會是正數，因此可以不帶符號表示（無符號）。這就像在紙上寫數字一樣：當符號很重要時，數字會帶有加號或減號；但是，當可以安全地假設數字為正數時，則不帶符號顯示。有符號數字使用二補數 (two’s complement) 表示法儲存。
 
-每個有符號變體可以儲存從 −(2<sup>n − 1</sup>) 到 2<sup>n − 1</sup> − 1（含）的數字，其中 *n* 是該變體使用的位元數。因此，一個 `i8` 可以儲存從 −(2<sup>7</sup>) 到 2<sup>7</sup> − 1 的數字，即 −128 到 127。無符號變體可以儲存從 0 到 2<sup>n</sup> − 1 的數字，因此一個 `u8` 可以儲存從 0 到 2<sup>8</sup> − 1 的數字，即 0 到 255。
+每個有符號變體可以儲存從 −(2<sup>n − 1</sup>) 到 2<sup>n − 1</sup> − 1（含）的數字，其中 _n_ 是該變體使用的位元數。因此，一個 `i8` 可以儲存從 −(2<sup>7</sup>) 到 2<sup>7</sup> − 1 的數字，即 −128 到 127。無符號變體可以儲存從 0 到 2<sup>n</sup> − 1 的數字，因此一個 `u8` 可以儲存從 0 到 2<sup>8</sup> − 1 的數字，即 0 到 255。
 
 此外，`isize` 和 `usize` 型別取決於程式運行所在的電腦架構：如果是 64-bit 架構則為 64 bits，如果是 32-bit 架構則為 32 bits。
 
@@ -243,32 +243,32 @@ error: could not compile `no_type_annotations` (bin "no_type_annotations") due t
 
 表 3-2：Rust 中的整數 Literal
 
-|數字 Literal (Number literals)|範例 (Example)|
-|---------------|-------|
-|十進制 (Decimal)|`98_222`|
-|十六進制 (Hex)|`0xff`|
-|八進制 (Octal)|`0o77`|
-|二進制 (Binary)|`0b1111_0000`|
-|位元組 (`u8` only) (Byte (`u8` only))|`b'A'`|
+| 數字 Literal (Number literals)        | 範例 (Example) |
+| ------------------------------------- | -------------- |
+| 十進制 (Decimal)                      | `98_222`       |
+| 十六進制 (Hex)                        | `0xff`         |
+| 八進制 (Octal)                        | `0o77`         |
+| 二進制 (Binary)                       | `0b1111_0000`  |
+| 位元組 (`u8` only) (Byte (`u8` only)) | `b'A'`         |
 
 那麼你如何知道要使用哪種整數型別呢？如果你不確定，Rust 的預設值通常是一個好的開始：整數型別預設為 `i32`。你使用 `isize` 或 `usize` 的主要情況是當索引某種類型的 collection 時。
 
 > ##### 整數溢位 (Integer Overflow)
 >
-> 假設你有一個 `u8` 型別的變數，它可以容納 0 到 255 之間的值。如果你嘗試將變數更改為超出該範圍的值，例如 256，將會發生*整數溢位* (integer overflow)，這可能導致兩種行為之一。當你在除錯模式 (debug mode) 下編譯時，Rust 包含整數溢位檢查，如果發生這種行為，將導致你的程式在執行時*panic*（恐慌）。Rust 在程式以錯誤退出時使用術語*panicking*；我們將在[第九章](https://doc.rust-lang.org/book/ch09-00-error-handling.html)的「[使用 `panic!` 處理無法復原的錯誤](https://doc.rust-lang.org/book/ch09-01-unrecoverable-errors-with-panic.html)」一節中更深入地討論 panics。
+> 假設你有一個 `u8` 型別的變數，它可以容納 0 到 255 之間的值。如果你嘗試將變數更改為超出該範圍的值，例如 256，將會發生_整數溢位_ (integer overflow)，這可能導致兩種行為之一。當你在除錯模式 (debug mode) 下編譯時，Rust 包含整數溢位檢查，如果發生這種行為，將導致你的程式在執行時_panic_（恐慌）。Rust 在程式以錯誤退出時使用術語_panicking_；我們將在[第九章](https://doc.rust-lang.org/book/ch09-00-error-handling.html)的「[使用 `panic!` 處理無法復原的錯誤](https://doc.rust-lang.org/book/ch09-01-unrecoverable-errors-with-panic.html)」一節中更深入地討論 panics。
 >
-> 當你使用 `--release` 標誌在發布模式 (release mode) 下編譯時，Rust *不*會包含導致 panics 的整數溢位檢查。相反，如果發生溢位，Rust 會執行*二補數環繞* (two’s complement wrapping)。簡而言之，大於型別所能容納的最大值會「環繞」到型別所能容納的最小值。對於 `u8` 的情況，值 256 變為 0，值 257 變為 1，依此類推。程式不會 panic，但變數將擁有一個值，這個值可能不是你預期的。依賴整數溢位的環繞行為被視為一個錯誤。
+> 當你使用 `--release` 標誌在發布模式 (release mode) 下編譯時，Rust *不*會包含導致 panics 的整數溢位檢查。相反，如果發生溢位，Rust 會執行_二補數環繞_ (two’s complement wrapping)。簡而言之，大於型別所能容納的最大值會「環繞」到型別所能容納的最小值。對於 `u8` 的情況，值 256 變為 0，值 257 變為 1，依此類推。程式不會 panic，但變數將擁有一個值，這個值可能不是你預期的。依賴整數溢位的環繞行為被視為一個錯誤。
 >
 > 為了明確處理溢位的可能性，你可以使用標準函式庫為基本數字型別提供的這些方法家族：
 >
-> *   在所有模式下使用 `wrapping_*` 方法進行環繞，例如 `wrapping_add`。
-> *   如果發生溢位，則使用 `checked_*` 方法回傳 `None` 值。
-> *   使用 `overflowing_*` 方法回傳值和一個布林值，指示是否發生溢位。
-> *   使用 `saturating_*` 方法將值飽和到該型別的最小值或最大值。
+> - 在所有模式下使用 `wrapping_*` 方法進行環繞，例如 `wrapping_add`。
+> - 如果發生溢位，則使用 `checked_*` 方法回傳 `None` 值。
+> - 使用 `overflowing_*` 方法回傳值和一個布林值，指示是否發生溢位。
+> - 使用 `saturating_*` 方法將值飽和到該型別的最小值或最大值。
 
 #### 浮點數型別 (Floating-Point Types)
 
-Rust 也有兩種用於*浮點數* (floating-point numbers) 的原始型別，它們是帶有小數點的數字。Rust 的浮點數型別是 `f32` 和 `f64`，它們的大小分別為 32 bits 和 64 bits。預設型別是 `f64`，因為在現代 CPU 上，它的速度大約與 `f32` 相同，但能夠提供更高的精確度。所有浮點數型別都是有符號的。
+Rust 也有兩種用於_浮點數_ (floating-point numbers) 的原始型別，它們是帶有小數點的數字。Rust 的浮點數型別是 `f32` 和 `f64`，它們的大小分別為 32 bits 和 64 bits。預設型別是 `f64`，因為在現代 CPU 上，它的速度大約與 `f32` 相同，但能夠提供更高的精確度。所有浮點數型別都是有符號的。
 
 以下是一個展示浮點數運作的範例：
 
@@ -346,11 +346,11 @@ fn main() {
 
 ### 複合型別 (Compound Types)
 
-*複合型別* (Compound types) 可以將多個值組合為一個型別。Rust 有兩種原始複合型別：元組 (tuples) 和陣列 (arrays)。
+_複合型別_ (Compound types) 可以將多個值組合為一個型別。Rust 有兩種原始複合型別：元組 (tuples) 和陣列 (arrays)。
 
 #### 元組型別 (The Tuple Type)
 
-*元組* (tuple) 是一種將多個具有各種型別的值分組為一個複合型別的通用方式。元組具有固定長度：一旦宣告，它們的大小就不能增加或減少。
+_元組_ (tuple) 是一種將多個具有各種型別的值分組為一個複合型別的通用方式。元組具有固定長度：一旦宣告，它們的大小就不能增加或減少。
 
 我們透過將逗號分隔的值列表寫在括號內來建立一個元組。元組中的每個位置都有一個型別，並且元組中不同值的型別不必相同。我們在這個範例中添加了可選的型別註釋：
 
@@ -376,7 +376,7 @@ fn main() {
 }
 ```
 
-這個程式首先建立一個 tuple 並將其綁定到變數 `tup`。然後它使用帶有 `let` 的 pattern 將 `tup` 轉換為三個獨立的變數 `x`、`y` 和 `z`。這稱為*解構* (destructuring)，因為它將單一 tuple 分解為三個部分。最後，程式印出 `y` 的值，即 `6.4`。
+這個程式首先建立一個 tuple 並將其綁定到變數 `tup`。然後它使用帶有 `let` 的 pattern 將 `tup` 轉換為三個獨立的變數 `x`、`y` 和 `z`。這稱為_解構_ (destructuring)，因為它將單一 tuple 分解為三個部分。最後，程式印出 `y` 的值，即 `6.4`。
 
 我們也可以透過使用句點 (`.`) 後跟我們要存取的值的索引來直接存取 tuple 元素。例如：
 
@@ -396,11 +396,11 @@ fn main() {
 
 這個程式建立 tuple `x`，然後使用各自的索引存取 tuple 的每個元素。與大多數程式語言一樣，tuple 的第一個索引是 0。
 
-沒有任何值的 tuple 有一個特殊名稱，*unit*（單元）。這個值及其對應的型別都寫作 `()`，並表示一個空值或一個空回傳型別。表達式如果沒有回傳任何其他值，則會隱式回傳 unit 值。
+沒有任何值的 tuple 有一個特殊名稱，_unit_（單元）。這個值及其對應的型別都寫作 `()`，並表示一個空值或一個空回傳型別。表達式如果沒有回傳任何其他值，則會隱式回傳 unit 值。
 
 #### 陣列型別 (The Array Type)
 
-另一種包含多個值集合的方式是使用*陣列* (array)。與元組 (tuple) 不同，陣列的每個元素都必須具有相同的型別。與某些其他語言中的陣列不同，Rust 中的陣列具有固定長度。
+另一種包含多個值集合的方式是使用_陣列_ (array)。與元組 (tuple) 不同，陣列的每個元素都必須具有相同的型別。與某些其他語言中的陣列不同，Rust 中的陣列具有固定長度。
 
 我們將陣列中的值寫成用逗號分隔的列表，並放在方括號內：
 
@@ -412,7 +412,7 @@ fn main() {
 }
 ```
 
-當你希望資料在 stack 上分配，就像我們目前看到的其他型別一樣，而不是在 heap 上時（我們將在[第四章](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html)中更多地討論 stack 和 heap），或者當你希望確保始終擁有固定數量的元素時，陣列非常有用。不過，陣列不像 vector 型別那樣靈活。*vector* 是標準函式庫提供的類似 collection 型別，它*允許*大小增長或縮小，因為其內容位於 heap 上。如果你不確定應該使用陣列還是 vector，很有可能你應該使用 vector。第八章會更詳細地討論 vectors。
+當你希望資料在 stack 上分配，就像我們目前看到的其他型別一樣，而不是在 heap 上時（我們將在[第四章](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html)中更多地討論 stack 和 heap），或者當你希望確保始終擁有固定數量的元素時，陣列非常有用。不過，陣列不像 vector 型別那樣靈活。_vector_ 是標準函式庫提供的類似 collection 型別，它*允許*大小增長或縮小，因為其內容位於 heap 上。如果你不確定應該使用陣列還是 vector，很有可能你應該使用 vector。第八章會更詳細地討論 vectors。
 
 然而，當你知道元素數量不需要改變時，陣列會更有用。例如，如果你在程式中使用月份名稱，你可能會使用陣列而不是 vector，因為你知道它將始終包含 12 個元素：
 
@@ -493,7 +493,7 @@ index out of bounds: the len is 5 but the index is 10
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-程式在索引操作中使用無效值時產生了*執行時* (runtime) 錯誤。程式以錯誤訊息退出，並且沒有執行最終的 `println!` 陳述式。當你嘗試使用索引存取元素時，Rust 將檢查你指定的索引是否小於陣列長度。如果索引大於或等於長度，Rust 將會 panic。此檢查必須在執行時進行，尤其是在此情況下，因為編譯器無法知道使用者在稍後執行程式碼時將輸入什麼值。
+程式在索引操作中使用無效值時產生了_執行時_ (runtime) 錯誤。程式以錯誤訊息退出，並且沒有執行最終的 `println!` 陳述式。當你嘗試使用索引存取元素時，Rust 將檢查你指定的索引是否小於陣列長度。如果索引大於或等於長度，Rust 將會 panic。此檢查必須在執行時進行，尤其是在此情況下，因為編譯器無法知道使用者在稍後執行程式碼時將輸入什麼值。
 
 這是 Rust 記憶體安全原則實際運作的一個範例。在許多低階語言中，此類檢查並未執行，當你提供不正確的索引時，可能會存取無效記憶體。Rust 透過立即退出而不是允許記憶體存取並繼續來保護你免受此類錯誤的影響。[第九章](https://doc.rust-lang.org/book/ch09-00-error-handling.html)討論了更多 Rust 的錯誤處理以及如何編寫可讀、安全且不會 panic 也沒有無效記憶體存取的程式碼。
 
@@ -501,7 +501,7 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 函數在 Rust 程式碼中很常見。你已經見過語言中最重要的函數之一：`main` 函數，它是許多程式的進入點。你也見過 `fn` 關鍵字，它允許你宣告新函數。
 
-Rust 程式碼使用 *snake case* 作為函數和變數名稱的慣例風格，其中所有字母都是小寫，單字之間用底線分隔。這是一個包含函數定義範例的程式：
+Rust 程式碼使用 _snake case_ 作為函數和變數名稱的慣例風格，其中所有字母都是小寫，單字之間用底線分隔。這是一個包含函數定義範例的程式：
 
 檔案名稱：src/main.rs
 
@@ -519,9 +519,9 @@ fn another_function() {
 
 我們透過輸入 `fn` 後跟函數名稱和一組括號來在 Rust 中定義一個函數。大括號告訴編譯器函數主體 (function body) 的開始和結束位置。
 
-我們可以透過輸入函數名稱後跟一組括號來呼叫任何我們定義的函數。因為 `another_function` 在程式中定義，所以可以在 `main` 函數內部呼叫它。請注意，我們在原始碼中將 `another_function` 定義在 `main` 函數*之後*；我們也可以將它定義在之前。Rust 不在乎你把函數定義在哪裡，只在乎它們是否定義在一個呼叫者可以看到的作用域內。
+我們可以透過輸入函數名稱後跟一組括號來呼叫任何我們定義的函數。因為 `another_function` 在程式中定義，所以可以在 `main` 函數內部呼叫它。請注意，我們在原始碼中將 `another_function` 定義在 `main` 函數_之後_；我們也可以將它定義在之前。Rust 不在乎你把函數定義在哪裡，只在乎它們是否定義在一個呼叫者可以看到的作用域內。
 
-讓我們建立一個名為 *functions* 的新 binary project 來進一步探索函數。將 `another_function` 範例放在 *src/main.rs* 中並執行它。你應該會看到以下輸出：
+讓我們建立一個名為 _functions_ 的新 binary project 來進一步探索函數。將 `another_function` 範例放在 _src/main.rs_ 中並執行它。你應該會看到以下輸出：
 
 ```
 $ cargo run
@@ -536,7 +536,7 @@ Another function.
 
 ### 參數 (Parameters)
 
-我們可以定義函數具有*參數* (parameters)，這些參數是函數簽章 (function’s signature) 的一部分的特殊變數。當一個函數有參數時，你可以為這些參數提供具體的值。嚴格來說，這些具體的值稱為*引數* (arguments)，但在日常對話中，人們傾向於將*參數*和*引數*交替使用，無論是函數定義中的變數還是呼叫函數時傳入的具體值。
+我們可以定義函數具有_參數_ (parameters)，這些參數是函數簽章 (function’s signature) 的一部分的特殊變數。當一個函數有參數時，你可以為這些參數提供具體的值。嚴格來說，這些具體的值稱為_引數_ (arguments)，但在日常對話中，人們傾向於將*參數*和*引數*交替使用，無論是函數定義中的變數還是呼叫函數時傳入的具體值。
 
 在這個版本的 `another_function` 中，我們新增了一個參數：
 
@@ -582,7 +582,7 @@ fn print_labeled_measurement(value: i32, unit_label: char) {
 
 這個範例建立了一個名為 `print_labeled_measurement` 的函數，它有兩個參數。第一個參數名為 `value`，型別為 `i32`。第二個參數名為 `unit_label`，型別為 `char`。然後函數會印出包含 `value` 和 `unit_label` 的文本。
 
-讓我們嘗試執行這段程式碼。將你 *functions* 專案的 *src/main.rs* 檔案中目前的程式替換為上述範例，並使用 `cargo run` 執行它：
+讓我們嘗試執行這段程式碼。將你 _functions_ 專案的 _src/main.rs_ 檔案中目前的程式替換為上述範例，並使用 `cargo run` 執行它：
 
 ```
 $ cargo run
@@ -598,8 +598,8 @@ The measurement is: 5h
 
 函數主體由一系列陳述式組成，可選地以表達式結尾。到目前為止，我們討論的函數沒有包含結尾的表達式，但你已經看到一個表達式作為陳述式的一部分。因為 Rust 是一種基於表達式的語言，所以理解這個重要的區別很重要。其他語言沒有相同的區別，所以讓我們看看陳述式和表達式是什麼，以及它們的差異如何影響函數的主體。
 
-*   陳述式 (Statements) 是執行某些動作且不回傳值的指令。
-*   表達式 (Expressions) 則會計算出一個結果值。
+- 陳述式 (Statements) 是執行某些動作且不回傳值的指令。
+- 表達式 (Expressions) 則會計算出一個結果值。
 
 讓我們看一些例子。
 
@@ -776,7 +776,7 @@ error: could not compile `functions` (bin "functions") due to 1 previous error
 
 ## 註解 (Comments)
 
-所有程式設計師都努力讓他們的程式碼易於理解，但有時需要額外的解釋。在這些情況下，程式設計師會在原始碼中留下*註解* (comments)，這些註解將被編譯器忽略，但對於閱讀原始碼的人來說可能很有用。
+所有程式設計師都努力讓他們的程式碼易於理解，但有時需要額外的解釋。在這些情況下，程式設計師會在原始碼中留下_註解_ (comments)，這些註解將被編譯器忽略，但對於閱讀原始碼的人來說可能很有用。
 
 這是一個簡單的註解：
 
@@ -823,7 +823,7 @@ Rust 還有另一種註解，即文件註解 (documentation comments)，我們�
 
 `if` 表達式允許你根據條件來分支你的程式碼。你提供一個條件，然後聲明：「如果滿足這個條件，就執行這個程式碼區塊。如果條件不滿足，就不要執行這個程式碼區塊。」
 
-在你的 *projects* 目錄中建立一個名為 *branches* 的新專案，以探索 `if` 表達式。在 *src/main.rs* 檔案中，輸入以下內容：
+在你的 _projects_ 目錄中建立一個名為 _branches_ 的新專案，以探索 `if` 表達式。在 _src/main.rs_ 檔案中，輸入以下內容：
 
 檔案名稱：src/main.rs
 
@@ -839,7 +839,7 @@ fn main() {
 }
 ```
 
-所有 `if` 表達式都以關鍵字 `if` 開頭，後跟一個條件。在此情況下，條件檢查變數 `number` 的值是否小於 5。如果條件為 `true`，我們將要執行的程式碼區塊緊接在條件之後，放在大括號內。與 `if` 表達式中的條件相關聯的程式碼區塊有時稱為*分支* (arms)，就像我們在[第二章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html)「[比較猜測與秘密數字](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number)」一節中討論的 `match` 表達式中的分支一樣。
+所有 `if` 表達式都以關鍵字 `if` 開頭，後跟一個條件。在此情況下，條件檢查變數 `number` 的值是否小於 5。如果條件為 `true`，我們將要執行的程式碼區塊緊接在條件之後，放在大括號內。與 `if` 表達式中的條件相關聯的程式碼區塊有時稱為_分支_ (arms)，就像我們在[第二章](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html)「[比較猜測與秘密數字](https://doc.rust-lang.org/book/ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number)」一節中討論的 `match` 表達式中的分支一樣。
 
 可選地，我們也可以包含一個 `else` 表達式，我們在這裡選擇這樣做，以便在條件評估為 `false` 時為程式提供一個替代的程式碼區塊來執行。如果你沒有提供 `else` 表達式並且條件為 `false`，程式將會跳過 `if` 區塊並繼續執行下一段程式碼。
 
@@ -856,7 +856,7 @@ condition was true
 讓我們試著將 `number` 的值更改為一個使條件為 `false` 的值，看看會發生什麼：
 
 ```rust
-    let number = 7;
+let number = 7;
 ```
 
 再次執行程式，並查看輸出：
@@ -1012,7 +1012,7 @@ error: could not compile `branches` (bin "branches") due to 1 previous error
 
 ### 使用迴圈重複執行 (Repetition with Loops)
 
-重複執行一個程式碼區塊通常很有用。為此，Rust 提供了幾種*迴圈* (loops)，它們將重複執行迴圈主體內的程式碼直到結束，然後立即從頭開始。為了實驗迴圈，讓我們建立一個名為 *loops* 的新專案。
+重複執行一個程式碼區塊通常很有用。為此，Rust 提供了幾種_迴圈_ (loops)，它們將重複執行迴圈主體內的程式碼直到結束，然後立即從頭開始。為了實驗迴圈，讓我們建立一個名為 _loops_ 的新專案。
 
 Rust 有三種迴圈：`loop`、`while` 和 `for`。讓我們逐一嘗試。
 
@@ -1020,7 +1020,7 @@ Rust 有三種迴圈：`loop`、`while` 和 `for`。讓我們逐一嘗試。
 
 `loop` 關鍵字告訴 Rust 不斷重複執行一個程式碼區塊，直到你明確地告訴它停止為止。
 
-例如，將你 *loops* 目錄中的 *src/main.rs* 檔案更改為以下內容：
+例如，將你 _loops_ 目錄中的 _src/main.rs_ 檔案更改為以下內容：
 
 檔案名稱：src/main.rs
 
@@ -1080,7 +1080,7 @@ fn main() {
 
 #### 迴圈標籤以區分多個迴圈 (Loop Labels to Disambiguate Between Multiple Loops)
 
-如果你的迴圈中還有迴圈，那麼 `break` 和 `continue` 將作用於當時最內層的迴圈。你可以選擇在迴圈上指定一個*迴圈標籤* (loop label)，然後你可以搭配 `break` 或 `continue` 使用該標籤，以指定這些關鍵字作用於該標籤所指的迴圈，而不是最內層的迴圈。迴圈標籤必須以單引號開頭。以下是一個包含兩個巢狀迴圈的範例：
+如果你的迴圈中還有迴圈，那麼 `break` 和 `continue` 將作用於當時最內層的迴圈。你可以選擇在迴圈上指定一個_迴圈標籤_ (loop label)，然後你可以搭配 `break` 或 `continue` 使用該標籤，以指定這些關鍵字作用於該標籤所指的迴圈，而不是最內層的迴圈。迴圈標籤必須以單引號開頭。以下是一個包含兩個巢狀迴圈的範例：
 
 ```rust
 fn main() {
@@ -1228,8 +1228,8 @@ fn main() {
 
 你成功了！這是一個內容豐富的章節：你學習了變數、純量和複合資料型別、函數、註解、`if` 表達式和迴圈！為了練習本章討論的概念，請嘗試建立程式來執行以下任務：
 
-*   在華氏和攝氏之間轉換溫度。
-*   產生第 *n* 個費波那契數列。
-*   印出聖誕頌歌「十二聖誕日」的歌詞，利用歌曲中的重複部分。
+- 在華氏和攝氏之間轉換溫度。
+- 產生第 _n_ 個費波那契數列。
+- 印出聖誕頌歌「十二聖誕日」的歌詞，利用歌曲中的重複部分。
 
 當你準備好繼續時，我們將討論 Rust 中一個不常見於其他程式語言的概念：所有權 (ownership)。

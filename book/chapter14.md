@@ -10,17 +10,17 @@ directory, so all fixes need to be made in `/src/`.
 
 目前為止，我們僅使用了 Cargo 最基礎的功能來建置、執行和測試我們的程式碼，但它能做到的遠不止這些。在本章中，我們將討論它的一些其他更進階的功能，向你展示如何做到以下幾點：
 
-*   透過 release profiles 自訂建置
-*   將函式庫發布到 crates.io
-*   使用 workspaces 組織大型專案
-*   從 crates.io 安裝二進位檔
-*   使用自訂命令擴展 Cargo
+- 透過 release profiles 自訂建置
+- 將函式庫發布到 crates.io
+- 使用 workspaces 組織大型專案
+- 從 crates.io 安裝二進位檔
+- 使用自訂命令擴展 Cargo
 
-Cargo 能做的比本章涵蓋的功能還要多，若想完整了解其所有功能，請參閱其文件：*https://doc.rust-lang.org/cargo/*.
+Cargo 能做的比本章涵蓋的功能還要多，若想完整了解其所有功能，請參閱其文件：_https://doc.rust-lang.org/cargo/_.
 
 ## 使用 Release Profiles 自訂建置
 
-在 Rust 中，*release profiles* 是預定義且可自訂的設定檔，包含不同的組態，讓程式設計師能更精確地控制編譯程式碼的各種選項。每個 profile 都是獨立配置的。
+在 Rust 中，_release profiles_ 是預定義且可自訂的設定檔，包含不同的組態，讓程式設計師能更精確地控制編譯程式碼的各種選項。每個 profile 都是獨立配置的。
 
 Cargo 有兩個主要的 profile：當你執行 `cargo build` 時 Cargo 使用的 `dev` profile，以及當你執行 `cargo build --release` 時 Cargo 使用的 `release` profile。`dev` profile 定義了有利於開發的預設值，而 `release` profile 則定義了有利於發布建置的預設值。
 
@@ -42,7 +42,7 @@ $ cargo build --release
 
 其中的 `dev` 和 `release` 就是編譯器使用的不同 profile。
 
-當你沒有在專案的 *Cargo.toml* 檔案中明確加入任何 `[profile.*]` 區塊時，Cargo 對於每個 profile 都有預設設定。透過為任何你想自訂的 profile 加入 `[profile.*]` 區塊，你就能覆寫預設設定的任何子集。例如，以下是 `dev` 和 `release` profile 的 `opt-level` 設定的預設值：
+當你沒有在專案的 _Cargo.toml_ 檔案中明確加入任何 `[profile.*]` 區塊時，Cargo 對於每個 profile 都有預設設定。透過為任何你想自訂的 profile 加入 `[profile.*]` 區塊，你就能覆寫預設設定的任何子集。例如，以下是 `dev` 和 `release` profile 的 `opt-level` 設定的預設值：
 
 Filename: Cargo.toml
 
@@ -56,7 +56,7 @@ opt-level = 3
 
 `opt-level` 設定控制 Rust 將對你的程式碼套用的優化等級，範圍從 0 到 3。套用更多優化會延長編譯時間，因此如果你正在開發並經常編譯程式碼，你會希望減少優化以加快編譯速度，即使結果程式碼執行速度較慢。所以 `dev` 的預設 `opt-level` 是 `0`。當你準備好發布程式碼時，最好花更多時間編譯。你只會在 release mode 下編譯一次，但你會多次執行編譯後的程式，因此 release mode 犧牲了較長的編譯時間以換取更快的程式碼執行速度。這就是為什麼 `release` profile 的預設 `opt-level` 是 `3`。
 
-你可以透過在 *Cargo.toml* 中為其加入不同的值來覆寫預設設定。例如，如果我們想在開發 profile 中使用優化等級 1，我們可以在專案的 *Cargo.toml* 檔案中加入這兩行：
+你可以透過在 _Cargo.toml_ 中為其加入不同的值來覆寫預設設定。例如，如果我們想在開發 profile 中使用優化等級 1，我們可以在專案的 _Cargo.toml_ 檔案中加入這兩行：
 
 Filename: Cargo.toml
 
@@ -67,7 +67,7 @@ opt-level = 1
 
 這段程式碼會覆寫預設設定 `0`。現在當我們執行 `cargo build` 時，Cargo 將使用 `dev` profile 的預設值加上我們對 `opt-level` 的自訂。因為我們將 `opt-level` 設定為 `1`，Cargo 將套用比預設更多的優化，但不會像 release build 那麼多。
 
-有關每個 profile 的完整組態選項和預設值列表，請參閱 Cargo 的文件：*https://doc.rust-lang.org/cargo/reference/profiles.html*。
+有關每個 profile 的完整組態選項和預設值列表，請參閱 Cargo 的文件：_https://doc.rust-lang.org/cargo/reference/profiles.html_。
 
 ## 將 Crate 發布到 Crates.io
 
@@ -77,13 +77,13 @@ Rust 和 Cargo 具有一些功能，能讓你的已發布套件更容易被他�
 
 ### 撰寫有用的文件註解
 
-準確地為你的套件撰寫文件將幫助其他使用者了解如何以及何時使用它們，因此投入時間撰寫文件是值得的。在第三章中，我們討論了如何使用兩個斜線 `//` 來註解 Rust 程式碼。Rust 還有一種特殊的文件註解，方便地稱為 *documentation comment* (文件註解)，它會生成 HTML 文件。HTML 會顯示用於公開 API 項目的文件註解內容，這些註解旨在供對如何*使用*你的 crate 感興趣的程式設計師閱讀，而非你的 crate 的*實作方式*。
+準確地為你的套件撰寫文件將幫助其他使用者了解如何以及何時使用它們，因此投入時間撰寫文件是值得的。在第三章中，我們討論了如何使用兩個斜線 `//` 來註解 Rust 程式碼。Rust 還有一種特殊的文件註解，方便地稱為 _documentation comment_ (文件註解)，它會生成 HTML 文件。HTML 會顯示用於公開 API 項目的文件註解內容，這些註解旨在供對如何*使用*你的 crate 感興趣的程式設計師閱讀，而非你的 crate 的_實作方式_。
 
 文件註解使用三個斜線 `///` 而不是兩個，並支援 Markdown 標記來格式化文字。將文件註解放置在它們要記錄的項目之前。清單 14-1 顯示了名為 `my_crate` 的 crate 中 `add_one` 函式的文件註解。
 
 src/lib.rs
 
-```rust
+````rust
 /// Adds one to the number given.
 ///
 /// # Examples
@@ -97,11 +97,11 @@ src/lib.rs
 pub fn add_one(x: i32) -> i32 {
     x + 1
 }
-```
+````
 
 清單 14-1：函式的文件註解
 
-在這裡，我們描述了 `add_one` 函式的功能，以標題 `Examples` 開始一個區塊，然後提供範例程式碼來展示如何使用 `add_one` 函式。我們可以透過執行 `cargo doc` 從這個文件註解生成 HTML 文件。此命令會執行 Rust 附帶的 `rustdoc` 工具，並將生成的 HTML 文件放在 *target/doc* 目錄中。
+在這裡，我們描述了 `add_one` 函式的功能，以標題 `Examples` 開始一個區塊，然後提供範例程式碼來展示如何使用 `add_one` 函式。我們可以透過執行 `cargo doc` 從這個文件註解生成 HTML 文件。此命令會執行 Rust 附帶的 `rustdoc` 工具，並將生成的 HTML 文件放在 _target/doc_ 目錄中。
 
 為方便起見，執行 `cargo doc --open` 將會為你當前 crate 的文件（以及你所有 crate 依賴項的文件）建置 HTML，並在網頁瀏覽器中打開結果。導覽到 `add_one` 函式，你將會看到文件註解中的文字是如何呈現的，如圖 14-1 所示。
 
@@ -113,9 +113,9 @@ pub fn add_one(x: i32) -> i32 {
 
 我們在清單 14-1 中使用了 `# Examples` Markdown 標題，在 HTML 中創建了一個標題為「Examples」的區塊。以下是 crate 作者在其文件中常用的一些其他區塊：
 
-*   **Panics** (恐慌)：被記錄的函式可能發生 panic 的場景。不希望其程式 panic 的函式呼叫者應確保在這些情況下不要呼叫該函式。
-*   **Errors** (錯誤)：如果函式返回 `Result`，描述可能發生的錯誤類型以及哪些條件可能導致這些錯誤被返回，這對呼叫者來說會很有幫助，他們可以編寫程式碼以不同方式處理不同類型的錯誤。
-*   **Safety** (安全性)：如果函式呼叫是 `unsafe` 的（我們在第二十章討論 unsafety），則應有一個區塊解釋為什麼該函式是 unsafe 的，並涵蓋函式期望呼叫者遵守的不變性。
+- **Panics** (恐慌)：被記錄的函式可能發生 panic 的場景。不希望其程式 panic 的函式呼叫者應確保在這些情況下不要呼叫該函式。
+- **Errors** (錯誤)：如果函式返回 `Result`，描述可能發生的錯誤類型以及哪些條件可能導致這些錯誤被返回，這對呼叫者來說會很有幫助，他們可以編寫程式碼以不同方式處理不同類型的錯誤。
+- **Safety** (安全性)：如果函式呼叫是 `unsafe` 的（我們在第二十章討論 unsafety），則應有一個區塊解釋為什麼該函式是 unsafe 的，並涵蓋函式期望呼叫者遵守的不變性。
 
 大多數文件註解不需要所有這些區塊，但這是一個很好的清單，可以提醒你使用者會感興趣的程式碼方面。
 
@@ -142,9 +142,9 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 #### 註解包含的項目
 
-文件註解 `//!` 的風格是為*包含*這些註解的項目添加文件，而不是為*跟隨*這些註解的項目添加。我們通常在 crate 的根檔案（依慣例是 *src/lib.rs*）或模組內部使用這些文件註解，以記錄整個 crate 或模組。
+文件註解 `//!` 的風格是為*包含*這些註解的項目添加文件，而不是為*跟隨*這些註解的項目添加。我們通常在 crate 的根檔案（依慣例是 _src/lib.rs_）或模組內部使用這些文件註解，以記錄整個 crate 或模組。
 
-例如，要添加描述包含 `add_one` 函式的 `my_crate` crate 目的的文件，我們將以 `//!` 開頭的文件註解添加到 *src/lib.rs* 檔案的開頭，如清單 14-2 所示。
+例如，要添加描述包含 `add_one` 函式的 `my_crate` crate 目的的文件，我們將以 `//!` 開頭的文件註解添加到 _src/lib.rs_ 檔案的開頭，如清單 14-2 所示。
 
 src/lib.rs
 
@@ -160,7 +160,7 @@ src/lib.rs
 
 清單 14-2：整個 `my_crate` crate 的文件
 
-請注意，以 `//!` 開頭的最後一行之後沒有任何程式碼。因為我們用 `//!` 而非 `///` 開啟註解，我們是在為包含此註解的項目撰寫文件，而不是為此註解之後的項目。在本例中，該項目是 *src/lib.rs* 檔案，即 crate 根目錄。這些註解描述了整個 crate。
+請注意，以 `//!` 開頭的最後一行之後沒有任何程式碼。因為我們用 `//!` 而非 `///` 開啟註解，我們是在為包含此註解的項目撰寫文件，而不是為此註解之後的項目。在本例中，該項目是 _src/lib.rs_ 檔案，即 crate 根目錄。這些註解描述了整個 crate。
 
 當我們執行 `cargo doc --open` 時，這些註解將會顯示在 `my_crate` 文件的首頁上，位於 crate 中公開項目列表的上方，如圖 14-2 所示。
 
@@ -176,7 +176,7 @@ src/lib.rs
 
 在第七章中，我們討論了如何使用 `pub` 關鍵字使項目公開，以及如何使用 `use` 關鍵字將項目引入作用域。然而，你在開發 crate 時覺得合理的結構，對於你的使用者來說可能不太方便。你可能希望將你的 struct 組織成一個包含多個層級的層次結構，但這樣一來，那些想使用你定義在層次結構深處的類型的使用者可能會難以發現該類型的存在。他們也可能會因為必須輸入 `use my_crate::some_module::another_module::UsefulType;` 而非 `use my_crate::UsefulType;` 而感到惱火。
 
-好消息是，如果結構對其他函式庫的使用者來說*不*方便，你不必重新安排你的內部組織：相反地，你可以使用 `pub use` 來 re-export 項目，以建立一個與你的私有結構不同的公開結構。*Re-exporting* (重新匯出) 是將一個公開項目從一個位置取出，並使其在另一個位置也公開，就像它是在那個新位置定義的一樣。
+好消息是，如果結構對其他函式庫的使用者來說*不*方便，你不必重新安排你的內部組織：相反地，你可以使用 `pub use` 來 re-export 項目，以建立一個與你的私有結構不同的公開結構。_Re-exporting_ (重新匯出) 是將一個公開項目從一個位置取出，並使其在另一個位置也公開，就像它是在那個新位置定義的一樣。
 
 例如，假設我們建立了一個名為 `art` 的函式庫，用於建模藝術概念。這個函式庫內有兩個模組：一個包含兩個 enum `PrimaryColor` 和 `SecondaryColor` 的 `kinds` 模組，以及一個包含名為 `mix` 的函式的 `utils` 模組，如清單 14-3 所示。
 
@@ -301,13 +301,13 @@ $ cargo login
 abcdefghijklmnopqrstuvwxyz012345
 ```
 
-此命令將告知 Cargo 你的 API token 並將其本地儲存在 *~/.cargo/credentials.toml* 中。請注意，這個 token 是*秘密*：不要與任何人分享。如果出於任何原因你與任何人分享了它，你應該立即撤銷它並在 crates.io 上生成一個新 token。
+此命令將告知 Cargo 你的 API token 並將其本地儲存在 _~/.cargo/credentials.toml_ 中。請注意，這個 token 是_秘密_：不要與任何人分享。如果出於任何原因你與任何人分享了它，你應該立即撤銷它並在 crates.io 上生成一個新 token。
 
 ### 為新 Crate 添加 Metadata
 
-假設你有一個想要發布的 crate。在發布之前，你需要在庫的 *Cargo.toml* 檔案的 `[package]` 區塊中添加一些 metadata。
+假設你有一個想要發布的 crate。在發布之前，你需要在庫的 _Cargo.toml_ 檔案的 `[package]` 區塊中添加一些 metadata。
 
-你的 crate 需要一個獨特的名稱。當你在本地開發 crate 時，你可以隨心所欲地命名它。然而，crates.io 上的 crate 名稱是按照先到先得的原則分配的。一旦一個 crate 名稱被佔用，其他人就不能再以該名稱發布 crate。在嘗試發布 crate 之前，請搜尋你想要使用的名稱。如果該名稱已被使用，你需要找到另一個名稱並編輯 *Cargo.toml* 檔案中 `[package]` 區塊下的 `name` 欄位，以使用新名稱進行發布，如下所示：
+你的 crate 需要一個獨特的名稱。當你在本地開發 crate 時，你可以隨心所欲地命名它。然而，crates.io 上的 crate 名稱是按照先到先得的原則分配的。一旦一個 crate 名稱被佔用，其他人就不能再以該名稱發布 crate。在嘗試發布 crate 之前，請搜尋你想要使用的名稱。如果該名稱已被使用，你需要找到另一個名稱並編輯 _Cargo.toml_ 檔案中 `[package]` 區塊下的 `name` 欄位，以使用新名稱進行發布，如下所示：
 
 Filename: Cargo.toml
 
@@ -337,7 +337,7 @@ Caused by:
   the remote server responded with an error (status 400 Bad Request): missing or empty metadata fields: description, license. Please see https://doc.rust-lang.org/cargo/reference/manifest.html for more information on configuring these fields
 ```
 
-這會導致錯誤，因為你缺少一些關鍵資訊：需要 description 和 license，以便人們了解你的 crate 的功能以及他們可以使用它的條款。在 *Cargo.toml* 中，添加一個只有一兩句話的 description，因為它會和你的 crate 一起出現在搜尋結果中。對於 `license` 欄位，你需要提供一個*許可證識別值*。Linux 基金會的軟體套件資料交換 (SPDX) 在 *https://spdx.org/licenses/* 列出了你可以用於此值的識別碼。例如，要指定你使用 MIT 許可證授權你的 crate，請添加 `MIT` 識別碼：
+這會導致錯誤，因為你缺少一些關鍵資訊：需要 description 和 license，以便人們了解你的 crate 的功能以及他們可以使用它的條款。在 _Cargo.toml_ 中，添加一個只有一兩句話的 description，因為它會和你的 crate 一起出現在搜尋結果中。對於 `license` 欄位，你需要提供一個_許可證識別值_。Linux 基金會的軟體套件資料交換 (SPDX) 在 _https://spdx.org/licenses/_ 列出了你可以用於此值的識別碼。例如，要指定你使用 MIT 許可證授權你的 crate，請添加 `MIT` 識別碼：
 
 Filename: Cargo.toml
 
@@ -351,7 +351,7 @@ license = "MIT"
 
 關於哪種許可證適合你的專案的指導超出了本書的範圍。許多 Rust 社群的人都像 Rust 一樣，使用 `MIT OR Apache-2.0` 雙重許可證來授權他們的專案。這種做法表明你也可以指定多個以 `OR` 分隔的許可證識別碼，讓你的專案擁有多個許可證。
 
-添加了獨特名稱、版本、描述和許可證後，準備發布的專案的 *Cargo.toml* 檔案可能看起來像這樣：
+添加了獨特名稱、版本、描述和許可證後，準備發布的專案的 _Cargo.toml_ 檔案可能看起來像這樣：
 
 Filename: Cargo.toml
 
@@ -366,7 +366,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 ```
 
-Cargo 的文件：*https://doc.rust-lang.org/cargo/* 描述了你可以指定的其他 metadata，以確保其他人更容易發現和使用你的 crate。
+Cargo 的文件：_https://doc.rust-lang.org/cargo/_ 描述了你可以指定的其他 metadata，以確保其他人更容易發現和使用你的 crate。
 
 ### 發布到 Crates.io
 
@@ -403,7 +403,7 @@ You may press ctrl-c to skip waiting; the crate should be available shortly.
 
 ### 發布現有 Crate 的新版本
 
-當你對你的 crate 進行了更改並準備發布新版本時，請更改你的 *Cargo.toml* 檔案中指定的 `version` 值並重新發布。使用 *https://semver.org/* 上的 Semantic Versioning 規則，根據你所做的更改類型來決定下一個適當的版本號。然後執行 `cargo publish` 以上傳新版本。
+當你對你的 crate 進行了更改並準備發布新版本時，請更改你的 _Cargo.toml_ 檔案中指定的 `version` 值並重新發布。使用 _https://semver.org/_ 上的 Semantic Versioning 規則，根據你所做的更改類型來決定下一個適當的版本號。然後執行 `cargo publish` 以上傳新版本。
 
 <!-- Old link, do not remove -->
 
@@ -413,7 +413,7 @@ You may press ctrl-c to skip waiting; the crate should be available shortly.
 
 雖然你無法移除 crate 的舊版本，但你可以阻止未來任何專案將其添加為新的 dependency。當某個 crate 版本因某種原因損壞時，這就很有用。在這種情況下，Cargo 支援 yank 一個 crate 版本。
 
-*Yanking* 一個版本會阻止新專案依賴該版本，同時允許所有現有依賴該版本的專案繼續運作。本質上，yank 意味著所有帶有 *Cargo.lock* 的專案不會損壞，並且任何未來生成的 *Cargo.lock* 檔案都不會使用被 yank 的版本。
+_Yanking_ 一個版本會阻止新專案依賴該版本，同時允許所有現有依賴該版本的專案繼續運作。本質上，yank 意味著所有帶有 _Cargo.lock_ 的專案不會損壞，並且任何未來生成的 _Cargo.lock_ 檔案都不會使用被 yank 的版本。
 
 要 yank 某個 crate 的版本，在你先前發布的 crate 目錄中，執行 `cargo yank` 並指定你想要 yank 的版本。例如，如果我們已經發布了一個名為 `guessing_game` 的 crate 版本 1.0.1，並且我們想要 yank 它，在 `guessing_game` 的專案目錄中，我們將執行：
 
@@ -440,18 +440,18 @@ yank *不會*刪除任何程式碼。例如，它無法刪除意外上傳的秘�
 
 ## Cargo Workspaces
 
-在第十二章中，我們建置了一個包含 binary crate 和 library crate 的 package。隨著你的專案發展，你可能會發現 library crate 持續變大，並且你希望將你的 package 進一步拆分為多個 library crate。Cargo 提供了一個稱為 *workspaces* 的功能，可以幫助管理多個同步開發的相關 package。
+在第十二章中，我們建置了一個包含 binary crate 和 library crate 的 package。隨著你的專案發展，你可能會發現 library crate 持續變大，並且你希望將你的 package 進一步拆分為多個 library crate。Cargo 提供了一個稱為 _workspaces_ 的功能，可以幫助管理多個同步開發的相關 package。
 
 ### 建立 Workspace
 
-*workspace* 是一組共享相同 *Cargo.lock* 和輸出目錄的 package。讓我們使用 workspace 來建立一個專案——我們將使用簡單的程式碼，以便專注於 workspace 的結構。建構 workspace 有多種方法，我們只展示一種常見的方式。我們將有一個包含一個 binary 和兩個 library 的 workspace。這個 binary 將提供主要功能，並依賴於這兩個 library。一個 library 將提供 `add_one` 函式，另一個 library 將提供 `add_two` 函式。這三個 crate 將是同一個 workspace 的一部分。我們將從為 workspace 建立一個新目錄開始：
+_workspace_ 是一組共享相同 _Cargo.lock_ 和輸出目錄的 package。讓我們使用 workspace 來建立一個專案——我們將使用簡單的程式碼，以便專注於 workspace 的結構。建構 workspace 有多種方法，我們只展示一種常見的方式。我們將有一個包含一個 binary 和兩個 library 的 workspace。這個 binary 將提供主要功能，並依賴於這兩個 library。一個 library 將提供 `add_one` 函式，另一個 library 將提供 `add_two` 函式。這三個 crate 將是同一個 workspace 的一部分。我們將從為 workspace 建立一個新目錄開始：
 
 ```text
 $ mkdir add
 $ cd add
 ```
 
-接下來，在 *add* 目錄中，我們建立 *Cargo.toml* 檔案，它將配置整個 workspace。這個檔案不會有 `[package]` 區塊。相反地，它會以一個 `[workspace]` 區塊開始，允許我們將成員加入 workspace。我們也特別指定在我們的 workspace 中使用 Cargo 最新且最棒的 resolver 演算法，將 `resolver` 值設定為 `"3"`。
+接下來，在 _add_ 目錄中，我們建立 _Cargo.toml_ 檔案，它將配置整個 workspace。這個檔案不會有 `[package]` 區塊。相反地，它會以一個 `[workspace]` 區塊開始，允許我們將成員加入 workspace。我們也特別指定在我們的 workspace 中使用 Cargo 最新且最棒的 resolver 演算法，將 `resolver` 值設定為 `"3"`。
 
 Filename: Cargo.toml
 
@@ -460,7 +460,7 @@ Filename: Cargo.toml
 resolver = "3"
 ```
 
-接著，我們將在 *add* 目錄中執行 `cargo new` 來建立 `adder` binary crate：
+接著，我們將在 _add_ 目錄中執行 `cargo new` 來建立 `adder` binary crate：
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/output-only-01-adder-crate/add
@@ -476,7 +476,7 @@ $ cargo new adder
       Adding `adder` as member of workspace at `file:///projects/add`
 ```
 
-在 workspace 內部執行 `cargo new` 也會自動將新建立的 package 加入 workspace *Cargo.toml* 中 `[workspace]` 定義的 `members` 鍵，像這樣：
+在 workspace 內部執行 `cargo new` 也會自動將新建立的 package 加入 workspace _Cargo.toml_ 中 `[workspace]` 定義的 `members` 鍵，像這樣：
 
 ```toml
 [workspace]
@@ -484,7 +484,7 @@ resolver = "3"
 members = ["adder"]
 ```
 
-此時，我們可以透過執行 `cargo build` 來建置 workspace。你的 *add* 目錄中的檔案應該像這樣：
+此時，我們可以透過執行 `cargo build` 來建置 workspace。你的 _add_ 目錄中的檔案應該像這樣：
 
 ```
 ├── Cargo.lock
@@ -496,7 +496,7 @@ members = ["adder"]
 └── target
 ```
 
-workspace 在頂層只有一個 *target* 目錄，編譯後的 artifacts 將會放置於此；`adder` package 沒有自己的 *target* 目錄。即使我們從 *adder* 目錄內部執行 `cargo build`，編譯後的 artifacts 仍然會落在 *add/target* 而不是 *add/adder/target*。Cargo 這樣組織 workspace 中的 *target* 目錄是因為 workspace 中的 crates 旨在相互依賴。如果每個 crate 都有自己的 *target* 目錄，那麼每個 crate 都必須重新編譯 workspace 中的其他每個 crate，才能將 artifacts 放置到自己的 *target* 目錄中。透過共享一個 *target* 目錄，這些 crates 可以避免不必要的重複建置。
+workspace 在頂層只有一個 _target_ 目錄，編譯後的 artifacts 將會放置於此；`adder` package 沒有自己的 _target_ 目錄。即使我們從 _adder_ 目錄內部執行 `cargo build`，編譯後的 artifacts 仍然會落在 _add/target_ 而不是 _add/adder/target_。Cargo 這樣組織 workspace 中的 _target_ 目錄是因為 workspace 中的 crates 旨在相互依賴。如果每個 crate 都有自己的 _target_ 目錄，那麼每個 crate 都必須重新編譯 workspace 中的其他每個 crate，才能將 artifacts 放置到自己的 _target_ 目錄中。透過共享一個 _target_ 目錄，這些 crates 可以避免不必要的重複建置。
 
 ### 在 Workspace 中建立第二個 Package
 
@@ -516,7 +516,7 @@ $ cargo new add_one --lib
       Adding `add_one` as member of workspace at `file:///projects/add`
 ```
 
-現在，頂層的 *Cargo.toml* 將會在 `members` 列表中包含 *add_one* 路徑：
+現在，頂層的 _Cargo.toml_ 將會在 `members` 列表中包含 _add_one_ 路徑：
 
 Filename: Cargo.toml
 
@@ -526,7 +526,7 @@ resolver = "3"
 members = ["adder", "add_one"]
 ```
 
-你的 *add* 目錄現在應該有這些目錄和檔案：
+你的 _add_ 目錄現在應該有這些目錄和檔案：
 
 ```
 ├── Cargo.lock
@@ -542,7 +542,7 @@ members = ["adder", "add_one"]
 └── target
 ```
 
-在 *add_one/src/lib.rs* 檔案中，讓我們添加一個 `add_one` 函式：
+在 _add_one/src/lib.rs_ 檔案中，讓我們添加一個 `add_one` 函式：
 
 Filename: add_one/src/lib.rs
 
@@ -552,7 +552,7 @@ pub fn add_one(x: i32) -> i32 {
 }
 ```
 
-現在我們可以讓帶有我們 binary 的 `adder` package 依賴於帶有我們 library 的 `add_one` package。首先，我們需要在 *adder/Cargo.toml* 中添加一個對 `add_one` 的 path dependency。
+現在我們可以讓帶有我們 binary 的 `adder` package 依賴於帶有我們 library 的 `add_one` package。首先，我們需要在 _adder/Cargo.toml_ 中添加一個對 `add_one` 的 path dependency。
 
 Filename: adder/Cargo.toml
 
@@ -563,7 +563,7 @@ add_one = { path = "../add_one" }
 
 Cargo 不會假設 workspace 中的 crates 會相互依賴，因此我們需要明確說明依賴關係。
 
-接下來，讓我們在 `adder` crate 中使用 `add_one` 函式（來自 `add_one` crate）。打開 *adder/src/main.rs* 檔案並更改 `main` 函式以呼叫 `add_one` 函式，如清單 14-7 所示。
+接下來，讓我們在 `adder` crate 中使用 `add_one` 函式（來自 `add_one` crate）。打開 _adder/src/main.rs_ 檔案並更改 `main` 函式以呼叫 `add_one` 函式，如清單 14-7 所示。
 
 adder/src/main.rs
 
@@ -576,7 +576,7 @@ fn main() {
 
 清單 14-7：從 `adder` crate 使用 `add_one` library crate
 
-讓我們在頂層的 *add* 目錄中執行 `cargo build` 來建置 workspace！
+讓我們在頂層的 _add_ 目錄中執行 `cargo build` 來建置 workspace！
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/listing-14-07/add
@@ -591,7 +591,7 @@ $ cargo build
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.22s
 ```
 
-要從 *add* 目錄執行 binary crate，我們可以使用 `-p` 參數和 package 名稱與 `cargo run` 來指定我們要執行 workspace 中的哪個 package：
+要從 _add_ 目錄執行 binary crate，我們可以使用 `-p` 參數和 package 名稱與 `cargo run` 來指定我們要執行 workspace 中的哪個 package：
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/listing-14-07/add
@@ -606,11 +606,11 @@ $ cargo run -p adder
 Hello, world! 10 plus one is 11!
 ```
 
-這會執行 *adder/src/main.rs* 中的程式碼，它依賴於 `add_one` crate。
+這會執行 _adder/src/main.rs_ 中的程式碼，它依賴於 `add_one` crate。
 
 #### Workspace 中依賴外部 Package
 
-請注意，workspace 在頂層只有一個 *Cargo.lock* 檔案，而不是每個 crate 目錄都有一個 *Cargo.lock*。這確保了所有 crate 都使用所有 dependencies 的相同版本。如果我們將 `rand` package 添加到 *adder/Cargo.toml* 和 *add_one/Cargo.toml* 檔案中，Cargo 將把這兩者解析為 `rand` 的一個版本，並將其記錄在唯一的 *Cargo.lock* 中。讓 workspace 中的所有 crate 使用相同的 dependencies 意味著這些 crate 將始終相互兼容。讓我們將 `rand` crate 添加到 *add_one/Cargo.toml* 檔案的 `[dependencies]` 區塊中，這樣我們就可以在 `add_one` crate 中使用 `rand` crate：
+請注意，workspace 在頂層只有一個 _Cargo.lock_ 檔案，而不是每個 crate 目錄都有一個 _Cargo.lock_。這確保了所有 crate 都使用所有 dependencies 的相同版本。如果我們將 `rand` package 添加到 _adder/Cargo.toml_ 和 _add_one/Cargo.toml_ 檔案中，Cargo 將把這兩者解析為 `rand` 的一個版本，並將其記錄在唯一的 _Cargo.lock_ 中。讓 workspace 中的所有 crate 使用相同的 dependencies 意味著這些 crate 將始終相互兼容。讓我們將 `rand` crate 添加到 _add_one/Cargo.toml_ 檔案的 `[dependencies]` 區塊中，這樣我們就可以在 `add_one` crate 中使用 `rand` crate：
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -625,7 +625,7 @@ Filename: add_one/Cargo.toml
 rand = "0.8.5"
 ```
 
-我們現在可以將 `use rand;` 添加到 *add_one/src/lib.rs* 檔案中，並透過在 *add* 目錄中執行 `cargo build` 來建置整個 workspace，這將會引入並編譯 `rand` crate。我們將會收到一個警告，因為我們沒有引用我們引入作用域的 `rand`：
+我們現在可以將 `use rand;` 添加到 _add_one/src/lib.rs_ 檔案中，並透過在 _add_ 目錄中執行 `cargo build` 來建置整個 workspace，這將會引入並編譯 `rand` crate。我們將會收到一個警告，因為我們沒有引用我們引入作用域的 `rand`：
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/no-listing-03-workspace-with-external-dependency/add
@@ -653,7 +653,7 @@ warning: `add_one` (lib) generated 1 warning (run `cargo fix --lib -p add_one` t
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.95s
 ```
 
-頂層的 *Cargo.lock* 現在包含 `add_one` 對 `rand` 的 dependency 資訊。然而，即使 `rand` 在 workspace 的某處被使用，我們也無法在 workspace 中的其他 crate 中使用它，除非我們也將 `rand` 添加到它們的 *Cargo.toml* 檔案中。例如，如果我們將 `use rand;` 添加到 `adder` package 的 *adder/src/main.rs* 檔案中，我們將會得到一個錯誤：
+頂層的 _Cargo.lock_ 現在包含 `add_one` 對 `rand` 的 dependency 資訊。然而，即使 `rand` 在 workspace 的某處被使用，我們也無法在 workspace 中的其他 crate 中使用它，除非我們也將 `rand` 添加到它們的 _Cargo.toml_ 檔案中。例如，如果我們將 `use rand;` 添加到 `adder` package 的 _adder/src/main.rs_ 檔案中，我們將會得到一個錯誤：
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/output-only-03-use-rand/add
@@ -672,7 +672,7 @@ error[E0432]: unresolved import `rand`
   |     ^^^^ no external crate `rand`
 ```
 
-要解決此問題，請編輯 `adder` package 的 *Cargo.toml* 檔案，並指出 `rand` 也是它的 dependency。建置 `adder` package 會將 `rand` 添加到 *Cargo.lock* 中 `adder` 的 dependencies 列表中，但不會下載額外的 `rand` 副本。只要它們指定兼容的 `rand` 版本，Cargo 將確保 workspace 中每個 package 中的每個 crate 都會使用相同版本的 `rand` package，從而節省空間並確保 workspace 中的 crate 相互兼容。
+要解決此問題，請編輯 `adder` package 的 _Cargo.toml_ 檔案，並指出 `rand` 也是它的 dependency。建置 `adder` package 會將 `rand` 添加到 _Cargo.lock_ 中 `adder` 的 dependencies 列表中，但不會下載額外的 `rand` 副本。只要它們指定兼容的 `rand` 版本，Cargo 將確保 workspace 中每個 package 中的每個 crate 都會使用相同版本的 `rand` package，從而節省空間並確保 workspace 中的 crate 相互兼容。
 
 如果 workspace 中的 crate 指定了相同 dependency 的不兼容版本，Cargo 將會解析它們每一個，但仍會盡量解析最少數量的版本。
 
@@ -698,7 +698,7 @@ mod tests {
 }
 ```
 
-現在在頂層的 *add* 目錄中執行 `cargo test`。在像這樣結構化的 workspace 中執行 `cargo test` 將會執行 workspace 中所有 crate 的測試：
+現在在頂層的 _add_ 目錄中執行 `cargo test`。在像這樣結構化的 workspace 中執行 `cargo test` 將會執行 workspace 中所有 crate 的測試：
 
 <!-- manual-regeneration
 cd listings/ch14-more-about-cargo/no-listing-04-workspace-with-tests/add
@@ -773,9 +773,9 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 ## 使用 cargo install 安裝二進位檔
 
-`cargo install` 命令允許你在本地安裝和使用 binary crate。這並非旨在取代系統套件；它旨在為 Rust 開發者提供一種方便的方式，來安裝其他人已在 crates.io 上分享的工具。請注意，你只能安裝具有 binary target 的 package。*binary target* 是指如果 crate 具有 *src/main.rs* 檔案或另一個指定為 binary 的檔案時所建立的可執行程式，這與 library target 不同，library target 本身無法執行，但適合包含在其他程式中。通常，crate 會在其 *README* 檔案中說明該 crate 是 library、具有 binary target，還是兩者兼有。
+`cargo install` 命令允許你在本地安裝和使用 binary crate。這並非旨在取代系統套件；它旨在為 Rust 開發者提供一種方便的方式，來安裝其他人已在 crates.io 上分享的工具。請注意，你只能安裝具有 binary target 的 package。_binary target_ 是指如果 crate 具有 _src/main.rs_ 檔案或另一個指定為 binary 的檔案時所建立的可執行程式，這與 library target 不同，library target 本身無法執行，但適合包含在其他程式中。通常，crate 會在其 _README_ 檔案中說明該 crate 是 library、具有 binary target，還是兩者兼有。
 
-所有透過 `cargo install` 安裝的二進位檔都儲存在安裝根目錄的 *bin* 資料夾中。如果你是使用 *rustup.rs* 安裝 Rust 並且沒有任何自訂配置，這個目錄將會是 *$HOME/.cargo/bin*。請確保該目錄位於你的 `$PATH` 中，以便能夠執行你使用 `cargo install` 安裝的程式。
+所有透過 `cargo install` 安裝的二進位檔都儲存在安裝根目錄的 _bin_ 資料夾中。如果你是使用 _rustup.rs_ 安裝 Rust 並且沒有任何自訂配置，這個目錄將會是 *$HOME/.cargo/bin*。請確保該目錄位於你的 `$PATH`中，以便能夠執行你使用`cargo install` 安裝的程式。
 
 例如，在第十二章中我們提到過，有一個 Rust 實作的 `grep` 工具，稱為 `ripgrep`，用於搜尋檔案。要安裝 `ripgrep`，我們可以執行以下命令：
 

@@ -28,7 +28,7 @@
 
 我們將從建置一個單執行緒網頁伺服器開始。在我們開始之前，讓我們先快速概述一下建置網頁伺服器所涉及的協定。這些協定的詳細資訊超出了本書的範圍，但簡要概述將為你提供所需的資訊。
 
-網頁伺服器涉及的兩個主要協定是 *Hypertext Transfer Protocol* (*HTTP*) 和 *Transmission Control Protocol* (*TCP*)。這兩個協定都是 *request-response* 協定，這意味著 *client* 發起請求，而 *server* 監聽請求並向 client 提供響應。這些請求和響應的內容由協定定義。
+網頁伺服器涉及的兩個主要協定是 _Hypertext Transfer Protocol_ (_HTTP_) 和 _Transmission Control Protocol_ (_TCP_)。這兩個協定都是 _request-response_ 協定，這意味著 _client_ 發起請求，而 _server_ 監聽請求並向 client 提供響應。這些請求和響應的內容由協定定義。
 
 TCP 是一個較低層次的協定，描述了資訊如何從一個伺服器傳輸到另一個伺服器的細節，但沒有指定該資訊是什麼。HTTP 則在 TCP 之上建置，定義了請求和響應的內容。技術上來說，HTTP 可以與其他協定一起使用，但在絕大多數情況下，HTTP 透過 TCP 傳送其資料。我們將處理 TCP 和 HTTP 請求及響應的原始位元組。
 
@@ -42,7 +42,7 @@ $ cargo new hello
 $ cd hello
 ```
 
-現在，在 *src/main.rs* 中輸入清單 21-1 中的程式碼來開始。這段程式碼將在本地位址 `127.0.0.1:7878` 監聽傳入的 TCP stream。當它收到傳入的 stream 時，它將印出 `Connection established!`。
+現在，在 _src/main.rs_ 中輸入清單 21-1 中的程式碼來開始。這段程式碼將在本地位址 `127.0.0.1:7878` 監聽傳入的 TCP stream。當它收到傳入的 stream 時，它將印出 `Connection established!`。
 
 src/main.rs
 
@@ -62,17 +62,17 @@ fn main() {
 
 清單 21-1：監聽傳入的 stream 並在收到 stream 時印出訊息
 
-使用 `TcpListener`，我們可以在位址 `127.0.0.1:7878` 監聽 TCP 連線。在位址中，冒號之前的部分是一個 IP address，代表你的電腦（這在每台電腦上都相同，不特別代表作者的電腦），`7878` 則是 port。我們選擇這個 port 有兩個原因：HTTP 通常不在此 port 上接受，所以我們的伺服器不太可能與你電腦上可能執行的任何其他網頁伺服器衝突；7878 在電話上拼寫起來是 *rust*。
+使用 `TcpListener`，我們可以在位址 `127.0.0.1:7878` 監聽 TCP 連線。在位址中，冒號之前的部分是一個 IP address，代表你的電腦（這在每台電腦上都相同，不特別代表作者的電腦），`7878` 則是 port。我們選擇這個 port 有兩個原因：HTTP 通常不在此 port 上接受，所以我們的伺服器不太可能與你電腦上可能執行的任何其他網頁伺服器衝突；7878 在電話上拼寫起來是 _rust_。
 
 在這種情況下，`bind` 函式的作用類似於 `new` 函式，它會回傳一個新的 `TcpListener` 實例。這個函式被稱為 `bind` 是因為在網路中，連接到一個 port 以進行監聽被稱為「binding to a port」。
 
 `bind` 函式回傳 `Result<T, E>`，表示 binding 可能會失敗。例如，如果我們運行了兩個程式實例，因此有兩個程式監聽同一個 port。由於我們只是為了學習目的編寫一個基本伺服器，我們不會擔心處理這類錯誤；相反，我們使用 `unwrap` 在發生錯誤時停止程式。
 
-`TcpListener` 上的 `incoming` 方法會回傳一個 iterator，它為我們提供一系列的 stream（更確切地說，是 `TcpStream` 類型的 stream）。一個單一的 *stream* 代表 client 和 server 之間的一個開放連線。一個 *connection* 是指完整的請求和響應過程，其中 client 連接到 server，server 產生響應，然後 server 關閉連線。因此，我們將從 `TcpStream` 讀取 client 傳送的內容，然後將我們的響應寫入 stream 以將資料傳回 client。總體而言，這個 `for` 迴圈將依次處理每個連線，並為我們產生一系列的 stream 以供處理。
+`TcpListener` 上的 `incoming` 方法會回傳一個 iterator，它為我們提供一系列的 stream（更確切地說，是 `TcpStream` 類型的 stream）。一個單一的 _stream_ 代表 client 和 server 之間的一個開放連線。一個 _connection_ 是指完整的請求和響應過程，其中 client 連接到 server，server 產生響應，然後 server 關閉連線。因此，我們將從 `TcpStream` 讀取 client 傳送的內容，然後將我們的響應寫入 stream 以將資料傳回 client。總體而言，這個 `for` 迴圈將依次處理每個連線，並為我們產生一系列的 stream 以供處理。
 
 目前，我們對 stream 的處理只包括呼叫 `unwrap` 以在 stream 發生任何錯誤時終止程式；如果沒有任何錯誤，程式將印出訊息。我們將在下一個清單中為成功案例添加更多功能。當 client 連接到伺服器時，我們可能會從 `incoming` 方法收到錯誤的原因是，我們實際上並不是在遍歷連線。相反，我們正在遍歷「連線嘗試」。連線可能因多種原因而失敗，其中許多與作業系統相關。例如，許多作業系統對它們可以支援的同時開放連線數量有限制；超出該數量的新的連線嘗試將產生錯誤，直到一些開放連線被關閉。
 
-讓我們嘗試執行這段程式碼！在終端機中執行 `cargo run`，然後在網頁瀏覽器中載入 *127.0.0.1:7878*。瀏覽器應該會顯示類似「Connection reset」的錯誤訊息，因為伺服器目前沒有傳回任何資料。但當你查看終端機時，你應該會看到當瀏覽器連接到伺服器時印出的幾條訊息！
+讓我們嘗試執行這段程式碼！在終端機中執行 `cargo run`，然後在網頁瀏覽器中載入 _127.0.0.1:7878_。瀏覽器應該會顯示類似「Connection reset」的錯誤訊息，因為伺服器目前沒有傳回任何資料。但當你查看終端機時，你應該會看到當瀏覽器連接到伺服器時印出的幾條訊息！
 
 ```
      Running `target/debug/hello`
@@ -81,11 +81,11 @@ Connection established!
 Connection established!
 ```
 
-有時你會看到一個瀏覽器請求印出多條訊息；原因可能是瀏覽器正在請求頁面以及其他資源，例如瀏覽器分頁中出現的 *favicon.ico* 圖示。
+有時你會看到一個瀏覽器請求印出多條訊息；原因可能是瀏覽器正在請求頁面以及其他資源，例如瀏覽器分頁中出現的 _favicon.ico_ 圖示。
 
 也可能是瀏覽器試圖多次連接伺服器，因為伺服器沒有回傳任何資料。當 `stream` 超出範圍並在迴圈結束時被 drop，連線會作為 `drop` 實作的一部分而關閉。瀏覽器有時會透過重試來處理關閉的連線，因為問題可能是暫時的。
 
-瀏覽器有時也會在不傳送任何請求的情況下，向伺服器開啟多個連線，這樣如果它們 *確實* 稍後傳送請求，這些請求就可以更快地發生。當這種情況發生時，我們的伺服器將會看到每個連線，無論該連線是否有任何請求。例如，許多基於 Chrome 的瀏覽器版本會這樣做；你可以透過使用私人瀏覽模式或使用不同的瀏覽器來停用該最佳化。
+瀏覽器有時也會在不傳送任何請求的情況下，向伺服器開啟多個連線，這樣如果它們 _確實_ 稍後傳送請求，這些請求就可以更快地發生。當這種情況發生時，我們的伺服器將會看到每個連線，無論該連線是否有任何請求。例如，許多基於 Chrome 的瀏覽器版本會這樣做；你可以透過使用私人瀏覽模式或使用不同的瀏覽器來停用該最佳化。
 
 重要的因素是我們已經成功地獲得了一個 TCP 連線的 handle！
 
@@ -176,17 +176,17 @@ headers CRLF
 message-body
 ```
 
-第一行是 *request line*，它包含 client 請求的資訊。請求行的第一部分指示所使用的 *method*，例如 `GET` 或 `POST`，描述了 client 發出此請求的方式。我們的 client 使用 `GET` 請求，這表示它正在請求資訊。
+第一行是 _request line_，它包含 client 請求的資訊。請求行的第一部分指示所使用的 _method_，例如 `GET` 或 `POST`，描述了 client 發出此請求的方式。我們的 client 使用 `GET` 請求，這表示它正在請求資訊。
 
-請求行的下一部分是 `*/`，它指示 client 正在請求的 *uniform resource identifier* (*URI*)：URI 幾乎但又不完全與 *uniform resource locator* (*URL*) 相同。URI 和 URL 之間的差異對於我們在本章的目的並不重要，但 HTTP spec 使用 *URI* 這個術語，所以我們可以在此處將 *URI* 腦中替換為 *URL*。
+請求行的下一部分是 `*/`，它指示 client 正在請求的 _uniform resource identifier_ (_URI_)：URI 幾乎但又不完全與 _uniform resource locator_ (_URL_) 相同。URI 和 URL 之間的差異對於我們在本章的目的並不重要，但 HTTP spec 使用 _URI_ 這個術語，所以我們可以在此處將 _URI_ 腦中替換為 _URL_。
 
-最後一部分是 client 使用的 HTTP 版本，然後請求行以 CRLF 序列結束。（CRLF 代表 *carriage return* 和 *line feed*，這些是打字機時代的術語！）CRLF 序列也可以寫成 `\r\n`，其中 `\r` 是 carriage return，`\n` 是 line feed。*CRLF 序列* 將請求行與其餘請求資料分開。請注意，當 CRLF 被印出時，我們看到的是新行開始而不是 `\r\n`。
+最後一部分是 client 使用的 HTTP 版本，然後請求行以 CRLF 序列結束。（CRLF 代表 _carriage return_ 和 _line feed_，這些是打字機時代的術語！）CRLF 序列也可以寫成 `\r\n`，其中 `\r` 是 carriage return，`\n` 是 line feed。_CRLF 序列_ 將請求行與其餘請求資料分開。請注意，當 CRLF 被印出時，我們看到的是新行開始而不是 `\r\n`。
 
 檢視我們到目前為止執行程式所收到的請求行資料，我們可以看到 `GET` 是 method，`*/` 是 request URI，而 `HTTP/1.1` 是版本。
 
 在請求行之後，從 `Host:` 開始的其餘行都是 headers。`GET` 請求沒有 body。
 
-嘗試從不同的瀏覽器發出請求，或請求不同的位址，例如 *127.0.0.1:7878/test*，以查看請求資料如何變化。
+嘗試從不同的瀏覽器發出請求，或請求不同的位址，例如 _127.0.0.1:7878/test_，以查看請求資料如何變化。
 
 現在我們知道了瀏覽器請求了什麼，讓我們傳回一些資料！
 
@@ -200,7 +200,7 @@ headers CRLF
 message-body
 ```
 
-第一行是 *status line*，它包含響應中使用的 HTTP 版本、一個總結請求結果的數字 status code，以及提供 status code 文字描述的 reason phrase。在 CRLF 序列之後是任何 headers、另一個 CRLF 序列，以及響應的 body。
+第一行是 _status line_，它包含響應中使用的 HTTP 版本、一個總結請求結果的數字 status code，以及提供 status code 文字描述的 reason phrase。在 CRLF 序列之後是任何 headers、另一個 CRLF 序列，以及響應的 body。
 
 以下是一個使用 HTTP 1.1 版、status code 為 200、reason phrase 為 OK、沒有 headers 且沒有 body 的響應範例：
 
@@ -231,11 +231,11 @@ fn handle_connection(mut stream: TcpStream) {
 
 第一行新程式碼定義了 `response` 變數，它儲存了成功訊息的資料。然後我們在 `response` 上呼叫 `as_bytes` 將字串資料轉換為位元組。`stream` 上的 `write_all` 方法接受一個 `&[u8]` 並將這些位元組直接傳送給連線。由於 `write_all` 操作可能會失敗，我們像以前一樣對任何錯誤結果使用 `unwrap`。同樣地，在實際應用程式中，你將在此處添加錯誤處理。
 
-有了這些更改，讓我們執行程式碼並發出請求。我們不再向終端機印出任何資料，因此除了 Cargo 的輸出之外，我們不會看到任何輸出。當你在網頁瀏覽器中載入 *127.0.0.1:7878* 時，你應該會得到一個空白頁面而不是錯誤。你剛剛手動編碼了接收 HTTP 請求和傳送響應！
+有了這些更改，讓我們執行程式碼並發出請求。我們不再向終端機印出任何資料，因此除了 Cargo 的輸出之外，我們不會看到任何輸出。當你在網頁瀏覽器中載入 _127.0.0.1:7878_ 時，你應該會得到一個空白頁面而不是錯誤。你剛剛手動編碼了接收 HTTP 請求和傳送響應！
 
 ### 回傳真實的 HTML
 
-讓我們實作回傳的不僅僅是空白頁面的功能。在你的專案根目錄中，而不是在 *src* 目錄中，建立一個新檔案 *hello.html*。你可以輸入任何你想要的 HTML；清單 21-4 顯示了一種可能性。
+讓我們實作回傳的不僅僅是空白頁面的功能。在你的專案根目錄中，而不是在 _src_ 目錄中，建立一個新檔案 _hello.html_。你可以輸入任何你想要的 HTML；清單 21-4 顯示了一種可能性。
 
 hello.html
 
@@ -286,15 +286,15 @@ fn handle_connection(mut stream: TcpStream) {
 }
 ```
 
-清單 21-5：將 *hello.html* 的內容作為響應的 body 傳送
+清單 21-5：將 _hello.html_ 的內容作為響應的 body 傳送
 
 我們在 `use` 語句中添加了 `fs`，以便將標準函式庫的 filesystem 模組引入作用域。將檔案內容讀取為字串的程式碼應該很熟悉；我們在清單 12-4 中為 I/O 專案讀取檔案內容時使用過它。
 
 接下來，我們使用 `format!` 將檔案內容作為成功響應的 body 添加。為了確保有效的 HTTP 響應，我們添加了 `Content-Length` header，其值設定為我們響應 body 的大小，在本例中是 `hello.html` 的大小。
 
-使用 `cargo run` 執行此程式碼，並在瀏覽器中載入 *127.0.0.1:7878*；你應該會看到你的 HTML 被渲染出來！
+使用 `cargo run` 執行此程式碼，並在瀏覽器中載入 _127.0.0.1:7878_；你應該會看到你的 HTML 被渲染出來！
 
-目前，我們忽略了 `http_request` 中的請求資料，只是無條件地傳回 HTML 檔案的內容。這意味著如果你嘗試在瀏覽器中請求 *127.0.0.1:7878/something-else*，你仍然會收到相同的 HTML 響應。目前，我們的伺服器非常有限，並且沒有像大多數網頁伺服器那樣運作。我們希望根據請求自訂我們的響應，並且只針對格式正確的 `*/` 請求傳回 HTML 檔案。
+目前，我們忽略了 `http_request` 中的請求資料，只是無條件地傳回 HTML 檔案的內容。這意味著如果你嘗試在瀏覽器中請求 _127.0.0.1:7878/something-else_，你仍然會收到相同的 HTML 響應。目前，我們的伺服器非常有限，並且沒有像大多數網頁伺服器那樣運作。我們希望根據請求自訂我們的響應，並且只針對格式正確的 `*/` 請求傳回 HTML 檔案。
 
 ### 驗證請求並選擇性響應
 
@@ -331,9 +331,9 @@ fn handle_connection(mut stream: TcpStream) {
 
 接下來，我們檢查 `request_line`，看它是否等於對 `*/` 路徑的 `GET` 請求行。如果是，`if` 區塊將回傳我們的 HTML 檔案內容。
 
-如果 `request_line` *不* 等於對 `*/` 路徑的 `GET` 請求，這表示我們收到了其他請求。我們將在稍後向 `else` 區塊添加程式碼以回應所有其他請求。
+如果 `request_line` _不_ 等於對 `*/` 路徑的 `GET` 請求，這表示我們收到了其他請求。我們將在稍後向 `else` 區塊添加程式碼以回應所有其他請求。
 
-現在執行此程式碼並請求 *127.0.0.1:7878*；你應該會得到 *hello.html* 中的 HTML。如果你發出任何其他請求，例如 *127.0.0.1:7878/something-else*，你將會收到類似於你在執行清單 21-1 和清單 21-2 中的程式碼時看到的連線錯誤。
+現在執行此程式碼並請求 _127.0.0.1:7878_；你應該會得到 _hello.html_ 中的 HTML。如果你發出任何其他請求，例如 _127.0.0.1:7878/something-else_，你將會收到類似於你在執行清單 21-1 和清單 21-2 中的程式碼時看到的連線錯誤。
 
 現在讓我們將清單 21-7 中的程式碼添加到 `else` 區塊，以回傳 status code 404 的響應，這表示找不到請求的內容。我們還將回傳一些 HTML 頁面，以便在瀏覽器中顯示給終端使用者。
 
@@ -356,7 +356,7 @@ src/main.rs
 
 清單 21-7：如果請求的不是 `*/`，則以 status code 404 和錯誤頁面響應
 
-在這裡，我們的響應有一個 status line，其 status code 為 404，reason phrase 為 `NOT FOUND`。響應的 body 將是檔案 *404.html* 中的 HTML。你需要在 *hello.html* 旁邊建立一個 *404.html* 檔案作為錯誤頁面；同樣地，你可以使用任何你想要的 HTML，或者使用清單 21-8 中的範例 HTML。
+在這裡，我們的響應有一個 status line，其 status code 為 404，reason phrase 為 `NOT FOUND`。響應的 body 將是檔案 _404.html_ 中的 HTML。你需要在 _hello.html_ 旁邊建立一個 _404.html_ 檔案作為錯誤頁面；同樣地，你可以使用任何你想要的 HTML，或者使用清單 21-8 中的範例 HTML。
 
 404.html
 
@@ -376,7 +376,7 @@ src/main.rs
 
 清單 21-8：隨 404 響應傳回的頁面內容範例
 
-有了這些更改，再次執行你的伺服器。請求 *127.0.0.1:7878* 應該會回傳 *hello.html* 的內容，而任何其他請求，例如 *127.0.0.1:7878/foo*，都應該回傳 *404.html* 的錯誤 HTML。
+有了這些更改，再次執行你的伺服器。請求 _127.0.0.1:7878_ 應該會回傳 _hello.html_ 的內容，而任何其他請求，例如 _127.0.0.1:7878/foo_，都應該回傳 _404.html_ 的錯誤 HTML。
 
 ### 稍作重構
 
@@ -462,17 +462,17 @@ fn handle_connection(mut stream: TcpStream) {
 
 你可以看到我們的伺服器是多麼原始：真正的函式庫會以一種更簡潔的方式處理多個請求的識別！
 
-使用 `cargo run` 啟動伺服器。然後開啟兩個瀏覽器視窗：一個用於 *http://127.0.0.1:7878*，另一個用於 *http://127.0.0.1:7878/sleep*。如果你像以前一樣輸入 `*/` URI 幾次，你會看到它快速響應。但是如果你輸入 `*/sleep`，然後載入 `*/`，你會看到 `*/` 會等待 `sleep` 完成整整五秒鐘才會載入。
+使用 `cargo run` 啟動伺服器。然後開啟兩個瀏覽器視窗：一個用於 _http://127.0.0.1:7878_，另一個用於 _http://127.0.0.1:7878/sleep_。如果你像以前一樣輸入 `*/` URI 幾次，你會看到它快速響應。但是如果你輸入 `*/sleep`，然後載入 `*/`，你會看到 `*/` 會等待 `sleep` 完成整整五秒鐘才會載入。
 
 我們可以採用多種技術來避免請求因慢速請求而積壓，包括像我們在第 17 章中那樣使用 async；我們將實作的技術是 thread pool。
 
 ### 使用 Thread Pool 提升吞吐量
 
-一個 *thread pool* 是一組已產生且準備好處理任務的執行緒。當程式收到一個新任務時，它會將 thread pool 中的一個執行緒指派給該任務，然後該執行緒將處理該任務。thread pool 中其餘的執行緒在第一個執行緒處理時可用於處理任何其他進來的任務。當第一個執行緒完成處理其任務時，它會回到空閒執行緒池中，準備好處理新任務。thread pool 允許你同時處理連線，從而提高伺服器的吞吐量。
+一個 _thread pool_ 是一組已產生且準備好處理任務的執行緒。當程式收到一個新任務時，它會將 thread pool 中的一個執行緒指派給該任務，然後該執行緒將處理該任務。thread pool 中其餘的執行緒在第一個執行緒處理時可用於處理任何其他進來的任務。當第一個執行緒完成處理其任務時，它會回到空閒執行緒池中，準備好處理新任務。thread pool 允許你同時處理連線，從而提高伺服器的吞吐量。
 
 我們將把 thread pool 中的執行緒數量限制在一個較小的數字，以保護我們免受 DoS 攻擊；如果我們的程式為每個傳入的請求建立一個新執行緒，那麼有人向我們的伺服器發出 1000 萬個請求可能會造成混亂，耗盡我們伺服器的所有資源並使請求處理停滯。
 
-因此，我們不會產生無限數量的執行緒，而是在 thread pool 中預先設定固定數量的執行緒等待。傳入的請求會被傳送到 thread pool 進行處理。thread pool 將維護一個傳入請求的 queue。thread pool 中的每個執行緒都會從這個 queue 中取走一個請求，處理該請求，然後向 queue 請求另一個請求。透過這種設計，我們可以同時處理最多 *`N`* 個請求，其中 *`N`* 是執行緒的數量。如果每個執行緒都在響應一個長時間運行的請求，隨後的請求仍然可能會在 queue 中積壓，但我們已經增加了在達到該點之前可以處理的長時間運行請求的數量。
+因此，我們不會產生無限數量的執行緒，而是在 thread pool 中預先設定固定數量的執行緒等待。傳入的請求會被傳送到 thread pool 進行處理。thread pool 將維護一個傳入請求的 queue。thread pool 中的每個執行緒都會從這個 queue 中取走一個請求，處理該請求，然後向 queue 請求另一個請求。透過這種設計，我們可以同時處理最多 _`N`_ 個請求，其中 _`N`_ 是執行緒的數量。如果每個執行緒都在響應一個長時間運行的請求，隨後的請求仍然可能會在 queue 中積壓，但我們已經增加了在達到該點之前可以處理的長時間運行請求的數量。
 
 這種技術只是提高網頁伺服器吞吐量的眾多方法之一。你可能還會探索的其他選項包括 fork/join 模型、單執行緒 async I/O 模型和多執行緒 async I/O 模型。如果你對這個主題感興趣，你可以閱讀更多關於其他解決方案的資訊並嘗試實作它們；使用像 Rust 這樣的低階語言，所有這些選項都是可能的。
 
@@ -541,7 +541,7 @@ fn main() {
 
 #### 使用編譯器驅動開發建置 ThreadPool
 
-將清單 21-12 中的更改應用到 *src/main.rs*，然後讓我們使用來自 `cargo check` 的編譯器錯誤來驅動我們的開發。這是我們得到的第一個錯誤：
+將清單 21-12 中的更改應用到 _src/main.rs_，然後讓我們使用來自 `cargo check` 的編譯器錯誤來驅動我們的開發。這是我們得到的第一個錯誤：
 
 ```
 $ cargo check
@@ -558,7 +558,7 @@ error: could not compile `hello` (bin "hello") due to 1 previous error
 
 太棒了！這個錯誤告訴我們需要一個 `ThreadPool` 類型或模組，所以我們現在就建置一個。我們的 `ThreadPool` 實作將獨立於我們的網頁伺服器正在做的工作類型。因此，讓我們將 `hello` crate 從 binary crate 更改為 library crate，以容納我們的 `ThreadPool` 實作。更改為 library crate 後，我們還可以使用單獨的 thread pool 函式庫來執行任何我們想使用 thread pool 完成的工作，而不僅僅是處理網頁請求。
 
-建立一個 *src/lib.rs* 檔案，其中包含以下內容，這是我們目前可以擁有的 `ThreadPool` 結構體的最簡單定義：
+建立一個 _src/lib.rs_ 檔案，其中包含以下內容，這是我們目前可以擁有的 `ThreadPool` 結構體的最簡單定義：
 
 src/lib.rs
 
@@ -566,7 +566,7 @@ src/lib.rs
 pub struct ThreadPool;
 ```
 
-然後編輯 *main.rs* 檔案，透過在 *src/main.rs* 的頂部添加以下程式碼，將 `ThreadPool` 從 library crate 引入作用域：
+然後編輯 _main.rs_ 檔案，透過在 _src/main.rs_ 的頂部添加以下程式碼，將 `ThreadPool` 從 library crate 引入作用域：
 
 src/main.rs
 
@@ -661,7 +661,7 @@ $ cargo check
 
 它編譯了！但請注意，如果你嘗試 `cargo run` 並在瀏覽器中發出請求，你會看到本章開頭我們看到的瀏覽器錯誤。我們的函式庫實際上還沒有呼叫傳遞給 `execute` 的 closure！
 
-> 注意：你可能會聽到關於具有嚴格編譯器的語言（如 Haskell 和 Rust）的一句話是「如果程式碼編譯了，它就能運作」。但這句話並非普遍適用。我們的專案編譯了，但它什麼都沒做！如果我們正在建置一個真正的完整專案，這將是開始編寫 unit test 的好時機，以檢查程式碼是否編譯 *並* 具有我們想要的行為。
+> 注意：你可能會聽到關於具有嚴格編譯器的語言（如 Haskell 和 Rust）的一句話是「如果程式碼編譯了，它就能運作」。但這句話並非普遍適用。我們的專案編譯了，但它什麼都沒做！如果我們正在建置一個真正的完整專案，這將是開始編寫 unit test 的好時機，以檢查程式碼是否編譯 _並_ 具有我們想要的行為。
 
 思考：如果我們要執行一個 future 而不是一個 closure，這裡會有什麼不同？
 
@@ -754,9 +754,9 @@ impl ThreadPool {
 
 #### 從 ThreadPool 向執行緒傳送程式碼
 
-我們在清單 21-14 中的 `for` 迴圈中留下了一個關於執行緒建立的註解。在這裡，我們將探討如何實際建立執行緒。標準函式庫提供了 `thread::spawn` 作為建立執行緒的方式，而 `thread::spawn` 期望在執行緒建立後立即執行一些程式碼。然而，在我們的案例中，我們希望建立執行緒並讓它們 *等待* 我們稍後將傳送的程式碼。標準函式庫的執行緒實作不包含任何這樣做的方法；我們必須手動實作它。
+我們在清單 21-14 中的 `for` 迴圈中留下了一個關於執行緒建立的註解。在這裡，我們將探討如何實際建立執行緒。標準函式庫提供了 `thread::spawn` 作為建立執行緒的方式，而 `thread::spawn` 期望在執行緒建立後立即執行一些程式碼。然而，在我們的案例中，我們希望建立執行緒並讓它們 _等待_ 我們稍後將傳送的程式碼。標準函式庫的執行緒實作不包含任何這樣做的方法；我們必須手動實作它。
 
-我們將透過在 `ThreadPool` 和執行緒之間引入一個新的資料結構來實作這種行為，該結構將管理這種新行為。我們將此資料結構稱為 *Worker*，這是 pooling 實作中的常見術語。`Worker` 負責接收需要執行的程式碼並在其執行緒中執行該程式碼。
+我們將透過在 `ThreadPool` 和執行緒之間引入一個新的資料結構來實作這種行為，該結構將管理這種新行為。我們將此資料結構稱為 _Worker_，這是 pooling 實作中的常見術語。`Worker` 負責接收需要執行的程式碼並在其執行緒中執行該程式碼。
 
 想像一下餐廳廚房裡工作的人：工人等待顧客點餐，然後他們負責接單並完成訂單。
 
@@ -816,11 +816,11 @@ impl Worker {
 
 我們已將 `ThreadPool` 上的欄位名稱從 `threads` 更改為 `workers`，因為它現在持有 `Worker` 實例而不是 `JoinHandle<()>` 實例。我們將 `for` 迴圈中的計數器作為引數傳遞給 `Worker::new`，並將每個新的 `Worker` 儲存在名為 `workers` 的 vector 中。
 
-外部程式碼（如 *src/main.rs* 中的伺服器）不需要知道 `ThreadPool` 內部使用 `Worker` 結構體的實作細節，因此我們將 `Worker` 結構體及其 `new` 函式設定為 private。`Worker::new` 函式使用我們給定的 `id` 並儲存一個透過使用空 closure 產生新執行緒而建立的 `JoinHandle<()>` 實例。
+外部程式碼（如 _src/main.rs_ 中的伺服器）不需要知道 `ThreadPool` 內部使用 `Worker` 結構體的實作細節，因此我們將 `Worker` 結構體及其 `new` 函式設定為 private。`Worker::new` 函式使用我們給定的 `id` 並儲存一個透過使用空 closure 產生新執行緒而建立的 `JoinHandle<()>` 實例。
 
 > 注意：如果作業系統因為系統資源不足而無法建立執行緒，`thread::spawn` 將會 panic。這將導致我們的整個伺服器 panic，即使某些執行緒的建立可能會成功。為了簡單起見，這種行為是可以接受的，但在生產級的 thread pool 實作中，你可能會希望使用 `std::thread::Builder` 及其 `spawn` 方法，該方法回傳 `Result`。
 
-這段程式碼將會編譯並儲存我們在 `ThreadPool::new` 中指定為引數的 `Worker` 實例數量。但我們 *仍然* 沒有處理在 `execute` 中獲得的 closure。接下來我們來看看如何做到這一點。
+這段程式碼將會編譯並儲存我們在 `ThreadPool::new` 中指定為引數的 `Worker` 實例數量。但我們 _仍然_ 沒有處理在 `execute` 中獲得的 closure。接下來我們來看看如何做到這一點。
 
 #### 透過 Channel 向執行緒傳送請求
 
@@ -945,7 +945,7 @@ For more information about this error, try `rustc --explain E0382`.
 error: could not compile `hello` (lib) due to 1 previous error
 ```
 
-程式碼試圖將 `receiver` 傳遞給多個 `Worker` 實例。這將不起作用，正如你在第 16 章中回想的那樣：Rust 提供的 channel 實作是多個 *producer*，單個 *consumer*。這意味著我們不能簡單地複製 channel 的消費端來修復這段程式碼。我們也不希望將訊息多次傳送給多個 consumer；我們希望有一個訊息列表，其中包含多個 `Worker` 實例，以便每個訊息只被處理一次。
+程式碼試圖將 `receiver` 傳遞給多個 `Worker` 實例。這將不起作用，正如你在第 16 章中回想的那樣：Rust 提供的 channel 實作是多個 _producer_，單個 _consumer_。這意味著我們不能簡單地複製 channel 的消費端來修復這段程式碼。我們也不希望將訊息多次傳送給多個 consumer；我們希望有一個訊息列表，其中包含多個 `Worker` 實例，以便每個訊息只被處理一次。
 
 此外，從 channel queue 中取出一個 job 涉及到變異 `receiver`，所以執行緒需要一種安全的方式來共用和修改 `receiver`；否則，我們可能會遇到 race conditions（如第 16 章所述）。
 
@@ -1027,7 +1027,7 @@ impl ThreadPool {
 
 建立一個新的 `Job` 實例後，我們使用 `execute` 中獲得的 closure，然後將該 job 傳送到 channel 的傳送端。我們對 `send` 呼叫 `unwrap` 以處理傳送失敗的情況。這可能會發生，例如，如果我們停止所有執行緒執行，這意味著接收端已停止接收新訊息。目前，我們無法阻止執行緒執行：只要 thread pool 存在，我們的執行緒就會繼續執行。我們使用 `unwrap` 的原因是因為我們知道失敗情況不會發生，但編譯器不知道。
 
-但我們還沒完全結束！在 `Worker` 中，傳遞給 `thread::spawn` 的 closure 仍然只 *引用* channel 的接收端。相反，我們需要 closure 永遠迴圈，向 channel 的接收端請求 job，並在獲得 job 時執行它。讓我們在 `Worker::new` 中進行清單 21-20 所示的更改。
+但我們還沒完全結束！在 `Worker` 中，傳遞給 `thread::spawn` 的 closure 仍然只 _引用_ channel 的接收端。相反，我們需要 closure 永遠迴圈，向 channel 的接收端請求 job，並在獲得 job 時執行它。讓我們在 `Worker::new` 中進行清單 21-20 所示的更改。
 
 src/lib.rs
 
@@ -1053,7 +1053,7 @@ impl Worker {
 
 清單 21-20：在 `Worker` 實例的執行緒中接收和執行 job
 
-這裡，我們首先在 `receiver` 上呼叫 `lock` 來取得 mutex，然後呼叫 `unwrap` 來處理任何錯誤。取得鎖可能會失敗，如果 mutex 處於 *poisoned* 狀態，這可能會發生在其他執行緒在持有鎖時發生 panic 而不是釋放鎖的情況。在這種情況下，呼叫 `unwrap` 讓這個執行緒 panic 是正確的動作。你可以隨意將這個 `unwrap` 更改為 `expect`，並帶有對你有意義的錯誤訊息。
+這裡，我們首先在 `receiver` 上呼叫 `lock` 來取得 mutex，然後呼叫 `unwrap` 來處理任何錯誤。取得鎖可能會失敗，如果 mutex 處於 _poisoned_ 狀態，這可能會發生在其他執行緒在持有鎖時發生 panic 而不是釋放鎖的情況。在這種情況下，呼叫 `unwrap` 讓這個執行緒 panic 是正確的動作。你可以隨意將這個 `unwrap` 更改為 `expect`，並帶有對你有意義的錯誤訊息。
 
 如果我們取得 mutex 的鎖，我們就呼叫 `recv` 從 channel 接收一個 `Job`。最後一個 `unwrap` 也忽略了這裡可能發生的任何錯誤，這可能發生在持有 sender 的執行緒已經關閉的情況下，類似於如果 receiver 關閉，`send` 方法會回傳 `Err`。
 
@@ -1187,7 +1187,7 @@ error: could not compile `hello` (lib) due to 1 previous error
 
 然而，這只會在 drop `Worker` 時才會出現。作為交換，我們將不得不處理任何我們訪問 `worker.thread` 的地方的 `Option<thread::JoinHandle<()>>`。慣用的 Rust 確實會大量使用 `Option`，但當你發現自己為了這種變通方法而將你確定會一直存在的東西包裝在 `Option` 中時，最好尋找替代方法，以使你的程式碼更簡潔，錯誤更少。
 
-在這種情況下，存在一個更好的替代方案：`Vec::drain` 方法。它接受一個 range 參數來指定要從 vector 中移除哪些項目，並回傳這些項目的 iterator。傳遞 `..` 範圍語法將從 vector 中移除 *所有* 值。
+在這種情況下，存在一個更好的替代方案：`Vec::drain` 方法。它接受一個 range 參數來指定要從 vector 中移除哪些項目，並回傳這些項目的 iterator。傳遞 `..` 範圍語法將從 vector 中移除 _所有_ 值。
 
 所以我們需要像這樣更新 `ThreadPool` 的 `drop` 實作：
 
@@ -1213,7 +1213,7 @@ impl Drop for ThreadPool {
 
 為了解決這個問題，我們需要修改 `ThreadPool` 的 `drop` 實作，然後修改 `Worker` 迴圈。
 
-首先，我們將更改 `ThreadPool` 的 `drop` 實作，在等待執行緒完成之前明確地 drop `sender`。清單 21-23 顯示了對 `ThreadPool` 的更改，以明確地 drop `sender`。與執行緒不同的是，這裡我們 *確實* 需要使用 `Option` 才能夠使用 `Option::take` 將 `sender` 從 `ThreadPool` 中移出。
+首先，我們將更改 `ThreadPool` 的 `drop` 實作，在等待執行緒完成之前明確地 drop `sender`。清單 21-23 顯示了對 `ThreadPool` 的更改，以明確地 drop `sender`。與執行緒不同的是，這裡我們 _確實_ 需要使用 `Option` 才能夠使用 `Option::take` 將 `sender` 從 `ThreadPool` 中移出。
 
 src/lib.rs
 
@@ -1496,11 +1496,11 @@ impl Worker {
 
 我們可以在這裡做更多事情！如果你想繼續增強這個專案，這裡有一些想法：
 
-* 為 `ThreadPool` 及其公共方法添加更多文件。
-* 為函式庫功能添加測試。
-* 將對 `unwrap` 的呼叫更改為更穩健的錯誤處理。
-* 使用 `ThreadPool` 執行除了服務網頁請求之外的其他任務。
-* 在 [crates.io](https://crates.io/) 上找到一個 thread pool crate，並使用該 crate 實作一個類似的網頁伺服器。然後將其 API 和穩健性與我們實作的 thread pool 進行比較。
+- 為 `ThreadPool` 及其公共方法添加更多文件。
+- 為函式庫功能添加測試。
+- 將對 `unwrap` 的呼叫更改為更穩健的錯誤處理。
+- 使用 `ThreadPool` 執行除了服務網頁請求之外的其他任務。
+- 在 [crates.io](https://crates.io/) 上找到一個 thread pool crate，並使用該 crate 實作一個類似的網頁伺服器。然後將其 API 和穩健性與我們實作的 thread pool 進行比較。
 
 ## 總結
 

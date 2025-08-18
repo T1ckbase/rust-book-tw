@@ -22,9 +22,9 @@ Edsger W. Dijkstra 在他 1972 年的論文「謙遜的程式設計師」（“T
 
 測試是 Rust 函式，用於驗證非測試程式碼是否以預期方式執行。測試函式的主體通常執行這三個動作：
 
-*   設定所需的任何資料或狀態。
-*   執行你想測試的程式碼。
-*   斷言結果符合你的預期。
+- 設定所需的任何資料或狀態。
+- 執行你想測試的程式碼。
+- 斷言結果符合你的預期。
 
 讓我們看看 Rust 專為編寫執行這些動作的測試所提供的功能，其中包括 `test` 屬性（attribute）、幾個巨集（macros）和 `should_panic` 屬性。
 
@@ -44,7 +44,7 @@ $ cargo new adder --lib
 $ cd adder
 ```
 
-你的 `adder` 函式庫中 *src/lib.rs* 檔案的內容應該如 Listing 11-1 所示。
+你的 `adder` 函式庫中 _src/lib.rs_ 檔案的內容應該如 Listing 11-1 所示。
 
 src/lib.rs
 
@@ -91,14 +91,13 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 Listing 11-2：執行自動產生測試的輸出
 
 Cargo 編譯並執行了測試。我們看到 `running 1 test` 這行。下一行顯示了產生的測試函式名稱 `tests::it_works`，以及執行該測試的結果是 `ok`。整體摘要 `test result: ok.` 代表所有測試都通過了，而 `1 passed; 0 failed` 的部分則是通過或失敗的測試總數。
 
-可以將測試標記為 `ignored`，使其在特定情況下不執行；我們將在本章後面的「除非明確要求，否則忽略某些測試」部分介紹這一點。由於我們在這裡沒有這樣做，所以摘要顯示 `0 ignored`。我們也可以將一個引數傳遞給 `cargo test` 命令，只執行名稱符合字串的測試；這稱為*過濾（filtering）*，我們將在「依名稱執行部分測試」部分介紹它。在這裡我們沒有過濾正在執行的測試，所以摘要的結尾顯示 `0 filtered out`。
+可以將測試標記為 `ignored`，使其在特定情況下不執行；我們將在本章後面的「除非明確要求，否則忽略某些測試」部分介紹這一點。由於我們在這裡沒有這樣做，所以摘要顯示 `0 ignored`。我們也可以將一個引數傳遞給 `cargo test` 命令，只執行名稱符合字串的測試；這稱為_過濾（filtering）_，我們將在「依名稱執行部分測試」部分介紹它。在這裡我們沒有過濾正在執行的測試，所以摘要的結尾顯示 `0 filtered out`。
 
 `0 measured` 統計資料用於測量效能的基準測試（benchmark tests）。截至本文撰寫時，基準測試僅在 nightly Rust 中提供。請參閱位於 [https://doc.rust-lang.org/book/unstable-book/library-features/test.html](https://doc.rust-lang.org/book/unstable-book/library-features/test.html) 的基準測試文件以了解更多資訊。
 
@@ -143,10 +142,9 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
-現在我們要新增另一個測試，但這次我們要讓它失敗！當測試函式中的某些東西發生 panic 時，測試就會失敗。每個測試都在一個新的執行緒（thread）中執行，當主執行緒看到測試執行緒已死時，該測試就被標記為失敗。在第 9 章中，我們討論了最簡單的 panic 方式是呼叫 `panic!` 巨集。輸入新測試作為名為 `another` 的函式，這樣你的 *src/lib.rs* 檔案就如 Listing 11-3 所示。
+現在我們要新增另一個測試，但這次我們要讓它失敗！當測試函式中的某些東西發生 panic 時，測試就會失敗。每個測試都在一個新的執行緒（thread）中執行，當主執行緒看到測試執行緒已死時，該測試就被標記為失敗。在第 9 章中，我們討論了最簡單的 panic 方式是呼叫 `panic!` 巨集。輸入新測試作為名為 `another` 的函式，這樣你的 _src/lib.rs_ 檔案就如 Listing 11-3 所示。
 
 src/lib.rs
 
@@ -205,7 +203,7 @@ error: test failed, to rerun pass `--lib`
 
 Listing 11-4：一個測試通過一個測試失敗時的測試結果
 
-`test tests::another` 這行顯示 `FAILED`，而不是 `ok`。在單獨的結果和摘要之間出現了兩個新區塊：第一個區塊顯示每個測試失敗的詳細原因。在這個例子中，我們得到詳細資訊，`tests::another` 失敗是因為它在 *src/lib.rs* 檔案的第 17 行以訊息 `Make this test fail` 發生 panic。下一個區塊只列出所有失敗測試的名稱，當測試很多且有大量詳細失敗測試輸出時，這很有用。我們可以使用失敗測試的名稱只執行該測試，以便更容易地偵錯；我們將在「控制測試的執行方式」部分更詳細地討論執行測試的方式。
+`test tests::another` 這行顯示 `FAILED`，而不是 `ok`。在單獨的結果和摘要之間出現了兩個新區塊：第一個區塊顯示每個測試失敗的詳細原因。在這個例子中，我們得到詳細資訊，`tests::another` 失敗是因為它在 _src/lib.rs_ 檔案的第 17 行以訊息 `Make this test fail` 發生 panic。下一個區塊只列出所有失敗測試的名稱，當測試很多且有大量詳細失敗測試輸出時，這很有用。我們可以使用失敗測試的名稱只執行該測試，以便更容易地偵錯；我們將在「控制測試的執行方式」部分更詳細地討論執行測試的方式。
 
 摘要行顯示在末尾：總體而言，我們的測試結果是 `FAILED`。我們有一個測試通過，一個測試失敗。
 
@@ -215,7 +213,7 @@ Listing 11-4：一個測試通過一個測試失敗時的測試結果
 
 標準函式庫提供的 `assert!` 巨集在你想確保測試中的某些條件評估為 `true` 時很有用。我們給 `assert!` 巨集一個評估為布林值（Boolean）的引數。如果值為 `true`，則什麼都不會發生，測試通過。如果值為 `false`，`assert!` 巨集會呼叫 `panic!` 導致測試失敗。使用 `assert!` 巨集有助於我們檢查程式碼是否以我們預期的方式執行。
 
-在第 5 章 Listing 5-15 中，我們使用了 `Rectangle` struct 和 `can_hold` 方法，這裡在 Listing 11-5 中重複了它們。讓我們把這段程式碼放入 *src/lib.rs* 檔案中，然後使用 `assert!` 巨集為其編寫一些測試。
+在第 5 章 Listing 5-15 中，我們使用了 `Rectangle` struct 和 `can_hold` 方法，這裡在 Listing 11-5 中重複了它們。讓我們把這段程式碼放入 _src/lib.rs_ 檔案中，然後使用 `assert!` 巨集為其編寫一些測試。
 
 src/lib.rs
 
@@ -282,7 +280,6 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 它確實通過了！讓我們再新增一個測試，這次要斷言一個較小的矩形無法包含一個較大的矩形：
@@ -334,7 +331,6 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 兩個測試都通過了！現在讓我們看看當我們在程式碼中引入錯誤時，測試結果會發生什麼。我們將透過將寬度比較中的大於號替換為小於號來更改 `can_hold` 方法的實作：
@@ -424,7 +420,6 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 我們建立了一個名為 `result` 的變數，它保存了呼叫 `add_two(2)` 的結果。然後我們將 `result` 和 `4` 作為引數傳遞給 `assert_eq!` 巨集。這個測試的輸出行是 `test tests::it_adds_two ... ok`，而 `ok` 文字表示我們的測試通過了！
@@ -469,7 +464,7 @@ error: test failed, to rerun pass `--lib`
 
 我們的測試抓到錯誤了！`tests::it_adds_two` 測試失敗了，訊息告訴我們失敗的斷言是 `left == right`，以及 `left` 和 `right` 的值。這個訊息有助於我們開始偵錯：`left` 引數（我們呼叫 `add_two(2)` 的結果）是 `5`，但 `right` 引數是 `4`。你可以想像當我們有很多測試時，這會特別有幫助。
 
-請注意，在某些語言和測試框架中，相等斷言函式的參數稱為 `expected` 和 `actual`，並且我們指定參數的順序很重要。然而，在 Rust 中，它們稱為 `left` 和 `right`，我們指定預期值和程式碼產生值的順序並不重要。我們可以將這個測試中的斷言寫成 `assert_eq!(4, result)`，這會產生相同的失敗訊息，顯示 `` assertion `left == right` failed ``。
+請注意，在某些語言和測試框架中，相等斷言函式的參數稱為 `expected` 和 `actual`，並且我們指定參數的順序很重要。然而，在 Rust 中，它們稱為 `left` 和 `right`，我們指定預期值和程式碼產生值的順序並不重要。我們可以將這個測試中的斷言寫成 `assert_eq!(4, result)`，這會產生相同的失敗訊息，顯示 ``assertion `left == right` failed``。
 
 `assert_ne!` 巨集在我們給予的兩個值不相等時通過，在它們相等時失敗。這個巨集對於我們不確定值*將會*是什麼，但我們知道值絕對*不應該*是什麼的情況最有用。例如，如果我們正在測試一個保證會以某種方式改變其輸入的函式，但輸入改變的方式取決於我們執行測試的星期幾，那麼最好的斷言可能是函式的輸出不等於輸入。
 
@@ -541,14 +536,14 @@ error: test failed, to rerun pass `--lib`
 這個結果只表示斷言失敗以及斷言所在的行數。一個更有用的失敗訊息會列印 `greeting` 函式的值。讓我們添加一個自訂失敗訊息，由格式字串組成，其中包含從 `greeting` 函式獲得的實際值填充的預留位置：
 
 ```rust
-    #[test]
-    fn greeting_contains_name() {
-        let result = greeting("Carol");
-        assert!(
-            result.contains("Carol"),
-            "Greeting did not contain name, value was `{result}`"
-        );
-    }
+#[test]
+fn greeting_contains_name() {
+    let result = greeting("Carol");
+    assert!(
+        result.contains("Carol"),
+        "Greeting did not contain name, value was `{result}`"
+    );
+}
 ```
 
 現在當我們執行測試時，我們會得到一個資訊量更大的錯誤訊息：
@@ -638,7 +633,6 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 看起來不錯！現在讓我們透過移除 `new` 函式在值大於 100 時會 panic 的條件，來在程式碼中引入一個錯誤：
@@ -724,15 +718,15 @@ Listing 11-9：使用包含指定子字串的 panic 訊息測試 `panic!`
 為了查看帶有 `expected` 訊息的 `should_panic` 測試失敗時會發生什麼，讓我們再次透過交換 `if value < 1` 和 `else if value > 100` 區塊的主體來在程式碼中引入一個錯誤：
 
 ```rust
-        if value < 1 {
-            panic!(
-                "Guess value must be less than or equal to 100, got {value}."
-            );
-        } else if value > 100 {
-            panic!(
-                "Guess value must be greater than or equal to 1, got {value}."
-            );
-        }
+if value < 1 {
+    panic!(
+        "Guess value must be less than or equal to 100, got {value}."
+    );
+} else if value > 100 {
+    panic!(
+        "Guess value must be greater than or equal to 1, got {value}."
+    );
+}
 ```
 
 這次當我們執行 `should_panic` 測試時，它將會失敗：
@@ -802,7 +796,7 @@ error: test failed, to rerun pass `--lib`
 
 當你執行多個測試時，預設情況下它們會使用執行緒（threads）平行執行，這意味著它們會更快地完成執行，並且你會更快地獲得回饋。由於測試同時執行，你必須確保你的測試不相互依賴，也不依賴任何共享狀態（shared state），包括共享環境，例如目前工作目錄或環境變數。
 
-例如，假設你的每個測試都執行一些程式碼，在磁碟上建立一個名為 *test-output.txt* 的檔案並向該檔案寫入一些資料。然後每個測試讀取該檔案中的資料並斷言該檔案包含特定值，該值在每個測試中都不同。因為測試同時執行，一個測試可能會在另一個測試寫入和讀取檔案之間覆蓋該檔案。第二個測試將會失敗，這不是因為程式碼不正確，而是因為測試在平行執行時相互干擾。一個解決方案是確保每個測試寫入不同的檔案；另一個解決方案是每次只執行一個測試。
+例如，假設你的每個測試都執行一些程式碼，在磁碟上建立一個名為 _test-output.txt_ 的檔案並向該檔案寫入一些資料。然後每個測試讀取該檔案中的資料並斷言該檔案包含特定值，該值在每個測試中都不同。因為測試同時執行，一個測試可能會在另一個測試寫入和讀取檔案之間覆蓋該檔案。第二個測試將會失敗，這不是因為程式碼不正確，而是因為測試在平行執行時相互干擾。一個解決方案是確保每個測試寫入不同的檔案；另一個解決方案是每次只執行一個測試。
 
 如果你不想平行執行測試，或者你想更精細地控制所使用的執行緒數量，你可以將 `--test-threads` 旗標和你想使用的執行緒數量傳送給測試二進位檔。看看下面的例子：
 
@@ -986,7 +980,6 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 #### 執行單一測試
@@ -1003,7 +996,6 @@ running 1 test
 test tests::one_hundred ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
-
 ```
 
 只有名稱為 `one_hundred` 的測試執行了；其他兩個測試不符合該名稱。測試輸出透過在末尾顯示 `2 filtered out` 告訴我們還有更多測試沒有執行。
@@ -1025,7 +1017,6 @@ test tests::add_three_and_two ... ok
 test tests::add_two_and_two ... ok
 
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
-
 ```
 
 這個命令執行了名稱中包含 `add` 的所有測試，並過濾掉了名為 `one_hundred` 的測試。還要請注意，測試所在的模組（module）會成為測試名稱的一部分，所以我們可以透過過濾模組的名稱來執行模組中的所有測試。
@@ -1074,7 +1065,6 @@ test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 `expensive_test` 函式被列為 `ignored`。如果我們只想執行被忽略的測試，我們可以使用 `cargo test -- --ignored`：
@@ -1095,7 +1085,6 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 透過控制執行哪些測試，你可以確保 `cargo test` 結果會快速回傳。當你認為檢查 `ignored` 測試的結果有意義，並且你有時間等待結果時，你可以改為執行 `cargo test -- --ignored`。如果你想執行所有測試，無論它們是否被忽略，你可以執行 `cargo test -- --include-ignored`。
@@ -1108,7 +1097,7 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 ### 單元測試
 
-單元測試的目的是隔離測試程式碼的每個單元，以快速找出程式碼在哪裡正常運行，在哪裡沒有正常運行。你將單元測試放在 *src* 目錄中，與它們所測試的程式碼在同一個檔案中。慣例是每個檔案中建立一個名為 `tests` 的模組來包含測試函式，並用 `cfg(test)` 註解該模組。
+單元測試的目的是隔離測試程式碼的每個單元，以快速找出程式碼在哪裡正常運行，在哪裡沒有正常運行。你將單元測試放在 _src_ 目錄中，與它們所測試的程式碼在同一個檔案中。慣例是每個檔案中建立一個名為 `tests` 的模組來包含測試函式，並用 `cfg(test)` 註解該模組。
 
 #### tests 模組與 #[cfg(test)]
 
@@ -1135,7 +1124,7 @@ mod tests {
 }
 ```
 
-在自動產生的 `tests` 模組上，`cfg` 屬性代表*設定（configuration）*，並告訴 Rust 以下項目只應在特定設定選項下包含。在這種情況下，設定選項是 `test`，這是 Rust 為編譯和執行測試而提供的。透過使用 `cfg` 屬性，Cargo 僅在我們積極執行 `cargo test` 時才編譯我們的測試程式碼。這包括這個模組中可能存在的任何輔助函式，以及用 `#[test]` 註解的函式。
+在自動產生的 `tests` 模組上，`cfg` 屬性代表_設定（configuration）_，並告訴 Rust 以下項目只應在特定設定選項下包含。在這種情況下，設定選項是 `test`，這是 Rust 為編譯和執行測試而提供的。透過使用 `cfg` 屬性，Cargo 僅在我們積極執行 `cargo test` 時才編譯我們的測試程式碼。這包括這個模組中可能存在的任何輔助函式，以及用 `#[test]` 註解的函式。
 
 #### 測試私有函式
 
@@ -1170,13 +1159,13 @@ Listing 11-12：測試私有函式
 
 ### 整合測試
 
-在 Rust 中，整合測試完全在函式庫外部。它們以其他任何程式碼會使用你的函式庫的相同方式使用你的函式庫，這表示它們只能呼叫屬於函式庫公共 API 的函式。它們的目的是測試函式庫的許多部分是否正確協同工作。程式碼單元（units of code）本身工作正常，但在整合時可能會出現問題，因此整合程式碼的測試覆蓋率（test coverage）也很重要。要建立整合測試，你首先需要一個 *tests* 目錄。
+在 Rust 中，整合測試完全在函式庫外部。它們以其他任何程式碼會使用你的函式庫的相同方式使用你的函式庫，這表示它們只能呼叫屬於函式庫公共 API 的函式。它們的目的是測試函式庫的許多部分是否正確協同工作。程式碼單元（units of code）本身工作正常，但在整合時可能會出現問題，因此整合程式碼的測試覆蓋率（test coverage）也很重要。要建立整合測試，你首先需要一個 _tests_ 目錄。
 
 #### tests 目錄
 
-我們在專案目錄的頂層，也就是 *src* 旁邊，建立一個 *tests* 目錄。Cargo 知道會在這個目錄中尋找整合測試檔案。然後我們可以建立任意數量的測試檔案，Cargo 會將每個檔案編譯為一個單獨的 crate。
+我們在專案目錄的頂層，也就是 _src_ 旁邊，建立一個 _tests_ 目錄。Cargo 知道會在這個目錄中尋找整合測試檔案。然後我們可以建立任意數量的測試檔案，Cargo 會將每個檔案編譯為一個單獨的 crate。
 
-讓我們建立一個整合測試。將 Listing 11-12 中的程式碼保留在 *src/lib.rs* 檔案中，建立一個 *tests* 目錄，然後建立一個名為 *tests/integration_test.rs* 的新檔案。你的目錄結構應該像這樣：
+讓我們建立一個整合測試。將 Listing 11-12 中的程式碼保留在 _src/lib.rs_ 檔案中，建立一個 _tests_ 目錄，然後建立一個名為 _tests/integration_test.rs_ 的新檔案。你的目錄結構應該像這樣：
 
 ```
 adder
@@ -1188,7 +1177,7 @@ adder
     └── integration_test.rs
 ```
 
-將 Listing 11-13 中的程式碼輸入到 *tests/integration_test.rs* 檔案中。
+將 Listing 11-13 中的程式碼輸入到 _tests/integration_test.rs_ 檔案中。
 
 tests/integration_test.rs
 
@@ -1204,9 +1193,9 @@ fn it_adds_two() {
 
 Listing 11-13：`adder` crate 中函式的整合測試
 
-*tests* 目錄中的每個檔案都是一個單獨的 crate，所以我們需要將我們的函式庫帶入每個測試 crate 的作用域中。因此，我們在程式碼的開頭加上 `use adder::add_two;`，這在單元測試中是不需要的。
+_tests_ 目錄中的每個檔案都是一個單獨的 crate，所以我們需要將我們的函式庫帶入每個測試 crate 的作用域中。因此，我們在程式碼的開頭加上 `use adder::add_two;`，這在單元測試中是不需要的。
 
-我們不需要用 `#[cfg(test)]` 註解 *tests/integration_test.rs* 中的任何程式碼。Cargo 會特別處理 *tests* 目錄，並且只在我們執行 `cargo test` 時才編譯此目錄中的檔案。現在執行 `cargo test`：
+我們不需要用 `#[cfg(test)]` 註解 _tests/integration_test.rs_ 中的任何程式碼。Cargo 會特別處理 _tests_ 目錄，並且只在我們執行 `cargo test` 時才編譯此目錄中的檔案。現在執行 `cargo test`：
 
 ```
 $ cargo test
@@ -1231,7 +1220,6 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
 輸出分為三個部分，包括單元測試、整合測試和文件測試。請注意，如果某個區塊中的任何測試失敗，則後續的區塊將不會執行。例如，如果單元測試失敗，則不會有整合測試和文件測試的輸出，因為只有在所有單元測試都通過時才會執行這些測試。
@@ -1240,7 +1228,7 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 整合測試區塊從 `Running tests/integration_test.rs` 行開始。接下來，每個整合測試中的測試函式都有單獨的一行，然後在 `Doc-tests adder` 區塊開始之前是整合測試結果的摘要行。
 
-每個整合測試檔案都有自己的區塊，所以如果我們在 *tests* 目錄中添加更多檔案，將會有更多的整合測試區塊。
+每個整合測試檔案都有自己的區塊，所以如果我們在 _tests_ 目錄中添加更多檔案，將會有更多的整合測試區塊。
 
 我們仍然可以透過將測試函式的名稱作為引數傳遞給 `cargo test` 來執行特定的整合測試函式。要執行特定整合測試檔案中的所有測試，請使用 `cargo test` 的 `--test` 引數，後跟檔案名稱：
 
@@ -1254,16 +1242,15 @@ running 1 test
 test it_adds_two ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
-此命令僅執行 *tests/integration_test.rs* 檔案中的測試。
+此命令僅執行 _tests/integration_test.rs_ 檔案中的測試。
 
 #### 整合測試中的子模組
 
-當你新增更多整合測試時，你可能會希望在 *tests* 目錄中建立更多檔案來幫助組織它們；例如，你可以依據測試的功能來分組測試函式。如前所述，*tests* 目錄中的每個檔案都被編譯為其自己的獨立 crate，這對於建立獨立的作用域以更密切地模擬終端使用者將如何使用你的 crate 很有用。然而，這意味著 *tests* 目錄中的檔案不共享與 *src* 中的檔案相同的行為，正如你在第 7 章中了解到的如何將程式碼分解為模組和檔案。
+當你新增更多整合測試時，你可能會希望在 _tests_ 目錄中建立更多檔案來幫助組織它們；例如，你可以依據測試的功能來分組測試函式。如前所述，_tests_ 目錄中的每個檔案都被編譯為其自己的獨立 crate，這對於建立獨立的作用域以更密切地模擬終端使用者將如何使用你的 crate 很有用。然而，這意味著 _tests_ 目錄中的檔案不共享與 _src_ 中的檔案相同的行為，正如你在第 7 章中了解到的如何將程式碼分解為模組和檔案。
 
-當你有一組輔助函式要在多個整合測試檔案中使用，並且你嘗試遵循第 7 章的「[替代檔案路徑](https://doc.rust-lang.org/book/ch07-05-separating-modules-into-different-files.html#alternate-file-paths)」部分中的步驟將它們提取到一個通用模組時，*tests* 目錄檔案的不同行為最為明顯。例如，如果我們建立 *tests/common.rs* 並在其中放置一個名為 `setup` 的函式，我們可以將一些我們想要從多個測試檔案中的多個測試函式呼叫的程式碼新增到 `setup` 中：
+當你有一組輔助函式要在多個整合測試檔案中使用，並且你嘗試遵循第 7 章的「[替代檔案路徑](https://doc.rust-lang.org/book/ch07-05-separating-modules-into-different-files.html#alternate-file-paths)」部分中的步驟將它們提取到一個通用模組時，_tests_ 目錄檔案的不同行為最為明顯。例如，如果我們建立 _tests/common.rs_ 並在其中放置一個名為 `setup` 的函式，我們可以將一些我們想要從多個測試檔案中的多個測試函式呼叫的程式碼新增到 `setup` 中：
 
 檔案名稱：tests/common.rs
 
@@ -1273,7 +1260,7 @@ pub fn setup() {
 }
 ```
 
-當我們再次執行測試時，我們會在測試輸出中看到 *common.rs* 檔案的新區塊，即使這個檔案不包含任何測試函式，我們也沒有從任何地方呼叫 `setup` 函式：
+當我們再次執行測試時，我們會在測試輸出中看到 _common.rs_ 檔案的新區塊，即使這個檔案不包含任何測試函式，我們也沒有從任何地方呼叫 `setup` 函式：
 
 ```
 $ cargo test
@@ -1304,10 +1291,9 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-
 ```
 
-讓 `common` 出現在測試結果中並顯示 `running 0 tests` 並不是我們想要的。我們只是想與其他整合測試檔案共享一些程式碼。為了避免 `common` 出現在測試輸出中，我們將建立 *tests/common/mod.rs*，而不是建立 *tests/common.rs*。專案目錄現在看起來像這樣：
+讓 `common` 出現在測試結果中並顯示 `running 0 tests` 並不是我們想要的。我們只是想與其他整合測試檔案共享一些程式碼。為了避免 `common` 出現在測試輸出中，我們將建立 _tests/common/mod.rs_，而不是建立 _tests/common.rs_。專案目錄現在看起來像這樣：
 
 ```
 ├── Cargo.lock
@@ -1320,9 +1306,9 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
     └── integration_test.rs
 ```
 
-這是 Rust 也理解的舊命名慣例，我們在第 7 章的「[替代檔案路徑](https://doc.rust-lang.org/book/ch07-05-separating-modules-into-different-files.html#alternate-file-paths)」中提過。以這種方式命名檔案告訴 Rust 不要將 `common` 模組視為整合測試檔案。當我們將 `setup` 函式程式碼移到 *tests/common/mod.rs* 並刪除 *tests/common.rs* 檔案後，測試輸出中的該部分將不再出現。*tests* 目錄的子目錄中的檔案不會被編譯為單獨的 crate，也不會在測試輸出中擁有自己的區塊。
+這是 Rust 也理解的舊命名慣例，我們在第 7 章的「[替代檔案路徑](https://doc.rust-lang.org/book/ch07-05-separating-modules-into-different-files.html#alternate-file-paths)」中提過。以這種方式命名檔案告訴 Rust 不要將 `common` 模組視為整合測試檔案。當我們將 `setup` 函式程式碼移到 _tests/common/mod.rs_ 並刪除 _tests/common.rs_ 檔案後，測試輸出中的該部分將不再出現。_tests_ 目錄的子目錄中的檔案不會被編譯為單獨的 crate，也不會在測試輸出中擁有自己的區塊。
 
-在我們建立 *tests/common/mod.rs* 之後，我們可以在任何整合測試檔案中將其作為模組使用。以下是從 *tests/integration_test.rs* 中的 `it_adds_two` 測試呼叫 `setup` 函式的範例：
+在我們建立 _tests/common/mod.rs_ 之後，我們可以在任何整合測試檔案中將其作為模組使用。以下是從 _tests/integration_test.rs_ 中的 `it_adds_two` 測試呼叫 `setup` 函式的範例：
 
 檔案名稱：tests/integration_test.rs
 
@@ -1344,9 +1330,9 @@ fn it_adds_two() {
 
 #### 二進位 crate 的整合測試
 
-如果我們的專案是一個只包含 *src/main.rs* 檔案且沒有 *src/lib.rs* 檔案的二進位 crate，我們就不能在 *tests* 目錄中建立整合測試，並使用 `use` 陳述式將 *src/main.rs* 檔案中定義的函式引入作用域。只有函式庫 crate 會公開其他 crate 可以使用的函式；二進位 crate 旨在自行執行。
+如果我們的專案是一個只包含 _src/main.rs_ 檔案且沒有 _src/lib.rs_ 檔案的二進位 crate，我們就不能在 _tests_ 目錄中建立整合測試，並使用 `use` 陳述式將 _src/main.rs_ 檔案中定義的函式引入作用域。只有函式庫 crate 會公開其他 crate 可以使用的函式；二進位 crate 旨在自行執行。
 
-這就是 Rust 專案提供二進位檔時，`src/main.rs` 檔案直截了當地呼叫 `src/lib.rs` 檔案中的邏輯的原因之一。使用該結構，整合測試*可以*透過 `use` 測試函式庫 crate，使重要功能可用。如果重要功能正常運作，則 *src/main.rs* 檔案中少量程式碼也會正常運作，而這少量程式碼無需測試。
+這就是 Rust 專案提供二進位檔時，`src/main.rs` 檔案直截了當地呼叫 `src/lib.rs` 檔案中的邏輯的原因之一。使用該結構，整合測試*可以*透過 `use` 測試函式庫 crate，使重要功能可用。如果重要功能正常運作，則 _src/main.rs_ 檔案中少量程式碼也會正常運作，而這少量程式碼無需測試。
 
 ## 總結
 

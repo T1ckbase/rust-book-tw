@@ -2,13 +2,13 @@
 
 # 列舉型別與模式匹配
 
-在本章中，我們將探討 *列舉型別 (enumerations)*，也稱為 *enum*。enum 允許你透過列舉其可能的 *variant* 來定義一個型別。首先，我們將定義並使用一個 enum，以展示 enum 如何將意義與資料一同編碼。接著，我們將探索一個特別有用的 enum，稱為 `Option`，它表達了一個值可能存在，也可能不存在的情況。然後，我們將探討 `match` 運算式中的模式匹配 (pattern matching) 如何讓我們輕鬆地為 enum 的不同值執行不同的程式碼。最後，我們將介紹 `if let` 建構 (construct) 是另一種方便且簡潔的慣用語 (idiom)，可用於處理程式碼中的 enum。
+在本章中，我們將探討 _列舉型別 (enumerations)_，也稱為 _enum_。enum 允許你透過列舉其可能的 _variant_ 來定義一個型別。首先，我們將定義並使用一個 enum，以展示 enum 如何將意義與資料一同編碼。接著，我們將探索一個特別有用的 enum，稱為 `Option`，它表達了一個值可能存在，也可能不存在的情況。然後，我們將探討 `match` 運算式中的模式匹配 (pattern matching) 如何讓我們輕鬆地為 enum 的不同值執行不同的程式碼。最後，我們將介紹 `if let` 建構 (construct) 是另一種方便且簡潔的慣用語 (idiom)，可用於處理程式碼中的 enum。
 
 ## 定義一個 Enum
 
 struct 讓你可以將相關的欄位與資料分組在一起，就像一個 `Rectangle` 擁有 `width` 和 `height` 一樣；而 enum 則讓你能夠表達一個值是可能值集合中的其中一個。例如，我們可能希望表達 `Rectangle` 是可能形狀集合中的一種，這些形狀還包括 `Circle` 和 `Triangle`。為此，Rust 允許我們將這些可能性編碼為一個 enum。
 
-讓我們看看一個我們可能希望在程式碼中表達的情境，並了解在這種情況下，為什麼 enum 比 struct 更有用且更合適。假設我們需要處理 IP 位址。目前，有兩個主要的 IP 位址標準：第四版和第六版。由於這些是我們的程式會遇到的 IP 位址唯一可能性，我們可以 *列舉 (enumerate)* 所有可能的 variant，這也是 enumeration 得名的原因。
+讓我們看看一個我們可能希望在程式碼中表達的情境，並了解在這種情況下，為什麼 enum 比 struct 更有用且更合適。假設我們需要處理 IP 位址。目前，有兩個主要的 IP 位址標準：第四版和第六版。由於這些是我們的程式會遇到的 IP 位址唯一可能性，我們可以 _列舉 (enumerate)_ 所有可能的 variant，這也是 enumeration 得名的原因。
 
 任何 IP 位址都可以是第四版或第六版，但不能同時是兩者。IP 位址的這種特性使得 enum 資料結構非常適用，因為一個 enum 值只能是其 variant 中的其中一個。第四版和第六版位址本質上都仍然是 IP 位址，因此當程式碼處理適用於任何類型 IP 位址的情境時，它們應該被視為相同型別。
 
@@ -28,8 +28,8 @@ enum IpAddrKind {
 我們可以像這樣建立 `IpAddrKind` 兩個 variant 的實例 (instance)：
 
 ```rust
-    let four = IpAddrKind::V4;
-    let six = IpAddrKind::V6;
+let four = IpAddrKind::V4;
+let six = IpAddrKind::V6;
 ```
 
 請注意，enum 的 variant 是在它的識別符號下命名空間化的 (namespaced)，我們使用雙冒號 `::` 來分隔兩者。這很有用，因為現在 `IpAddrKind::V4` 和 `IpAddrKind::V6` 這兩個值都屬於相同的型別：`IpAddrKind`。然後，我們可以定義一個接受任何 `IpAddrKind` 的函數，例如：
@@ -41,11 +41,11 @@ fn route(ip_kind: IpAddrKind) {}
 我們可以呼叫這個函數，傳入任何一個 variant：
 
 ```rust
-    route(IpAddrKind::V4);
-    route(IpAddrKind::V6);
+route(IpAddrKind::V4);
+route(IpAddrKind::V6);
 ```
 
-使用 enum 還有更多優勢。進一步思考我們的 IP 位址型別，目前我們沒有辦法儲存實際的 IP 位址 *資料*；我們只知道它是什麼 *種類*。鑑於你在[第五章](https://doc.rust-lang.org/book/ch05-00-structs.html)剛剛學過 struct，你可能會想用 struct 來解決這個問題，如程式清單 6-1 所示。
+使用 enum 還有更多優勢。進一步思考我們的 IP 位址型別，目前我們沒有辦法儲存實際的 IP 位址 _資料_；我們只知道它是什麼 _種類_。鑑於你在[第五章](https://doc.rust-lang.org/book/ch05-00-structs.html)剛剛學過 struct，你可能會想用 struct 來解決這個問題，如程式清單 6-1 所示。
 
 ```rust
     enum IpAddrKind {
@@ -137,10 +137,10 @@ enum Message {
 
 這個 enum 有四個不同型別的 variant：
 
-*   `Quit`：完全沒有關聯資料。
-*   `Move`：像 struct 一樣有具名欄位 (named fields)。
-*   `Write`：包含一個 `String`。
-*   `ChangeColor`：包含三個 `i32` 值。
+- `Quit`：完全沒有關聯資料。
+- `Move`：像 struct 一樣有具名欄位 (named fields)。
+- `Write`：包含一個 `String`。
+- `ChangeColor`：包含三個 `i32` 值。
 
 定義一個擁有如程式清單 6-2 中 variant 的 enum，類似於定義不同種類的 struct 定義，只不過 enum 不使用 `struct` 關鍵字，而且所有 variant 都被歸類在 `Message` 型別下。以下 struct 可以儲存與前面 enum variant 相同的資料：
 
@@ -179,7 +179,7 @@ enum 和 struct 之間還有一項相似之處：就像我們能夠使用 `impl`
 
 例如，如果你請求一個非空列表中的第一個項目，你將會得到一個值。如果你請求一個空列表中的第一個項目，你將什麼也得不到。在型別系統 (type system) 中表達這個概念，意味著編譯器可以檢查你是否處理了所有應該處理的情況；這項功能可以防止在其他程式語言中極為常見的錯誤。
 
-程式語言設計通常會考慮你包含哪些功能，但你排除的功能也同樣重要。Rust 沒有許多其他語言所擁有的 null 功能。*Null* 是一個表示那裡沒有值的概念。在具有 null 的語言中，變數總是處於兩種狀態之一：null 或非 null (not-null)。
+程式語言設計通常會考慮你包含哪些功能，但你排除的功能也同樣重要。Rust 沒有許多其他語言所擁有的 null 功能。_Null_ 是一個表示那裡沒有值的概念。在具有 null 的語言中，變數總是處於兩種狀態之一：null 或非 null (not-null)。
 
 在 Tony Hoare（null 的發明者）2009 年的演講「Null References: The Billion Dollar Mistake」中，他這樣說道：
 
@@ -385,13 +385,13 @@ fn value_in_cents(coin: Coin) -> u8 {
 讓我們更詳細地檢查 `plus_one` 的第一次執行。當我們呼叫 `plus_one(five)` 時，`plus_one` 函式主體中的變數 `x` 將會是 `Some(5)`。然後我們將其與每個 `match` `匹配分支` 進行比較：
 
 ```
-            None => None,
+None => None,
 ```
 
 `Some(5)` 值不匹配模式 `None`，所以我們繼續到下一個 `匹配分支`：
 
 ```
-            Some(i) => Some(i + 1),
+Some(i) => Some(i + 1),
 ```
 
 `Some(5)` 匹配 `Some(i)` 嗎？是的，它匹配！我們擁有相同的 variant。`i` 綁定到 `Some` 中包含的值，所以 `i` 取值 `5`。然後執行 `match` `匹配分支` 中的程式碼，所以我們將 `i` 的值加 1，並建立一個新的 `Some` 值，其中包含我們的總和 `6`。
@@ -399,7 +399,7 @@ fn value_in_cents(coin: Coin) -> u8 {
 現在讓我們考慮程式清單 6-5 中對 `plus_one` 的第二次呼叫，其中 `x` 是 `None`。我們進入 `match` 並與第一個 `匹配分支` 進行比較：
 
 ```
-            None => None,
+None => None,
 ```
 
 它匹配！沒有要加的值，所以程式停止並回傳 `=>` 右側的 `None` 值。因為第一個 `匹配分支` 匹配了，所以不會比較其他 `匹配分支`。
@@ -411,11 +411,11 @@ fn value_in_cents(coin: Coin) -> u8 {
 `match` 還有另一個方面我們需要討論：`匹配分支` 的模式必須涵蓋所有可能性。考慮我們 `plus_one` 函數的這個版本，它有一個錯誤，將無法編譯：
 
 ```rust
-    fn plus_one(x: Option<i32>) -> Option<i32> {
-        match x {
-            Some(i) => Some(i + 1),
-        }
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        Some(i) => Some(i + 1),
     }
+}
 ```
 
 我們沒有處理 `None` 的情況，所以這段程式碼會導致錯誤。幸運的是，這是 Rust 知道如何捕獲的錯誤。如果我們嘗試編譯這段程式碼，我們會得到這個錯誤：
@@ -445,7 +445,7 @@ For more information about this error, try `rustc --explain E0004`.
 error: could not compile `enums` (bin "enums") due to 1 previous error
 ```
 
-Rust 知道我們沒有涵蓋所有可能的情況，甚至知道我們忘記了哪個模式！Rust 中的 `match` 是*窮舉的 (exhaustive)*：我們必須窮盡所有可能性，程式碼才能有效。特別是在 `Option<T>` 的情況下，當 Rust 阻止我們忘記明確處理 `None` 情況時，它保護我們避免在可能為 null 時卻假設有值，從而使前面討論的十億美元錯誤 (billion-dollar mistake) 成為不可能。
+Rust 知道我們沒有涵蓋所有可能的情況，甚至知道我們忘記了哪個模式！Rust 中的 `match` 是_窮舉的 (exhaustive)_：我們必須窮盡所有可能性，程式碼才能有效。特別是在 `Option<T>` 的情況下，當 Rust 阻止我們忘記明確處理 `None` 情況時，它保護我們避免在可能為 null 時卻假設有值，從而使前面討論的十億美元錯誤 (billion-dollar mistake) 成為不可能。
 
 ### 萬用匹配模式與 `_` 佔位符
 
@@ -468,7 +468,7 @@ Rust 知道我們沒有涵蓋所有可能的情況，甚至知道我們忘記了
 
 這段程式碼可以編譯，儘管我們沒有列出 `u8` 可能擁有的所有值，因為最後一個模式將匹配所有未明確列出的值。這個萬用匹配模式 (catch-all pattern) 滿足了 `match` 必須是窮舉性的要求。請注意，我們必須將萬用匹配 `匹配分支` 放在最後，因為模式是依序評估的。如果我們將萬用匹配 `匹配分支` 放在前面，其他 `匹配分支` 將永遠不會執行，所以如果我們在萬用匹配之後添加 `匹配分支`，Rust 會發出警告！
 
-Rust 還有一種模式，我們可以在需要萬用匹配但不想 *使用* 萬用匹配模式中的值時使用：`_` 是一個特殊模式，它匹配任何值，但不將該值綁定。這告訴 Rust 我們不打算使用該值，所以 Rust 不會警告我們有未使用的變數。
+Rust 還有一種模式，我們可以在需要萬用匹配但不想 _使用_ 萬用匹配模式中的值時使用：`_` 是一個特殊模式，它匹配任何值，但不將該值綁定。這告訴 Rust 我們不打算使用該值，所以 Rust 不會警告我們有未使用的變數。
 
 讓我們改變遊戲規則：現在，如果你擲出除了 3 或 7 以外的任何數字，你必須重新擲骰子。我們不再需要使用萬用匹配值，所以我們可以將程式碼改為使用 `_` 而不是名為 `other` 的變數：
 
@@ -510,11 +510,11 @@ Rust 還有一種模式，我們可以在需要萬用匹配但不想 *使用* �
 `if let` 語法讓你可以結合 `if` 和 `let`，以一種更簡潔的方式處理匹配單一模式的值，同時忽略其餘的值。考慮程式清單 6-6 中的程式，它匹配 `config_max` 變數中的 `Option<u8>` 值，但只希望在值是 `Some` variant 時執行程式碼。
 
 ```rust
-    let config_max = Some(3u8);
-    match config_max {
-        Some(max) => println!("The maximum is configured to be {max}"),
-        _ => (),
-    }
+let config_max = Some(3u8);
+match config_max {
+    Some(max) => println!("The maximum is configured to be {max}"),
+    _ => (),
+}
 ```
 
 程式清單 6-6：一個只關心在值為 `Some` 時執行程式碼的 `match`
@@ -524,10 +524,10 @@ Rust 還有一種模式，我們可以在需要萬用匹配但不想 *使用* �
 相反地，我們可以使用 `if let` 以更短的方式來編寫這段程式碼。以下程式碼的行為與程式清單 6-6 中的 `match` 相同：
 
 ```rust
-    let config_max = Some(3u8);
-    if let Some(max) = config_max {
-        println!("The maximum is configured to be {max}");
-    }
+let config_max = Some(3u8);
+if let Some(max) = config_max {
+    println!("The maximum is configured to be {max}");
+}
 ```
 
 `if let` 語法接受一個模式和一個由等號分隔的運算式。它的工作方式與 `match` 相同，其中運算式被給予 `match`，而模式是它的第一個 `匹配分支`。在這個例子中，模式是 `Some(max)`，而 `max` 綁定到 `Some` 內部的這個值。然後我們就可以在 `if let` 區塊的函式主體中使用 `max`，就像我們在相應的 `match` `匹配分支` 中使用 `max` 一樣。`if let` 區塊中的程式碼只有在值匹配模式時才會執行。
@@ -539,22 +539,22 @@ Rust 還有一種模式，我們可以在需要萬用匹配但不想 *使用* �
 我們可以在 `if let` 中包含一個 `else`。與 `else` 搭配的程式碼區塊，與等同於 `if let` 和 `else` 的 `match` 運算式中的 `_` 情況搭配的程式碼區塊相同。回顧程式清單 6-4 中的 `Coin` enum 定義，其中 `Quarter` variant 也持有 `UsState` 值。如果我們想在計算所有非 25 美分硬幣的同時，也宣布 25 美分硬幣的州別，我們可以使用 `match` 運算式來做到這一點，像這樣：
 
 ```rust
-    let mut count = 0;
-    match coin {
-        Coin::Quarter(state) => println!("State quarter from {state:?}!"),
-        _ => count += 1,
-    }
+let mut count = 0;
+match coin {
+    Coin::Quarter(state) => println!("State quarter from {state:?}!"),
+    _ => count += 1,
+}
 ```
 
 或者我們可以使用 `if let` 和 `else` 運算式，像這樣：
 
 ```rust
-    let mut count = 0;
-    if let Coin::Quarter(state) = coin {
-        println!("State quarter from {state:?}!");
-    } else {
-        count += 1;
-    }
+let mut count = 0;
+if let Coin::Quarter(state) = coin {
+    println!("State quarter from {state:?}!");
+} else {
+    count += 1;
+}
 ```
 
 ## 使用 let...else 保持「快樂路徑」

@@ -8,7 +8,7 @@
 
 ## 設定新專案
 
-要設定一個新專案，請前往你在[第一章](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html)中建立的 *projects* 目錄，並使用 Cargo 建立一個新專案，如下所示：
+要設定一個新專案，請前往你在[第一章](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html)中建立的 _projects_ 目錄，並使用 Cargo 建立一個新專案，如下所示：
 
 ```
 $ cargo new guessing_game
@@ -17,7 +17,7 @@ $ cd guessing_game
 
 第一個指令 `cargo new` 以專案名稱 (`guessing_game`) 作為第一個引數。第二個指令則切換到新專案的目錄。
 
-查看產生的 *Cargo.toml* 檔案：
+查看產生的 _Cargo.toml_ 檔案：
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial
@@ -39,7 +39,7 @@ edition = "2024"
 [dependencies]
 ```
 
-如你在[第一章](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html)所見，`cargo new` 為你產生了一個「Hello, world!」程式。看看 *src/main.rs* 檔案：
+如你在[第一章](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html)所見，`cargo new` 為你產生了一個「Hello, world!」程式。看看 _src/main.rs_ 檔案：
 
 檔案名稱: src/main.rs
 
@@ -61,11 +61,11 @@ Hello, world!
 
 `run` 指令在你需要快速迭代專案時非常方便，就像我們在這個遊戲中一樣，在進入下一個迭代之前快速測試每個迭代。
 
-重新開啟 *src/main.rs* 檔案。你將會把所有程式碼寫在這個檔案中。
+重新開啟 _src/main.rs_ 檔案。你將會把所有程式碼寫在這個檔案中。
 
 ## 處理猜測
 
-猜數字遊戲的第一部分將要求使用者輸入、處理該輸入，並檢查輸入是否符合預期格式。首先，我們將允許玩家輸入一個猜測。將清單 2-1 中的程式碼輸入到 *src/main.rs* 中。
+猜數字遊戲的第一部分將要求使用者輸入、處理該輸入，並檢查輸入是否符合預期格式。首先，我們將允許玩家輸入一個猜測。將清單 2-1 中的程式碼輸入到 _src/main.rs_ 中。
 
 src/main.rs
 
@@ -95,7 +95,7 @@ fn main() {
 use std::io;
 ```
 
-預設情況下，Rust 在標準函式庫中定義了一組項目，並將其引入每個程式的作用域。這組項目被稱為 *prelude*，你可以在標準函式庫說明文件中的[這裡](https://doc.rust-lang.org/book/std/prelude/index.html)看到所有內容。
+預設情況下，Rust 在標準函式庫中定義了一組項目，並將其引入每個程式的作用域。這組項目被稱為 _prelude_，你可以在標準函式庫說明文件中的[這裡](https://doc.rust-lang.org/book/std/prelude/index.html)看到所有內容。
 
 如果你想使用的類型不在 prelude 中，你必須使用 `use` 陳述式明確地將該類型引入作用域。使用 `std::io` 函式庫為你提供了許多有用的功能，包括接受使用者輸入的能力。
 
@@ -119,10 +119,10 @@ fn main() {
 
 ### 使用變數儲存數值
 
-接下來，我們將建立一個 *variable* 來儲存使用者輸入，就像這樣：
+接下來，我們將建立一個 _variable_ 來儲存使用者輸入，就像這樣：
 
 ```rust
-    let mut guess = String::new();
+let mut guess = String::new();
 ```
 
 現在程式變得有趣了！這短短的一行包含了許多內容。我們使用 `let` 陳述式來建立變數。以下是另一個範例：
@@ -142,7 +142,7 @@ let mut bananas = 5; // mutable
 
 回到猜數字遊戲程式，你現在知道 `let mut guess` 將引入一個名為 `guess` 的 mutable 變數。等號 (`=`) 告訴 Rust 我們現在要將某個東西綁定到這個變數。等號右邊是 `guess` 綁定的值，它是呼叫 `String::new` 的結果，`String::new` 是一個回傳 `String` 新實例的函式。`String` 是標準函式庫提供的一種字串類型，是一種可成長的 UTF-8 編碼文字。
 
-`::new` 行中的 `::` 語法表示 `new` 是 `String` 類型的一個 associated function。*Associated function* 是在某種類型上實作的函式，在本例中是 `String`。這個 `new` 函式建立一個新的、空的字串。你會在許多類型上找到 `new` 函式，因為它是建立某種新值的常用函式名稱。
+`::new` 行中的 `::` 語法表示 `new` 是 `String` 類型的一個 associated function。_Associated function_ 是在某種類型上實作的函式，在本例中是 `String`。這個 `new` 函式建立一個新的、空的字串。你會在許多類型上找到 `new` 函式，因為它是建立某種新值的常用函式名稱。
 
 總而言之，`let mut guess = String::new();` 這行程式碼已經建立了一個 mutable 變數，它目前綁定到 `String` 的一個新的、空的實例。呼！
 
@@ -151,15 +151,15 @@ let mut bananas = 5; // mutable
 回想一下，我們在程式的第一行使用 `use std::io;` 包含了標準函式庫的輸入/輸出功能。現在我們將呼叫 `io` 模組中的 `stdin` 函式，這將允許我們處理使用者輸入：
 
 ```rust
-    io::stdin()
-        .read_line(&mut guess)
+io::stdin()
+    .read_line(&mut guess)
 ```
 
 如果我們沒有在程式開頭使用 `use std::io;` 引入 `io` 模組，我們仍然可以使用這個函式，方法是將這個函式呼叫寫為 `std::io::stdin`。`stdin` 函式回傳 `std::io::Stdin` 的一個實例，這是一個表示終端機標準輸入句柄的類型。
 
 接下來，`.read_line(&mut guess)` 這行程式碼在標準輸入句柄上呼叫 `read_line` method 以取得使用者的輸入。我們也將 `&mut guess` 作為引數傳遞給 `read_line`，告訴它將使用者輸入儲存在哪個字串中。`read_line` 的完整工作是將使用者輸入到標準輸入中的任何內容附加到字串中（不覆寫其內容），因此我們將該字串作為引數傳遞。字串引數需要是 mutable，以便 method 可以更改字串的內容。
 
-`&` 表示這個引數是一個 *reference*，它提供了一種方式，讓程式碼的多個部分存取一份資料，而不需要多次將該資料複製到記憶體中。References 是一個複雜的功能，而 Rust 的主要優勢之一在於使用 references 的安全性和簡便性。你不需要了解太多這些細節就能完成這個程式。目前，你只需要知道，與變數一樣，references 預設是 immutable 的。因此，你需要寫 `&mut guess` 而不是 `&guess` 來使其 mutable。（[第四章](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html)將更徹底地解釋 references。）
+`&` 表示這個引數是一個 _reference_，它提供了一種方式，讓程式碼的多個部分存取一份資料，而不需要多次將該資料複製到記憶體中。References 是一個複雜的功能，而 Rust 的主要優勢之一在於使用 references 的安全性和簡便性。你不需要了解太多這些細節就能完成這個程式。目前，你只需要知道，與變數一樣，references 預設是 immutable 的。因此，你需要寫 `&mut guess` 而不是 `&guess` 來使其 mutable。（[第四章](https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html)將更徹底地解釋 references。）
 
 <!-- Old heading. Do not remove or links may break. -->
 
@@ -170,7 +170,7 @@ let mut bananas = 5; // mutable
 我們仍在處理這行程式碼。我們現在討論的是第三行文字，但請注意它仍然是單個邏輯程式碼行的一部分。接下來的部分是這個 method：
 
 ```rust
-        .expect("Failed to read line");
+.expect("Failed to read line");
 ```
 
 我們也可以將這段程式碼寫成：
@@ -181,7 +181,7 @@ io::stdin().read_line(&mut guess).expect("Failed to read line");
 
 然而，一行過長的程式碼難以閱讀，因此最好將其分開。當你使用 `.method_name()` 語法呼叫 method 時，通常會明智地引入換行符號和其他空白字元以幫助拆分長行。現在讓我們討論這行程式碼的作用。
 
-如前所述，`read_line` 將使用者輸入的任何內容放入我們傳遞給它的字串中，但它也會回傳一個 `Result` 值。`Result` 是一個 *enumeration*，通常稱為 *enum*，它是一種可以處於多種可能狀態之一的類型。我們將每種可能的狀態稱為一個 *variant*。
+如前所述，`read_line` 將使用者輸入的任何內容放入我們傳遞給它的字串中，但它也會回傳一個 `Result` 值。`Result` 是一個 _enumeration_，通常稱為 _enum_，它是一種可以處於多種可能狀態之一的類型。我們將每種可能的狀態稱為一個 _variant_。
 
 [第六章](https://doc.rust-lang.org/book/ch06-00-enums-and-pattern-matching.html)將更詳細地介紹 enums。這些 `Result` 類型的目的是編碼錯誤處理資訊。
 
@@ -220,7 +220,7 @@ Rust 警告你沒有使用 `read_line` 回傳的 `Result` 值，這表示程式�
 除了結尾的大括號之外，目前程式碼中還有一行要討論：
 
 ```rust
-    println!("You guessed: {guess}");
+println!("You guessed: {guess}");
 ```
 
 這行程式碼印出現在包含使用者輸入的字串。 `{}` 這組大括號是一個 placeholder：你可以把它想像成夾住數值的小螃蟹鉗子。當印出變數的值時，變數名稱可以放在大括號內。當印出評估表達式結果時，將空的大括號放在格式字串中，然後在格式字串後面加上一個逗號分隔的表達式列表，以便在每個空的大括號 placeholder 中以相同順序印出。在一次呼叫 `println!` 中印出變數和表達式結果會像這樣：
@@ -263,9 +263,9 @@ You guessed: 6
 
 ### 使用 Crate 取得更多功能
 
-回想一下，crate 是 Rust 原始碼檔案的集合。我們一直在建立的專案是一個 *binary crate*，也就是一個可執行檔。`rand` crate 是一個 *library crate*，其中包含旨在用於其他程式碼的程式碼，無法自行執行。
+回想一下，crate 是 Rust 原始碼檔案的集合。我們一直在建立的專案是一個 _binary crate_，也就是一個可執行檔。`rand` crate 是一個 _library crate_，其中包含旨在用於其他程式碼的程式碼，無法自行執行。
 
-Cargo 對外部 crates 的協調是 Cargo 真正閃耀的地方。在使用 `rand` 撰寫程式碼之前，我們需要修改 *Cargo.toml* 檔案以將 `rand` crate 作為 dependency 包含進來。現在開啟該檔案，並將以下行新增到 `[dependencies]` 區段標頭下方，該標頭是 Cargo 為你建立的。請務必像我們這裡一樣精確地指定 `rand`，並使用此版本號，否則本教學中的程式碼範例可能無法運作：
+Cargo 對外部 crates 的協調是 Cargo 真正閃耀的地方。在使用 `rand` 撰寫程式碼之前，我們需要修改 _Cargo.toml_ 檔案以將 `rand` crate 作為 dependency 包含進來。現在開啟該檔案，並將以下行新增到 `[dependencies]` 區段標頭下方，該標頭是 Cargo 為你建立的。請務必像我們這裡一樣精確地指定 `rand`，並使用此版本號，否則本教學中的程式碼範例可能無法運作：
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -280,7 +280,7 @@ Cargo 對外部 crates 的協調是 Cargo 真正閃耀的地方。在使用 `ran
 rand = "0.8.5"
 ```
 
-在 *Cargo.toml* 檔案中，標頭之後的所有內容都屬於該區段，並持續到另一個區段開始。在 `[dependencies]` 中，你告訴 Cargo 你的專案依賴哪些 external crates 以及你需要這些 crates 的哪些版本。在本例中，我們使用 semantic version specifier `0.8.5` 指定了 `rand` crate。Cargo 了解 [Semantic Versioning](https://semver.org/)（有時稱為 *SemVer*），這是一種用於編寫版本號的標準。specifier `0.8.5` 實際上是 `^0.8.5` 的簡寫，表示任何版本至少是 0.8.5 但低於 0.9.0。
+在 _Cargo.toml_ 檔案中，標頭之後的所有內容都屬於該區段，並持續到另一個區段開始。在 `[dependencies]` 中，你告訴 Cargo 你的專案依賴哪些 external crates 以及你需要這些 crates 的哪些版本。在本例中，我們使用 semantic version specifier `0.8.5` 指定了 `rand` crate。Cargo 了解 [Semantic Versioning](https://semver.org/)（有時稱為 _SemVer_），這是一種用於編寫版本號的標準。specifier `0.8.5` 實際上是 `^0.8.5` 的簡寫，表示任何版本至少是 0.8.5 但低於 0.9.0。
 
 Cargo 認為這些版本與 0.8.5 版具有相容的 public APIs，此規範確保你將獲得最新的 patch release，該 release 仍可與本章中的程式碼一起編譯。任何 0.9.0 或更高版本不保證具有與以下範例相同的 API。
 
@@ -291,7 +291,6 @@ cd listings/ch02-guessing-game-tutorial/listing-02-02/
 rm Cargo.lock
 cargo clean
 cargo build -->
-
 
 ```
 $ cargo build
@@ -320,13 +319,13 @@ $ cargo build
 
 你可能會看到不同的版本號（但由於 SemVer，它們都與程式碼相容！）和不同的行（取決於作業系統），而且行可能以不同的順序出現。
 
-當我們包含一個 external dependency 時，Cargo 會從 *registry* 中取得該 dependency 所需的所有最新版本，registry 是 [Crates.io](https://crates.io/) 的資料副本。Crates.io 是 Rust 生態系統中的人們發布他們的開源 Rust 專案供他人使用的地方。
+當我們包含一個 external dependency 時，Cargo 會從 _registry_ 中取得該 dependency 所需的所有最新版本，registry 是 [Crates.io](https://crates.io/) 的資料副本。Crates.io 是 Rust 生態系統中的人們發布他們的開源 Rust 專案供他人使用的地方。
 
 更新 registry 後，Cargo 會檢查 `[dependencies]` 區段並下載任何列出但尚未下載的 crates。在本例中，雖然我們只將 `rand` 列為 dependency，但 Cargo 也取得了 `rand` 為了運作所依賴的其他 crates。下載 crates 後，Rust 會編譯它們，然後再編譯專案，並使 dependencies 可用。
 
-如果你在不進行任何更改的情況下立即再次執行 `cargo build`，除了 `Finished` 行之外，你不會得到任何輸出。Cargo 知道它已經下載並編譯了 dependencies，而且你沒有在 *Cargo.toml* 檔案中更改它們的任何內容。Cargo 也知道你沒有更改程式碼的任何內容，因此它也不會重新編譯。由於沒有任何事情可做，它只是退出。
+如果你在不進行任何更改的情況下立即再次執行 `cargo build`，除了 `Finished` 行之外，你不會得到任何輸出。Cargo 知道它已經下載並編譯了 dependencies，而且你沒有在 _Cargo.toml_ 檔案中更改它們的任何內容。Cargo 也知道你沒有更改程式碼的任何內容，因此它也不會重新編譯。由於沒有任何事情可做，它只是退出。
 
-如果你打開 *src/main.rs* 檔案，進行一個微不足道的更改，然後儲存並再次建立，你只會看到兩行輸出：
+如果你打開 _src/main.rs_ 檔案，進行一個微不足道的更改，然後儲存並再次建立，你只會看到兩行輸出：
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -339,17 +338,17 @@ $ cargo build
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
 ```
 
-這些行顯示 Cargo 只會使用你對 *src/main.rs* 檔案的微小更改來更新 build。你的 dependencies 沒有改變，因此 Cargo 知道它可以重複使用它已經下載和編譯的內容。
+這些行顯示 Cargo 只會使用你對 _src/main.rs_ 檔案的微小更改來更新 build。你的 dependencies 沒有改變，因此 Cargo 知道它可以重複使用它已經下載和編譯的內容。
 
 #### 使用 Cargo.lock 檔案確保可重現的建構
 
-Cargo 有一種機制，可以確保你每次或任何其他人建構你的程式碼時，都能重建相同的 artifact：Cargo 將只使用你指定的 dependency 版本，除非你另有指示。例如，假設下週 `rand` crate 的 0.8.6 版發布，該版本包含一個重要的錯誤修復，但它也包含一個會破壞你的程式碼的 regression。為了處理這個問題，Rust 在你第一次執行 `cargo build` 時會建立 *Cargo.lock* 檔案，所以我們現在在 *guessing_game* 目錄中有了這個檔案。
+Cargo 有一種機制，可以確保你每次或任何其他人建構你的程式碼時，都能重建相同的 artifact：Cargo 將只使用你指定的 dependency 版本，除非你另有指示。例如，假設下週 `rand` crate 的 0.8.6 版發布，該版本包含一個重要的錯誤修復，但它也包含一個會破壞你的程式碼的 regression。為了處理這個問題，Rust 在你第一次執行 `cargo build` 時會建立 _Cargo.lock_ 檔案，所以我們現在在 _guessing_game_ 目錄中有了這個檔案。
 
-當你第一次建構專案時，Cargo 會找出所有符合標準的 dependency 版本，然後將它們寫入 *Cargo.lock* 檔案。當你將來建構專案時，Cargo 會看到 *Cargo.lock* 檔案存在，並將使用其中指定的版本，而不是再次執行所有找出版本的工作。這讓你能夠自動擁有可重現的建構。換句話說，由於 *Cargo.lock* 檔案的存在，你的專案將保持在 0.8.5 版，直到你明確升級為止。因為 *Cargo.lock* 檔案對於可重現的建構很重要，所以它通常與專案中的其餘程式碼一起簽入版本控制。
+當你第一次建構專案時，Cargo 會找出所有符合標準的 dependency 版本，然後將它們寫入 _Cargo.lock_ 檔案。當你將來建構專案時，Cargo 會看到 _Cargo.lock_ 檔案存在，並將使用其中指定的版本，而不是再次執行所有找出版本的工作。這讓你能夠自動擁有可重現的建構。換句話說，由於 _Cargo.lock_ 檔案的存在，你的專案將保持在 0.8.5 版，直到你明確升級為止。因為 _Cargo.lock_ 檔案對於可重現的建構很重要，所以它通常與專案中的其餘程式碼一起簽入版本控制。
 
 #### 更新 Crate 以取得新版本
 
-當你確實想要更新 crate 時，Cargo 提供了 `update` 命令，它將忽略 *Cargo.lock* 檔案，並找出 *Cargo.toml* 中符合你規格的所有最新版本。然後 Cargo 會將這些版本寫入 *Cargo.lock* 檔案。在本例中，Cargo 只會尋找大於 0.8.5 且小於 0.9.0 的版本。如果 `rand` crate 已經發布了兩個新版本 0.8.6 和 0.9.0，如果你執行 `cargo update`，你會看到以下內容：
+當你確實想要更新 crate 時，Cargo 提供了 `update` 命令，它將忽略 _Cargo.lock_ 檔案，並找出 _Cargo.toml_ 中符合你規格的所有最新版本。然後 Cargo 會將這些版本寫入 _Cargo.lock_ 檔案。在本例中，Cargo 只會尋找大於 0.8.5 且小於 0.9.0 的版本。如果 `rand` crate 已經發布了兩個新版本 0.8.6 和 0.9.0，如果你執行 `cargo update`，你會看到以下內容：
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -364,7 +363,7 @@ $ cargo update
     Updating rand v0.8.5 -> v0.8.6 (available: v0.9.0)
 ```
 
-Cargo 忽略了 0.9.0 版本。此時，你還會注意到 *Cargo.lock* 檔案中的變化，其中記錄了你現在使用的 `rand` crate 版本是 0.8.6。要使用 `rand` 0.9.0 版或 0.9.*x* 系列中的任何版本，你必須將 *Cargo.toml* 檔案更新為以下內容：
+Cargo 忽略了 0.9.0 版本。此時，你還會注意到 _Cargo.lock_ 檔案中的變化，其中記錄了你現在使用的 `rand` crate 版本是 0.8.6。要使用 `rand` 0.9.0 版或 0.9._x_ 系列中的任何版本，你必須將 _Cargo.toml_ 檔案更新為以下內容：
 
 ```
 [dependencies]
@@ -377,7 +376,7 @@ rand = "0.9.0"
 
 ### 產生一個隨機數字
 
-讓我們開始使用 `rand` 來產生一個要猜測的數字。下一步是更新 *src/main.rs*，如清單 2-3 所示。
+讓我們開始使用 `rand` 來產生一個要猜測的數字。下一步是更新 _src/main.rs_，如清單 2-3 所示。
 
 src/main.rs
 
@@ -479,7 +478,7 @@ fn main() {
 
 然後我們在底部新增了五行程式碼，這些程式碼使用了 `Ordering` 類型。`cmp` method 會比較兩個值，並且可以在任何可比較的東西上呼叫。它接受一個 reference 作為你想要比較的對象：這裡它將 `guess` 與 `secret_number` 進行比較。然後它回傳我們用 `use` 陳述式引入作用域的 `Ordering` enum 的一個 variant。我們使用 `match` expression 根據從 `cmp` 呼叫 `guess` 和 `secret_number` 值所回傳的 `Ordering` variant 來決定下一步該怎麼做。
 
-`match` expression 由多個 *arm* 組成。一個 arm 包含一個要匹配的 *pattern*，以及當給定 `match` 的值符合該 arm 的 pattern 時應該執行的程式碼。Rust 會取得給定 `match` 的值，並依序檢查每個 arm 的 pattern。Patterns 和 `match` 結構是強大的 Rust 功能：它們讓你能夠表達程式碼可能遇到的各種情況，並確保你處理了所有這些情況。這些功能將分別在[第六章](https://doc.rust-lang.org/book/ch06-00-enums-and-pattern-matching.html)和[第十九章](https://doc.rust-lang.org/book/ch19-00-advanced-features.html)中詳細介紹。
+`match` expression 由多個 _arm_ 組成。一個 arm 包含一個要匹配的 _pattern_，以及當給定 `match` 的值符合該 arm 的 pattern 時應該執行的程式碼。Rust 會取得給定 `match` 的值，並依序檢查每個 arm 的 pattern。Patterns 和 `match` 結構是強大的 Rust 功能：它們讓你能夠表達程式碼可能遇到的各種情況，並確保你處理了所有這些情況。這些功能將分別在[第六章](https://doc.rust-lang.org/book/ch06-00-enums-and-pattern-matching.html)和[第十九章](https://doc.rust-lang.org/book/ch19-00-advanced-features.html)中詳細介紹。
 
 讓我們透過這裡使用的 `match` expression 來看一個範例。假設使用者猜測了 50，而這次隨機產生的秘密數字是 38。
 
@@ -519,7 +518,7 @@ For more information about this error, try `rustc --explain E0308`.
 error: could not compile `guessing_game` (bin "guessing_game") due to 1 previous error
 ```
 
-錯誤的核心指出有 *mismatched types*。Rust 有一個強大、靜態的 type system。然而，它也有 type inference。當我們寫 `let mut guess = String::new()` 時，Rust 能夠推斷 `guess` 應該是 `String`，而沒有要求我們寫出類型。另一方面，`secret_number` 是一個 number type。Rust 的一些 number types 可以有介於 1 到 100 之間的值：`i32`，一個 32 位元數字；`u32`，一個 unsigned 32 位元數字；`i64`，一個 64 位元數字；以及其他。除非另有指定，Rust 預設為 `i32`，這是 `secret_number` 的類型，除非你在其他地方添加類型資訊，這將導致 Rust 推斷出不同的數值類型。錯誤的原因是 Rust 無法比較字串和數字類型。
+錯誤的核心指出有 _mismatched types_。Rust 有一個強大、靜態的 type system。然而，它也有 type inference。當我們寫 `let mut guess = String::new()` 時，Rust 能夠推斷 `guess` 應該是 `String`，而沒有要求我們寫出類型。另一方面，`secret_number` 是一個 number type。Rust 的一些 number types 可以有介於 1 到 100 之間的值：`i32`，一個 32 位元數字；`u32`，一個 unsigned 32 位元數字；`i64`，一個 64 位元數字；以及其他。除非另有指定，Rust 預設為 `i32`，這是 `secret_number` 的類型，除非你在其他地方添加類型資訊，這將導致 Rust 推斷出不同的數值類型。錯誤的原因是 Rust 無法比較字串和數字類型。
 
 最終，我們希望將程式讀取為輸入的 `String` 轉換為 number type，以便我們可以將其與秘密數字進行數值比較。我們透過在 `main` 函式主體中新增這行程式碼來實現：
 
@@ -551,7 +550,7 @@ error: could not compile `guessing_game` (bin "guessing_game") due to 1 previous
 let guess: u32 = guess.trim().parse().expect("Please type a number!");
 ```
 
-我們建立了一個名為 `guess` 的變數。但是等等，程式不是已經有一個名為 `guess` 的變數了嗎？確實有，但 Rust 允許我們用一個新的值來 shadowing 之前的 `guess` 值。*Shadowing* 讓我們可以重複使用 `guess` 變數名稱，而不是強迫我們建立兩個獨特的變數，例如 `guess_str` 和 `guess`。我們將在[第三章](https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html#shadowing)中更詳細地介紹這個功能，但現在，你只需要知道這個功能經常用於將一個值從一種類型轉換為另一種類型時。
+我們建立了一個名為 `guess` 的變數。但是等等，程式不是已經有一個名為 `guess` 的變數了嗎？確實有，但 Rust 允許我們用一個新的值來 shadowing 之前的 `guess` 值。_Shadowing_ 讓我們可以重複使用 `guess` 變數名稱，而不是強迫我們建立兩個獨特的變數，例如 `guess_str` 和 `guess`。我們將在[第三章](https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html#shadowing)中更詳細地介紹這個功能，但現在，你只需要知道這個功能經常用於將一個值從一種類型轉換為另一種類型時。
 
 我們將這個新變數綁定到表達式 `guess.trim().parse()`。表達式中的 `guess` 指的是包含輸入字串的原始 `guess` 變數。`String` 實例上的 `trim` method 將消除開頭和結尾的任何空白字元，這是我們將字串轉換為 `u32` 之前必須做的，因為 `u32` 只能包含數值資料。使用者必須按下 <kbd>enter</kbd> 以滿足 `read_line` 並輸入他們的猜測，這會向字串新增一個換行字元。例如，如果使用者輸入 <kbd>5</kbd> 並按下 <kbd>enter</kbd>，`guess` 看起來會像這樣：`5\n`。`\n` 代表「換行」。(在 Windows 上，按下 <kbd>enter</kbd> 會產生一個回車和一個換行，`\r\n`。) `trim` method 會消除 `\n` 或 `\r\n`，結果只剩下 `5`。
 

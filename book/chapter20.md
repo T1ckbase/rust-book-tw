@@ -12,17 +12,17 @@ directory, so all fixes need to be made in `/src/`.
 
 在本章中，我們將介紹：
 
-* Unsafe Rust：如何選擇不使用 Rust 的一些保證，並承擔手動維護這些保證的責任
-* 進階 traits：關聯型別 (associated types)、預設型別參數、完全限定語法 (fully qualified syntax)、supertraits，以及與 trait 相關的 newtype pattern
-* 進階型別：更多關於 newtype pattern、型別別名 (type aliases)、never type 和動態大小型別 (dynamically sized types)
-* 進階函式與閉包：函式指標 (function pointers) 和回傳閉包
-* Macros：在編譯時定義更多程式碼的方法
+- Unsafe Rust：如何選擇不使用 Rust 的一些保證，並承擔手動維護這些保證的責任
+- 進階 traits：關聯型別 (associated types)、預設型別參數、完全限定語法 (fully qualified syntax)、supertraits，以及與 trait 相關的 newtype pattern
+- 進階型別：更多關於 newtype pattern、型別別名 (type aliases)、never type 和動態大小型別 (dynamically sized types)
+- 進階函式與閉包：函式指標 (function pointers) 和回傳閉包
+- Macros：在編譯時定義更多程式碼的方法
 
 這是 Rust 功能的百科全書，每個 Rust 開發者都能從中受益！讓我們深入探討吧！
 
 ## Unsafe Rust
 
-我們到目前為止討論過的所有程式碼，其 Rust 記憶體安全保證都是在編譯時強制執行的。然而，Rust 內部隱藏著另一種語言，它不強制執行這些記憶體安全保證：它被稱為 *unsafe Rust*，其運作方式與一般 Rust 相同，但賦予我們額外的超能力。
+我們到目前為止討論過的所有程式碼，其 Rust 記憶體安全保證都是在編譯時強制執行的。然而，Rust 內部隱藏著另一種語言，它不強制執行這些記憶體安全保證：它被稱為 _unsafe Rust_，其運作方式與一般 Rust 相同，但賦予我們額外的超能力。
 
 Unsafe Rust 之所以存在，是因為靜態分析本質上是保守的。當編譯器嘗試判斷程式碼是否符合保證時，它寧願拒絕一些有效的程式，也不願接受一些無效的程式。儘管程式碼*可能*沒問題，但如果 Rust 編譯器沒有足夠的資訊來確定，它就會拒絕該程式碼。在這些情況下，你可以使用 unsafe 程式碼來告訴編譯器：「相信我，我知道我在做什麼。」然而，請注意，使用 unsafe Rust 需自擔風險：如果你錯誤地使用 unsafe 程式碼，可能會因記憶體不安全而導致問題，例如 null pointer dereferencing。
 
@@ -30,7 +30,7 @@ Rust 還有一個 unsafe 分身的原因是，底層的電腦硬體本質上就�
 
 ### Unsafe 超能力
 
-要切換到 unsafe Rust，請使用 `unsafe` 關鍵字，然後開始一個包含 unsafe 程式碼的新 block。你可以在 unsafe Rust 中執行五種在 safe Rust 中無法執行的動作，我們稱之為 *unsafe 超能力*。這些超能力包括：
+要切換到 unsafe Rust，請使用 `unsafe` 關鍵字，然後開始一個包含 unsafe 程式碼的新 block。你可以在 unsafe Rust 中執行五種在 safe Rust 中無法執行的動作，我們稱之為 _unsafe 超能力_。這些超能力包括：
 
 1. Dereference 原始指標 (raw pointer)
 1. 呼叫 unsafe 函式或方法
@@ -50,14 +50,14 @@ Rust 還有一個 unsafe 分身的原因是，底層的電腦硬體本質上就�
 
 ### Dereferencing 原始指標
 
-在第 4 章的「[Dangling References](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html#dangling-references)」中，我們提到編譯器會確保 reference 總是有效的。Unsafe Rust 有兩種新的型別，稱為 *原始指標 (raw pointers)*，它們與 reference 類似。與 reference 一樣，原始指標可以是 immutable 或 mutable，分別寫作 `*const T` 和 `*mut T`。星號不是 dereference operator；它是型別名稱的一部分。在原始指標的上下文中，*immutable* 表示指標在 dereferenced 後不能直接被賦值。
+在第 4 章的「[Dangling References](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html#dangling-references)」中，我們提到編譯器會確保 reference 總是有效的。Unsafe Rust 有兩種新的型別，稱為 _原始指標 (raw pointers)_，它們與 reference 類似。與 reference 一樣，原始指標可以是 immutable 或 mutable，分別寫作 `*const T` 和 `*mut T`。星號不是 dereference operator；它是型別名稱的一部分。在原始指標的上下文中，_immutable_ 表示指標在 dereferenced 後不能直接被賦值。
 
 與 reference 和 smart pointers 不同，原始指標：
 
-* 允許忽略借用規則，可以同時擁有 immutable 和 mutable 指標，或多個 mutable 指標指向同一位置
-* 不保證指向有效的記憶體
-* 允許為 null
-* 不實作任何自動清理
+- 允許忽略借用規則，可以同時擁有 immutable 和 mutable 指標，或多個 mutable 指標指向同一位置
+- 不保證指向有效的記憶體
+- 允許為 null
+- 不實作任何自動清理
 
 透過選擇不讓 Rust 強制執行這些保證，你可以放棄保證的安全性，以換取更高的效能，或與 Rust 的保證不適用的其他語言或硬體介接的能力。
 
@@ -79,13 +79,13 @@ Rust 還有一個 unsafe 分身的原因是，底層的電腦硬體本質上就�
 為了證明這一點，接下來我們將建立一個我們無法確定其有效性的原始指標，方法是使用關鍵字 `as` 來 cast 值，而不是使用原始借用運算子。程式碼清單 20-2 顯示了如何建立指向記憶體中任意位置的原始指標。嘗試使用任意記憶體是 undefined 的：該位址可能有資料，也可能沒有；編譯器可能會最佳化程式碼，使其不存取記憶體；或者程式可能會因 segmentation fault 而終止。通常，沒有充分的理由編寫這樣的程式碼，尤其是在可以使用原始借用運算子的情況下，但這是可能的。
 
 ```rust
-    let address = 0x012345usize;
-    let r = address as *const i32;
+let address = 0x012345usize;
+let r = address as *const i32;
 ```
 
 程式碼清單 20-2：建立指向任意記憶體位址的原始指標
 
-回想一下，我們可以在 safe 程式碼中建立原始指標，但我們不能 *dereference* 原始指標並讀取所指向的資料。在程式碼清單 20-3 中，我們在原始指標上使用了 dereference operator `*`，這需要一個 `unsafe` block。
+回想一下，我們可以在 safe 程式碼中建立原始指標，但我們不能 _dereference_ 原始指標並讀取所指向的資料。在程式碼清單 20-3 中，我們在原始指標上使用了 dereference operator `*`，這需要一個 `unsafe` block。
 
 ```rust
     let mut num = 5;
@@ -250,7 +250,7 @@ fn split_at_mut(values: &mut [i32], mid: usize) -> (&mut [i32], &mut [i32]) {
 
 #### 使用 extern 函式呼叫外部程式碼
 
-有時你的 Rust 程式碼可能需要與以其他語言編寫的程式碼互動。為此，Rust 有一個 `extern` 關鍵字，可以促進 *外部函式介面 (Foreign Function Interface，FFI)* 的建立和使用，這是一種程式語言定義函式並啟用不同的（外部）程式語言來呼叫這些函式的方式。
+有時你的 Rust 程式碼可能需要與以其他語言編寫的程式碼互動。為此，Rust 有一個 `extern` 關鍵字，可以促進 _外部函式介面 (Foreign Function Interface，FFI)_ 的建立和使用，這是一種程式語言定義函式並啟用不同的（外部）程式語言來呼叫這些函式的方式。
 
 程式碼清單 20-8 展示了如何設定與 C 標準函式庫中 `abs` 函式的整合。在 `extern` block 中宣告的函式通常在 Rust 程式碼中呼叫是不安全的，因此 `extern` block 也必須標記為 `unsafe`。原因在於其他語言不強制執行 Rust 的規則和保證，Rust 也無法檢查它們，因此確保安全的責任落在了程式設計師身上。
 
@@ -270,7 +270,7 @@ fn main() {
 
 程式碼清單 20-8：宣告和呼叫在另一種語言中定義的 `extern` 函式
 
-在 `unsafe extern "C"` block 內，我們列出了我們想要呼叫的其他語言的外部函式的名稱和簽名。`"C"` 部分定義了外部函式使用的 *應用程式二進位介面 (application binary interface, ABI)*：ABI 定義了如何在組譯層級呼叫函式。`"C"` ABI 是最常見的，並遵循 C 程式語言的 ABI。有關 Rust 支援的所有 ABI 的資訊可在 Rust Reference 的 *[../reference/items/external-blocks.html#abi](https://doc.rust-lang.org/reference/items/external-blocks.html#abi)* 中找到。
+在 `unsafe extern "C"` block 內，我們列出了我們想要呼叫的其他語言的外部函式的名稱和簽名。`"C"` 部分定義了外部函式使用的 _應用程式二進位介面 (application binary interface, ABI)_：ABI 定義了如何在組譯層級呼叫函式。`"C"` ABI 是最常見的，並遵循 C 程式語言的 ABI。有關 Rust 支援的所有 ABI 的資訊可在 Rust Reference 的 _[../reference/items/external-blocks.html#abi](https://doc.rust-lang.org/reference/items/external-blocks.html#abi)_ 中找到。
 
 在 `unsafe extern` block 中宣告的每個項目都是隱式 unsafe 的。然而，有些 FFI 函式*是*安全的呼叫。例如，C 標準函式庫中的 `abs` 函式沒有任何記憶體安全考量，我們知道它可以與任何 `i32` 呼叫。在這種情況下，我們可以使 `safe` 關鍵字來表示這個特定函式即使在 `unsafe extern` block 中也是安全的呼叫。一旦我們進行了該變更，呼叫它就不再需要 `unsafe` block，如程式碼清單 20-9 所示。
 
@@ -292,7 +292,7 @@ fn main() {
 
 #### 從其他語言呼叫 Rust 函式
 
-我們也可以使用 `extern` 來建立一個介面，讓其他語言能夠呼叫 Rust 函式。我們不需要建立一個完整的 `extern` block，只需在相關函式的 `fn` 關鍵字之前加入 `extern` 關鍵字並指定要使用的 ABI。我們還需要加入 `#[unsafe(no_mangle)]` 註解，以告知 Rust 編譯器不要混淆 (mangle) 此函式的名稱。*混淆 (Mangling)* 是指編譯器將我們給函式的名稱變更為另一個名稱，其中包含更多資訊供編譯過程的其他部分使用，但可讀性較差。每個程式語言編譯器混淆名稱的方式略有不同，因此要讓 Rust 函式可由其他語言命名，我們必須禁用 Rust 編譯器的名稱混淆。這是不安全的，因為在沒有內建混淆的情況下，函式庫之間可能會發生名稱衝突，因此我們有責任確保我們選擇的名稱在沒有混淆的情況下安全地匯出。
+我們也可以使用 `extern` 來建立一個介面，讓其他語言能夠呼叫 Rust 函式。我們不需要建立一個完整的 `extern` block，只需在相關函式的 `fn` 關鍵字之前加入 `extern` 關鍵字並指定要使用的 ABI。我們還需要加入 `#[unsafe(no_mangle)]` 註解，以告知 Rust 編譯器不要混淆 (mangle) 此函式的名稱。_混淆 (Mangling)_ 是指編譯器將我們給函式的名稱變更為另一個名稱，其中包含更多資訊供編譯過程的其他部分使用，但可讀性較差。每個程式語言編譯器混淆名稱的方式略有不同，因此要讓 Rust 函式可由其他語言命名，我們必須禁用 Rust 編譯器的名稱混淆。這是不安全的，因為在沒有內建混淆的情況下，函式庫之間可能會發生名稱衝突，因此我們有責任確保我們選擇的名稱在沒有混淆的情況下安全地匯出。
 
 在以下範例中，我們使 `call_from_c` 函式在編譯為共享函式庫並從 C 連結後，可從 C 程式碼存取：
 
@@ -309,7 +309,7 @@ pub extern "C" fn call_from_c() {
 
 在本書中，我們還沒有討論全域變數 (global variables)，雖然 Rust 支援它們，但它們可能與 Rust 的 ownership 規則產生問題。如果兩個執行緒同時存取同一個可變全域變數，可能會導致 data race。
 
-在 Rust 中，全域變數被稱為 *static 變數*。程式碼清單 20-10 顯示了一個 static 變數的宣告和使用範例，其值為字串 slice。
+在 Rust 中，全域變數被稱為 _static 變數_。程式碼清單 20-10 顯示了一個 static 變數的宣告和使用範例，其值為字串 slice。
 
 src/main.rs
 
@@ -325,7 +325,7 @@ fn main() {
 
 Static 變數與我們在第 3 章「[常數](https://doc.rust-lang.org/book/ch03-02-data-types.html#constants)」中討論的常數類似。根據慣例，Static 變數的名稱採用 `SCREAMING_SNAKE_CASE` 命名。Static 變數只能儲存具有 `'static` lifetime 的 reference，這表示 Rust 編譯器可以計算出 lifetime，我們不需要明確地標註它。存取 immutable static 變數是安全的。
 
-常數和 immutable static 變數之間的一個細微差異是，static 變數中的值在記憶體中具有固定位址。使用該值將始終存取相同的資料。另一方面，常數允許在使用時複製其資料。另一個差異是 static 變數可以是 mutable 的。存取和修改 mutable static 變數是 *unsafe* 的。程式碼清單 20-11 顯示了如何宣告、存取和修改一個名為 `COUNTER` 的 mutable static 變數。
+常數和 immutable static 變數之間的一個細微差異是，static 變數中的值在記憶體中具有固定位址。使用該值將始終存取相同的資料。另一方面，常數允許在使用時複製其資料。另一個差異是 static 變數可以是 mutable 的。存取和修改 mutable static 變數是 _unsafe_ 的。程式碼清單 20-11 顯示了如何宣告、存取和修改一個名為 `COUNTER` 的 mutable static 變數。
 
 src/main.rs
 
@@ -382,7 +382,7 @@ unsafe impl Foo for i32 {
 
 ### 存取 Union 的欄位
 
-最後一個只有在 `unsafe` 下才能執行的動作是存取 union 的欄位。*Union* 類似於 `struct`，但每次在特定 instance 中只會使用一個宣告的欄位。Union 主要用於與 C 程式碼中的 union 介面。存取 union 欄位是不安全的，因為 Rust 無法保證目前儲存在 union instance 中的資料型別。你可以在 Rust Reference 的 *[../reference/items/unions.html](https://doc.rust-lang.org/reference/items/unions.html)* 中了解更多關於 union 的資訊。
+最後一個只有在 `unsafe` 下才能執行的動作是存取 union 的欄位。_Union_ 類似於 `struct`，但每次在特定 instance 中只會使用一個宣告的欄位。Union 主要用於與 C 程式碼中的 union 介面。存取 union 欄位是不安全的，因為 Rust 無法保證目前儲存在 union instance 中的資料型別。你可以在 Rust Reference 的 _[../reference/items/unions.html](https://doc.rust-lang.org/reference/items/unions.html)_ 中了解更多關於 union 的資訊。
 
 ### 使用 Miri 檢查 Unsafe 程式碼
 
@@ -425,7 +425,6 @@ error: Undefined Behavior: pointer not dereferenceable: pointer must be derefere
 note: some details are omitted, run with `MIRIFLAGS=-Zmiri-backtrace=full` for a verbose backtrace
 
 error: aborting due to 1 previous error; 1 warning emitted
-
 ```
 
 Miri 正確地警告我們正在將一個整數 cast 為指標，這可能是一個問題，但 Miri 無法偵測它是否存在問題，因為它不知道指標是如何產生的。然後，Miri 會回傳一個錯誤，指出程式碼清單 20-7 存在 undefined behavior，因為我們有一個 dangling pointer。感謝 Miri，我們現在知道存在 undefined behavior 的風險，我們可以思考如何使程式碼安全。在某些情況下，Miri 甚至可以就如何修正錯誤提出建議。
@@ -434,13 +433,13 @@ Miri 並不能捕獲你在編寫 unsafe 程式碼時可能出錯的所有問題�
 
 換句話說：如果 Miri *確實*捕獲到一個問題，你就知道存在 bug，但僅僅因為 Miri *沒有*捕獲到 bug 並不代表沒有問題。儘管如此，它還是可以捕獲很多問題。試著在這些章節的其他 unsafe 程式碼範例上執行它，看看它會說什麼！
 
-你可以在 Miri 的 GitHub 儲存庫 *[https://github.com/rust-lang/miri](https://github.com/rust-lang/miri)* 中了解更多資訊。
+你可以在 Miri 的 GitHub 儲存庫 _[https://github.com/rust-lang/miri](https://github.com/rust-lang/miri)_ 中了解更多資訊。
 
 ### 何時使用 Unsafe 程式碼
 
 使用 `unsafe` 來使用我們剛才討論的五個超能力並沒有錯，甚至也沒有被禁止，但要正確地編寫 `unsafe` 程式碼會更棘手，因為編譯器無法幫助維護記憶體安全性。當你有理由使用 `unsafe` 程式碼時，你可以這樣做，而且明確的 `unsafe` 註解使得在問題發生時更容易追蹤問題來源。無論何時編寫 unsafe 程式碼，你都可以使用 Miri 來幫助你更確信所編寫的程式碼遵守了 Rust 的規則。
 
-要更深入地探索如何有效地使用 unsafe Rust，請閱讀 Rust 的官方指南，即 Rustonomicon，網址為 *[https://doc.rust-lang.org/nomicon/](https://doc.rust-lang.org/nomicon/)*。
+要更深入地探索如何有效地使用 unsafe Rust，請閱讀 Rust 的官方指南，即 Rustonomicon，網址為 _[https://doc.rust-lang.org/nomicon/](https://doc.rust-lang.org/nomicon/)_。
 
 ## 進階 Traits
 
@@ -450,7 +449,7 @@ Miri 並不能捕獲你在編寫 unsafe 程式碼時可能出錯的所有問題�
 
 ### 關聯型別 (Associated Types)
 
-*關聯型別 (Associated types)* 將型別 placeholder 與 trait 連接起來，以便 trait 方法定義可以在其簽名中使用這些 placeholder 型別。trait 的實作者將指定要使用的具體型別，而不是特定實作的 placeholder 型別。這樣，我們就可以定義一個使用某些型別的 trait，而無需在 trait 實作之前確切知道這些型別是什麼。
+_關聯型別 (Associated types)_ 將型別 placeholder 與 trait 連接起來，以便 trait 方法定義可以在其簽名中使用這些 placeholder 型別。trait 的實作者將指定要使用的具體型別，而不是特定實作的 placeholder 型別。這樣，我們就可以定義一個使用某些型別的 trait，而無需在 trait 實作之前確切知道這些型別是什麼。
 
 我們將本章中的大多數進階功能描述為很少需要。關聯型別介於中間：它們比書中其餘部分解釋的功能使用頻率更低，但比本章討論的許多其他功能更常用。
 
@@ -500,7 +499,7 @@ pub trait Iterator<T> {
 
 當我們使用泛型型別參數時，我們可以為泛型型別指定一個預設具體型別。這消除了 trait 實作者在預設型別適用時指定具體型別的需要。你可以在宣告泛型型別時使用 `<PlaceholderType=ConcreteType>` 語法來指定預設型別。
 
-這種技術有用的一個很好的例子是*運算子重載 (operator overloading)*，其中你在特定情況下自訂運算子（例如 `+`）的行為。
+這種技術有用的一個很好的例子是_運算子重載 (operator overloading)_，其中你在特定情況下自訂運算子（例如 `+`）的行為。
 
 Rust 不允許你建立自己的運算子或重載任意運算子。但你可以透過實作與運算子相關的 traits 來重載 `std::ops` 中列出的操作和相應的 traits。例如，在程式碼清單 20-15 中，我們重載 `+` 運算子以將兩個 `Point` 實例相加。我們透過在 `Point` struct 上實作 `Add` trait 來做到這一點。
 
@@ -548,11 +547,11 @@ trait Add<Rhs=Self> {
 }
 ```
 
-這段程式碼看起來應該大致熟悉：一個帶有一個方法和一個關聯型別的 trait。新的部分是 `Rhs=Self`：這種語法稱為 *default type parameters (預設型別參數)*。`Rhs` 泛型型別參數（“right-hand side” 的縮寫）定義了 `add` 方法中 `rhs` 參數的型別。如果我們在實作 `Add` trait 時沒有為 `Rhs` 指定具體型別，`Rhs` 的型別將預設為 `Self`，也就是我們正在實作 `Add` 的型別。
+這段程式碼看起來應該大致熟悉：一個帶有一個方法和一個關聯型別的 trait。新的部分是 `Rhs=Self`：這種語法稱為 _default type parameters (預設型別參數)_。`Rhs` 泛型型別參數（“right-hand side” 的縮寫）定義了 `add` 方法中 `rhs` 參數的型別。如果我們在實作 `Add` trait 時沒有為 `Rhs` 指定具體型別，`Rhs` 的型別將預設為 `Self`，也就是我們正在實作 `Add` 的型別。
 
 當我們為 `Point` 實作 `Add` 時，我們使用了 `Rhs` 的預設值，因為我們想要將兩個 `Point` 實例相加。讓我們看一個實作 `Add` trait 的範例，其中我們想要自訂 `Rhs` 型別，而不是使用預設值。
 
-我們有兩個 struct，`Millimeters` 和 `Meters`，分別儲存不同單位的值。這種將現有型別薄包裝在另一個 struct 中的方式稱為 *newtype pattern*，我們將在「[使用 Newtype Pattern 實作外部 Trait](https://doc.rust-lang.org/book/ch20-03-advanced-types.html#using-the-newtype-pattern-to-implement-external-traits-on-external-types)」一節中詳細說明。我們想要將毫米值加到公尺值，並讓 `Add` 的實作正確地進行轉換。我們可以為 `Millimeters` 實作 `Add`，並將 `Meters` 作為 `Rhs`，如程式碼清單 20-16 所示。
+我們有兩個 struct，`Millimeters` 和 `Meters`，分別儲存不同單位的值。這種將現有型別薄包裝在另一個 struct 中的方式稱為 _newtype pattern_，我們將在「[使用 Newtype Pattern 實作外部 Trait](https://doc.rust-lang.org/book/ch20-03-advanced-types.html#using-the-newtype-pattern-to-implement-external-traits-on-external-types)」一節中詳細說明。我們想要將毫米值加到公尺值，並讓 `Add` 的實作正確地進行轉換。我們可以為 `Millimeters` 實作 `Add`，並將 `Meters` 作為 `Rhs`，如程式碼清單 20-16 所示。
 
 src/lib.rs
 
@@ -670,7 +669,7 @@ Up!
 *waving arms furiously*
 ```
 
-因為 `fly` 方法接受 `self` 參數，如果我們有兩個*型別*都實作一個*trait*，Rust 可以根據 `self` 的型別來判斷要使用哪個 trait 的實作。
+因為 `fly` 方法接受 `self` 參數，如果我們有兩個*型別*都實作一個_trait_，Rust 可以根據 `self` 的型別來判斷要使用哪個 trait 的實作。
 
 然而，不是方法的關聯函式沒有 `self` 參數。當有多個型別或 trait 定義了同名且非方法函式時，除非你使用完全限定語法，否則 Rust 不總是知道你指的是哪個型別。例如，在程式碼清單 20-20 中，我們為一個動物收容所建立一個 trait，該收容所希望將所有幼犬命名為 Spot。我們建立一個 `Animal` trait，其中包含一個關聯的非方法函式 `baby_name`。`Animal` trait 被實作在 `Dog` struct 上，我們也直接在 `Dog` 上提供了關聯的非方法函式 `baby_name`。
 
@@ -783,7 +782,7 @@ A baby dog is called a puppy
 
 ### 使用 Supertraits
 
-有時你可能會編寫一個 trait 定義，該定義依賴於另一個 trait：為了讓型別實作第一個 trait，你希望要求該型別也實作第二個 trait。這樣做是為了讓你的 trait 定義可以使用第二個 trait 的關聯項目。你的 trait 定義所依賴的 trait 被稱為你自己的 trait 的 *supertrait*。
+有時你可能會編寫一個 trait 定義，該定義依賴於另一個 trait：為了讓型別實作第一個 trait，你希望要求該型別也實作第二個 trait。這樣做是為了讓你的 trait 定義可以使用第二個 trait 的關聯項目。你的 trait 定義所依賴的 trait 被稱為你自己的 trait 的 _supertrait_。
 
 舉例來說，假設我們想要建立一個 `OutlinePrint` trait，其中包含一個 `outline_print` 方法，該方法會將給定的值格式化為星號框起來。也就是說，給定一個實作標準函式庫 `Display` trait 以產生 `(x, y)` 的 `Point` struct，當我們在 `x` 為 `1` 且 `y` 為 `3` 的 `Point` 實例上呼叫 `outline_print` 時，它應該印出以下內容：
 
@@ -891,7 +890,7 @@ impl fmt::Display for Point {
 
 ### 使用 Newtype Pattern 實作外部 Traits
 
-在第 10 章「[在型別上實作 Trait](https://doc.rust-lang.org/book/ch10-02-traits.html#implementing-a-trait-on-a-type)」中，我們提到 orphan rule，它規定我們只能在 trait 或型別（或兩者）本地於我們的 crate 時，才能在型別上實作 trait。使用 *newtype pattern* 可以繞過這個限制，這涉及在 tuple struct 中建立一個新型別。（我們在第 5 章「[使用不帶命名欄位的 Tuple Struct 建立不同型別](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types)」中討論了 tuple structs。）tuple struct 將有一個欄位，並作為我們想要實作 trait 的型別的薄包裝。然後，該包裝型別是我們 crate 的本地型別，我們可以在該包裝上實作 trait。*Newtype* 是一個源自 Haskell 程式語言的術語。使用此 pattern 沒有執行時效能損失，並且包裝型別在編譯時會被省略。
+在第 10 章「[在型別上實作 Trait](https://doc.rust-lang.org/book/ch10-02-traits.html#implementing-a-trait-on-a-type)」中，我們提到 orphan rule，它規定我們只能在 trait 或型別（或兩者）本地於我們的 crate 時，才能在型別上實作 trait。使用 _newtype pattern_ 可以繞過這個限制，這涉及在 tuple struct 中建立一個新型別。（我們在第 5 章「[使用不帶命名欄位的 Tuple Struct 建立不同型別](https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types)」中討論了 tuple structs。）tuple struct 將有一個欄位，並作為我們想要實作 trait 的型別的薄包裝。然後，該包裝型別是我們 crate 的本地型別，我們可以在該包裝上實作 trait。_Newtype_ 是一個源自 Haskell 程式語言的術語。使用此 pattern 沒有執行時效能損失，並且包裝型別在編譯時會被省略。
 
 舉例來說，假設我們想在 `Vec<T>` 上實作 `Display`，而 orphan rule 阻止我們直接這樣做，因為 `Display` trait 和 `Vec<T>` 型別都在我們的 crate 外部定義。我們可以建立一個 `Wrapper` struct 來容納 `Vec<T>` 實例；然後我們可以在 `Wrapper` 上實作 `Display` 並使用 `Vec<T>` 值，如程式碼清單 20-24 所示。
 
@@ -936,13 +935,13 @@ Newtypes 也可以隱藏內部實作。例如，我們可以提供一個 `People
 
 ### 使用型別別名建立型別同義詞
 
-Rust 提供宣告*型別別名 (type alias)* 的功能，為現有型別提供另一個名稱。為此，我們使用 `type` 關鍵字。例如，我們可以像這樣為 `i32` 建立別名 `Kilometers`：
+Rust 提供宣告_型別別名 (type alias)_ 的功能，為現有型別提供另一個名稱。為此，我們使用 `type` 關鍵字。例如，我們可以像這樣為 `i32` 建立別名 `Kilometers`：
 
 ```rust
-    type Kilometers = i32;
+type Kilometers = i32;
 ```
 
-現在別名 `Kilometers` 是 `i32` 的*同義詞*；與我們在程式碼清單 20-16 中建立的 `Millimeters` 和 `Meters` 型別不同，`Kilometers` 不是一個獨立的新型別。型別為 `Kilometers` 的值將被視為與 `i32` 型別的值相同：
+現在別名 `Kilometers` 是 `i32` 的_同義詞_；與我們在程式碼清單 20-16 中建立的 `Millimeters` 和 `Meters` 型別不同，`Kilometers` 不是一個獨立的新型別。型別為 `Kilometers` 的值將被視為與 `i32` 型別的值相同：
 
 ```rust
     type Kilometers = i32;
@@ -995,7 +994,7 @@ Box<dyn Fn() + Send + 'static>
 
 程式碼清單 20-26：引入型別別名 `Thunk` 以減少重複
 
-這段程式碼更容易閱讀和撰寫！為型別別名選擇一個有意義的名稱也有助於傳達你的意圖（*thunk* 是一個指稍後會被求值的程式碼的詞，因此它對於儲存的閉包來說是一個恰當的名稱）。
+這段程式碼更容易閱讀和撰寫！為型別別名選擇一個有意義的名稱也有助於傳達你的意圖（_thunk_ 是一個指稍後會被求值的程式碼的詞，因此它對於儲存的閉包來說是一個恰當的名稱）。
 
 型別別名也常用於 `Result<T, E>` 型別以減少重複。考慮標準函式庫中的 `std::io` 模組。I/O 操作通常回傳 `Result<T, E>` 以處理操作失敗的情況。這個函式庫有一個 `std::io::Error` struct，表示所有可能的 I/O 錯誤。`std::io` 中的許多函式都會回傳 `Result<T, E>`，其中 `E` 是 `std::io::Error`，例如 `Write` trait 中的這些函式：
 
@@ -1034,7 +1033,7 @@ pub trait Write {
 
 ### 永不回傳的 Never Type
 
-Rust 有一個特殊型別，名為 `!`，在型別理論術語中被稱為*空型別 (empty type)*，因為它沒有值。我們更喜歡稱它為 *never type*，因為當函式永遠不會回傳時，它就代表回傳型別。這是一個範例：
+Rust 有一個特殊型別，名為 `!`，在型別理論術語中被稱為_空型別 (empty type)_，因為它沒有值。我們更喜歡稱它為 _never type_，因為當函式永遠不會回傳時，它就代表回傳型別。這是一個範例：
 
 ```rust
 fn bar() -> ! {
@@ -1042,15 +1041,15 @@ fn bar() -> ! {
 }
 ```
 
-這段程式碼讀作「函式 `bar` 永不回傳」。永不回傳的函式稱為*發散函式 (diverging functions)*。我們無法建立 `!` 型別的值，因此 `bar` 永遠不可能回傳。
+這段程式碼讀作「函式 `bar` 永不回傳」。永不回傳的函式稱為_發散函式 (diverging functions)_。我們無法建立 `!` 型別的值，因此 `bar` 永遠不可能回傳。
 
 但是一個你永遠無法建立值的型別有什麼用呢？回想一下程式碼清單 2-5 中的程式碼，它是猜數字遊戲的一部分；我們在這裡程式碼清單 20-27 中複製了一部分。
 
 ```rust
-        let guess: u32 = match guess.trim().parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
+let guess: u32 = match guess.trim().parse() {
+    Ok(num) => num,
+    Err(_) => continue,
+};
 ```
 
 程式碼清單 20-27：一個以 `continue` 結尾的 `match` arm
@@ -1058,10 +1057,10 @@ fn bar() -> ! {
 當時，我們跳過了一些程式碼細節。在第 6 章「[`match` 控制流結構](https://doc.rust-lang.org/book/ch06-02-match.html#the-match-control-flow-construct)」中，我們討論過 `match` 的所有 arm 都必須回傳相同的型別。因此，例如，以下程式碼無法運作：
 
 ```rust
-    let guess = match guess.trim().parse() {
-        Ok(_) => 5,
-        Err(_) => "hello",
-    };
+let guess = match guess.trim().parse() {
+    Ok(_) => 5,
+    Err(_) => "hello",
+};
 ```
 
 此程式碼中 `guess` 的型別必須是整數*和*字串，而 Rust 要求 `guess` 只能有一個型別。那麼 `continue` 回傳什麼？我們如何在程式碼清單 20-27 中允許從一個 arm 回傳 `u32`，而另一個 arm 以 `continue` 結尾呢？
@@ -1099,13 +1098,13 @@ impl<T> Option<T> {
 
 ### 動態大小型別與 Sized Trait
 
-Rust 需要了解其型別的某些細節，例如為特定型別的值分配多少空間。這使得其型別系統的一個方面在開始時有點令人困惑：*動態大小型別 (dynamically sized types)* 的概念。這些型別有時被稱為 *DSTs* 或 *unsized types*，它們讓你可以編寫程式碼，其中值的大小只能在執行時得知。
+Rust 需要了解其型別的某些細節，例如為特定型別的值分配多少空間。這使得其型別系統的一個方面在開始時有點令人困惑：_動態大小型別 (dynamically sized types)_ 的概念。這些型別有時被稱為 _DSTs_ 或 _unsized types_，它們讓你可以編寫程式碼，其中值的大小只能在執行時得知。
 
 讓我們深入探討一個我們在本書中一直在使用的動態大小型別 `str` 的細節。沒錯，不是 `&str`，而是 `str` 本身就是一個 DST。在許多情況下，例如儲存使用者輸入的文字時，我們無法在執行時知道字串的長度。這意味著我們無法建立 `str` 型別的變數，也無法接受 `str` 型別的參數。考慮以下無法運作的程式碼：
 
 ```rust
-    let s1: str = "Hello there!";
-    let s2: str = "How's it going?";
+let s1: str = "Hello there!";
+let s2: str = "How's it going?";
 ```
 
 Rust 需要知道為特定型別的任何值分配多少記憶體，而且所有相同型別的值都必須使用相同數量的記憶體。如果 Rust 允許我們編寫這段程式碼，這兩個 `str` 值將需要佔用相同的空間。但它們的長度不同：`s1` 需要 12 個位元組的儲存空間，而 `s2` 需要 15 個。這就是為什麼無法建立包含動態大小型別的變數的原因。
@@ -1150,7 +1149,7 @@ fn generic<T: ?Sized>(t: &T) {
 
 ### 函式指標
 
-我們已經討論了如何將閉包傳遞給函式；你也可以將一般函式傳遞給函式！當你想要傳遞一個你已經定義的函式，而不是定義一個新的閉包時，這種技術很有用。函式會強制轉換為 `fn` (小寫 *f*) 型別，不要與 `Fn` 閉包 trait 混淆。`fn` 型別稱為*函式指標 (function pointer)*。透過函式指標傳遞函式將允許你將函式作為參數傳遞給其他函式。
+我們已經討論了如何將閉包傳遞給函式；你也可以將一般函式傳遞給函式！當你想要傳遞一個你已經定義的函式，而不是定義一個新的閉包時，這種技術很有用。函式會強制轉換為 `fn` (小寫 _f_) 型別，不要與 `Fn` 閉包 trait 混淆。`fn` 型別稱為_函式指標 (function pointer)_。透過函式指標傳遞函式將允許你將函式作為參數傳遞給其他函式。
 
 指定參數為函式指標的語法與閉包類似，如程式碼清單 20-28 所示，其中我們定義了一個 `add_one` 函式，它將其參數加 1。函式 `do_twice` 接受兩個參數：一個指向任何接受 `i32` 參數並回傳 `i32` 的函式的函式指標，以及一個 `i32` 值。`do_twice` 函式呼叫函式 `f` 兩次，將 `arg` 值傳遞給它，然後將兩個函式呼叫結果相加。`main` 函式使用 `add_one` 和 `5` 作為參數呼叫 `do_twice`。
 
@@ -1185,9 +1184,9 @@ fn main() {
 作為你可以使用 inline 定義的閉包或命名函式範例，讓我們看看標準函式庫中 `Iterator` trait 提供的 `map` 方法的使用。要使用 `map` 方法將數字向量轉換為字串向量，我們可以使用閉包，如程式碼清單 20-29 所示。
 
 ```rust
-    let list_of_numbers = vec![1, 2, 3];
-    let list_of_strings: Vec<String> =
-        list_of_numbers.iter().map(|i| i.to_string()).collect();
+let list_of_numbers = vec![1, 2, 3];
+let list_of_strings: Vec<String> =
+    list_of_numbers.iter().map(|i| i.to_string()).collect();
 ```
 
 程式碼清單 20-29：使用閉包搭配 `map` 方法將數字轉換為字串
@@ -1195,9 +1194,9 @@ fn main() {
 或者，我們可以將一個命名函式作為 `map` 的參數，而不是閉包。程式碼清單 20-30 顯示了這樣做的樣子。
 
 ```rust
-    let list_of_numbers = vec![1, 2, 3];
-    let list_of_strings: Vec<String> =
-        list_of_numbers.iter().map(ToString::to_string).collect();
+let list_of_numbers = vec![1, 2, 3];
+let list_of_strings: Vec<String> =
+    list_of_numbers.iter().map(ToString::to_string).collect();
 ```
 
 程式碼清單 20-30：使用 `String::to_string` 函式搭配 `map` 方法將數字轉換為字串
@@ -1284,7 +1283,7 @@ For more information about this error, try `rustc --explain E0308`.
 error: could not compile `functions-example` (bin "functions-example") due to 1 previous error
 ```
 
-錯誤訊息告訴我們，無論何時我們回傳 `impl Trait`，Rust 都會建立一個獨特的*不透明型別 (opaque type)*，這是一種我們無法深入查看 Rust 為我們建構的細節，也無法猜測 Rust 將生成的型別以自行編寫的型別。所以即使這些函式回傳實作相同 trait 的閉包，`Fn(i32) -> i32`，Rust 為每個函式生成的不透明型別也是不同的。（這類似於 Rust 如何為不同的 async block 產生不同的具體型別，即使它們具有相同的輸出型別，正如我們在第 17 章「[處理任意數量的 Futures](https://doc.rust-lang.org/book/ch17-03-async-io.html#working-with-any-number-of-futures)」中所見。）我們現在已經多次看到這個問題的解決方案：我們可以像程式碼清單 20-34 所示那樣使用 trait object。
+錯誤訊息告訴我們，無論何時我們回傳 `impl Trait`，Rust 都會建立一個獨特的_不透明型別 (opaque type)_，這是一種我們無法深入查看 Rust 為我們建構的細節，也無法猜測 Rust 將生成的型別以自行編寫的型別。所以即使這些函式回傳實作相同 trait 的閉包，`Fn(i32) -> i32`，Rust 為每個函式生成的不透明型別也是不同的。（這類似於 Rust 如何為不同的 async block 產生不同的具體型別，即使它們具有相同的輸出型別，正如我們在第 17 章「[處理任意數量的 Futures](https://doc.rust-lang.org/book/ch17-03-async-io.html#working-with-any-number-of-futures)」中所見。）我們現在已經多次看到這個問題的解決方案：我們可以像程式碼清單 20-34 所示那樣使用 trait object。
 
 ```rust
 fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
@@ -1304,17 +1303,17 @@ fn returns_initialized_closure(init: i32) -> Box<dyn Fn(i32) -> i32> {
 
 ## Macros
 
-我們在本書中一直使用 `println!` 等 macros，但我們尚未完全探討 macro 是什麼以及它是如何運作的。術語 *macro* 指的是 Rust 中的一系列功能：使用 `macro_rules!` 的*宣告式 (declarative)* macros 以及三種*程序式 (procedural)* macros：
+我們在本書中一直使用 `println!` 等 macros，但我們尚未完全探討 macro 是什麼以及它是如何運作的。術語 _macro_ 指的是 Rust 中的一系列功能：使用 `macro_rules!` 的_宣告式 (declarative)_ macros 以及三種_程序式 (procedural)_ macros：
 
-* 自訂的 `#[derive]` macros，指定在 struct 和 enum 上使用 `derive` attribute 添加的程式碼
-* 類 attribute macros，定義可套用於任何項目的自訂 attribute
-* 類函式 macros，看起來像函式呼叫，但操作其參數中指定的 token
+- 自訂的 `#[derive]` macros，指定在 struct 和 enum 上使用 `derive` attribute 添加的程式碼
+- 類 attribute macros，定義可套用於任何項目的自訂 attribute
+- 類函式 macros，看起來像函式呼叫，但操作其參數中指定的 token
 
 我們將逐一討論這些，但首先，讓我們看看為什麼在已經有函式的情況下，我們還需要 macros。
 
 ### Macros 與函式之間的差異
 
-從根本上說，macros 是一種編寫產生其他程式碼的程式碼的方式，這就是所謂的*元程式設計 (metaprogramming)*。在附錄 C 中，我們討論了 `derive` attribute，它為你產生各種 trait 的實作。我們還在本書中使用了 `println!` 和 `vec!` macro。所有這些 macro 都會*展開 (expand)*，以產生比你手動編寫的程式碼更多的程式碼。
+從根本上說，macros 是一種編寫產生其他程式碼的程式碼的方式，這就是所謂的_元程式設計 (metaprogramming)_。在附錄 C 中，我們討論了 `derive` attribute，它為你產生各種 trait 的實作。我們還在本書中使用了 `println!` 和 `vec!` macro。所有這些 macro 都會_展開 (expand)_，以產生比你手動編寫的程式碼更多的程式碼。
 
 元程式設計對於減少你必須編寫和維護的程式碼量很有用，這也是函式的其中一個作用。然而，macros 擁有一些函式沒有的額外能力。
 
@@ -1326,7 +1325,7 @@ fn returns_initialized_closure(init: i32) -> Box<dyn Fn(i32) -> i32> {
 
 ### 使用 macro_rules! 的宣告式 Macros 進行一般元程式設計
 
-Rust 中最廣泛使用的宏形式是*宣告式宏 (declarative macro)*。這些宏有時也被稱為「範例式宏 (macros by example)」、「`macro_rules!` 宏」或簡稱為「宏」。其核心在於，宣告式宏允許你編寫類似於 Rust `match` 表達式的內容。正如第 6 章所討論的，`match` 表達式是控制結構，它接受一個表達式，將表達式結果值與模式進行比較，然後執行與匹配模式相關聯的程式碼。宏也會將值與與特定程式碼相關聯的模式進行比較：在這種情況下，值是傳遞給宏的字面 Rust 原始碼；模式與原始碼的結構進行比較；與每個匹配模式相關聯的程式碼會取代傳遞給宏的程式碼。這一切都發生在編譯期間。
+Rust 中最廣泛使用的宏形式是_宣告式宏 (declarative macro)_。這些宏有時也被稱為「範例式宏 (macros by example)」、「`macro_rules!` 宏」或簡稱為「宏」。其核心在於，宣告式宏允許你編寫類似於 Rust `match` 表達式的內容。正如第 6 章所討論的，`match` 表達式是控制結構，它接受一個表達式，將表達式結果值與模式進行比較，然後執行與匹配模式相關聯的程式碼。宏也會將值與與特定程式碼相關聯的模式進行比較：在這種情況下，值是傳遞給宏的字面 Rust 原始碼；模式與原始碼的結構進行比較；與每個匹配模式相關聯的程式碼會取代傳遞給宏的程式碼。這一切都發生在編譯期間。
 
 要定義一個 macro，你使用 `macro_rules!` 構造。讓我們透過查看 `vec!` macro 的定義來探索如何使用 `macro_rules!`。第 8 章介紹了我們如何使用 `vec!` macro 建立一個帶有特定值的新 vector。例如，以下 macro 建立一個包含三個整數的新 vector：
 
@@ -1365,7 +1364,7 @@ macro_rules! vec {
 
 `vec!` 主體中的結構與 `match` 表達式的結構類似。這裡我們有一個 `( $( $x:expr ),* )` 模式的 arm，後面接著 `=>` 和與此模式相關聯的程式碼 block。如果模式匹配，相關聯的程式碼 block 將被發出。由於這是此 macro 中唯一的模式，因此只有一種有效的匹配方式；任何其他模式都將導致錯誤。更複雜的 macro 將有多個 arm。
 
-macro 定義中的有效 pattern 語法與第 19 章中介紹的 pattern 語法不同，因為 macro pattern 是針對 Rust 程式碼結構而不是值進行匹配。讓我們逐步了解程式碼清單 20-29 中 pattern 片段的含義；有關完整的 macro pattern 語法，請參閱 Rust Reference 中的 *[../reference/macros-by-example.html](https://doc.rust-lang.org/reference/macros-by-example.html)*。
+macro 定義中的有效 pattern 語法與第 19 章中介紹的 pattern 語法不同，因為 macro pattern 是針對 Rust 程式碼結構而不是值進行匹配。讓我們逐步了解程式碼清單 20-29 中 pattern 片段的含義；有關完整的 macro pattern 語法，請參閱 Rust Reference 中的 _[../reference/macros-by-example.html](https://doc.rust-lang.org/reference/macros-by-example.html)_。
 
 首先我們使用一組小括號來包含整個模式。我們使用 dollar sign (`$`) 在宏系統中宣告一個變數，該變數將包含與模式匹配的 Rust 程式碼。 dollar sign 清楚地表明這是一個宏變數，而不是一個普通的 Rust 變數。接下來是一組小括號，用於捕獲與小括號內模式匹配的值，以便在替換程式碼中使用。`$()` 內是 `$x:expr`，它匹配任何 Rust 表達式，並將表達式命名為 `$x`。
 
@@ -1391,7 +1390,7 @@ macro 定義中的有效 pattern 語法與第 19 章中介紹的 pattern 語法�
 
 ### 用於從 Attributes 產生程式碼的程序式 Macros
 
-第二種 macros 形式是程序式 macro，它的行為更像一個函式（並且是一種程序）。*程序式 macros (Procedural macros)* 接受一些程式碼作為輸入，對其進行操作，然後產生一些程式碼作為輸出，而不是像宣告式 macros 那樣匹配模式並用其他程式碼替換程式碼。程序式 macros 有三種：自訂 `derive`、類 attribute 和類函式，它們的工作方式都類似。
+第二種 macros 形式是程序式 macro，它的行為更像一個函式（並且是一種程序）。_程序式 macros (Procedural macros)_ 接受一些程式碼作為輸入，對其進行操作，然後產生一些程式碼作為輸出，而不是像宣告式 macros 那樣匹配模式並用其他程式碼替換程式碼。程序式 macros 有三種：自訂 `derive`、類 attribute 和類函式，它們的工作方式都類似。
 
 當建立程序式 macros 時，定義必須位於其自己的 crate 中，並具有特殊的 crate 型別。這是由於複雜的技術原因，我們希望將來能夠消除。在程式碼清單 20-36 中，我們展示了如何定義一個程序式 macro，其中 `some_attribute` 是使用特定 macro 變體的 placeholder。
 
@@ -1483,7 +1482,7 @@ $ cargo new hello_macro_derive --lib
 
 我們的兩個 crate 緊密相關，因此我們在 `hello_macro` crate 的目錄中建立程序式 macro crate。如果我們在 `hello_macro` 中更改 trait 定義，我們也必須在 `hello_macro_derive` 中更改程序式 macro 的實作。這兩個 crate 需要單獨發布，使用這些 crate 的程式設計師需要將兩者都添加為依賴項並將它們都引入 scope。我們也可以讓 `hello_macro` crate 將 `hello_macro_derive` 作為依賴項並重新匯出程序式 macro 程式碼。然而，我們組織專案的方式使得程式設計師即使不想要 `derive` 功能也可以使用 `hello_macro`。
 
-我們需要將 `hello_macro_derive` crate 宣告為程序式 macro crate。我們還需要 `syn` 和 `quote` crate 的功能，如你稍後將看到的，因此我們需要將它們添加為依賴項。將以下內容添加到 `hello_macro_derive` 的 *Cargo.toml* 檔案中：
+我們需要將 `hello_macro_derive` crate 宣告為程序式 macro crate。我們還需要 `syn` 和 `quote` crate 的功能，如你稍後將看到的，因此我們需要將它們添加為依賴項。將以下內容添加到 `hello_macro_derive` 的 _Cargo.toml_ 檔案中：
 
 hello_macro_derive/Cargo.toml
 
@@ -1496,7 +1495,7 @@ syn = "2.0"
 quote = "1.0"
 ```
 
-要開始定義程序式 macro，請將程式碼清單 20-40 中的程式碼放入 `hello_macro_derive` crate 的 *src/lib.rs* 檔案中。請注意，此程式碼在我們添加 `impl_hello_macro` 函式的定義之前不會編譯。
+要開始定義程序式 macro，請將程式碼清單 20-40 中的程式碼放入 `hello_macro_derive` crate 的 _src/lib.rs_ 檔案中。請注意，此程式碼在我們添加 `impl_hello_macro` 函式的定義之前不會編譯。
 
 hello_macro_derive/src/lib.rs
 
@@ -1532,7 +1531,7 @@ fn impl_hello_macro(ast: &syn::DeriveInput) -> TokenStream {
 
 請注意，我們已將程式碼分成 `hello_macro_derive` 函式（負責解析 `TokenStream`）和 `impl_hello_macro` 函式（負責轉換語法樹）：這使得編寫程序式 macro 更方便。外部函式（在本例中為 `hello_macro_derive`）中的程式碼對於你看到或建立的幾乎每個程序式 macro crate 都會相同。內部函式（在本例中為 `impl_hello_macro`）主體中指定的程式碼將根據你的程序式 macro 的目的而有所不同。
 
-我們引入了三個新的 crate：`proc_macro`、`syn` 位於 *[https://crates.io/crates/syn](https://crates.io/crates/syn)*，以及 `quote`。`proc_macro` crate 隨 Rust 一起提供，因此我們無需將其添加到 *Cargo.toml* 中的依賴項中。`proc_macro` crate 是編譯器的 API，允許我們從程式碼中讀取和操作 Rust 程式碼。
+我們引入了三個新的 crate：`proc_macro`、`syn` 位於 _[https://crates.io/crates/syn](https://crates.io/crates/syn)_，以及 `quote`。`proc_macro` crate 隨 Rust 一起提供，因此我們無需將其添加到 _Cargo.toml_ 中的依賴項中。`proc_macro` crate 是編譯器的 API，允許我們從程式碼中讀取和操作 Rust 程式碼。
 
 `syn` crate 將 Rust 程式碼從字串解析成我們可以執行操作的資料結構。`quote` crate 將 `syn` 資料結構轉換回 Rust 程式碼。這些 crate 使解析我們可能想要處理的任何 Rust 程式碼變得更加簡單：為 Rust 程式碼編寫一個完整的解析器並不是一項簡單的任務。
 
@@ -1562,7 +1561,7 @@ DeriveInput {
 
 程式碼清單 20-41：解析程式碼清單 20-37 中帶有宏 attribute 的程式碼時我們得到的 `DeriveInput` 實例
 
-此 struct 的欄位顯示我們解析的 Rust 程式碼是一個單位 struct，其 `ident`（*識別符*，即名稱）為 `Pancakes`。此 struct 上還有更多欄位，用於描述各種 Rust 程式碼；有關更多資訊，請查閱 `syn` 說明文件中關於 `DeriveInput` 的說明：*[https://docs.rs/syn/2.0/syn/struct.DeriveInput.html](https://docs.rs/syn/2.0/syn/struct.DeriveInput.html)*。
+此 struct 的欄位顯示我們解析的 Rust 程式碼是一個單位 struct，其 `ident`（_識別符_，即名稱）為 `Pancakes`。此 struct 上還有更多欄位，用於描述各種 Rust 程式碼；有關更多資訊，請查閱 `syn` 說明文件中關於 `DeriveInput` 的說明：_[https://docs.rs/syn/2.0/syn/struct.DeriveInput.html](https://docs.rs/syn/2.0/syn/struct.DeriveInput.html)_。
 
 很快我們將定義 `impl_hello_macro` 函式，我們將在其中建立我們想要包含的新 Rust 程式碼。但在我們這樣做之前，請注意我們的 `derive` macro 的輸出也是一個 `TokenStream`。回傳的 `TokenStream` 被添加到我們的 crate 使用者編寫的程式碼中，因此當他們編譯他們的 crate 時，他們將獲得我們在修改後的 `TokenStream` 中提供的額外功能。
 
@@ -1592,13 +1591,13 @@ fn impl_hello_macro(ast: &syn::DeriveInput) -> TokenStream {
 
 `quote!` macro 讓你可以定義你想要回傳的 Rust 程式碼。編譯器期望的結果與 `quote!` macro 執行結果不同，因此我們需要將其轉換為 `TokenStream`。我們透過呼叫 `into` 方法來完成此操作，該方法會消耗這個中間表示並回傳所需 `TokenStream` 型別的值。
 
-`quote!` macro 還提供了一些非常酷的 templating 機制：我們可以輸入 `#name`，然後 `quote!` 會將其替換為變數 `name` 中的值。你甚至可以進行一些與常規 macros 類似的重複。請查閱 `quote` crate 的說明文件 *[https://docs.rs/quote](https://docs.rs/quote)*，以獲得全面介紹。
+`quote!` macro 還提供了一些非常酷的 templating 機制：我們可以輸入 `#name`，然後 `quote!` 會將其替換為變數 `name` 中的值。你甚至可以進行一些與常規 macros 類似的重複。請查閱 `quote` crate 的說明文件 _[https://docs.rs/quote](https://docs.rs/quote)_，以獲得全面介紹。
 
 我們希望我們的程序式 macro 為使用者註解的型別產生一個 `HelloMacro` trait 的實作，我們可以透過使用 `#name` 來取得它。trait 實作有一個函式 `hello_macro`，其主體包含我們想要提供的功能：印出 `Hello, Macro! My name is`，然後是註解型別的名稱。
 
 這裡使用的 `stringify!` macro 是 Rust 內建的。它接受一個 Rust 表達式，例如 `1 + 2`，並在編譯時將該表達式轉換為字串字面值，例如 `"1 + 2"`。這與 `format!` 或 `println!` 不同，後者會計算表達式，然後將結果轉換為 `String`。`#name` 輸入可能是一個字面印出的表達式，因此我們使用 `stringify!`。使用 `stringify!` 還透過在編譯時將 `#name` 轉換為字串字面值來節省記憶體分配。
 
-此時，`cargo build` 應該在 `hello_macro` 和 `hello_macro_derive` 中都成功完成。讓我們將這些 crate 連接到程式碼清單 20-37 中的程式碼，以查看程序式 macro 的實際效果！在你的 *projects* 目錄中，使用 `cargo new pancakes` 建立一個新的二進位專案。我們需要將 `hello_macro` 和 `hello_macro_derive` 添加為 `pancakes` crate 的 *Cargo.toml* 中的依賴項。如果你正在將你的 `hello_macro` 和 `hello_macro_derive` 版本發布到 crates.io，它們將是[常規依賴項](https://crates.io/)；如果不是，你可以將它們指定為 `path` 依賴項，如下所示：
+此時，`cargo build` 應該在 `hello_macro` 和 `hello_macro_derive` 中都成功完成。讓我們將這些 crate 連接到程式碼清單 20-37 中的程式碼，以查看程序式 macro 的實際效果！在你的 _projects_ 目錄中，使用 `cargo new pancakes` 建立一個新的二進位專案。我們需要將 `hello_macro` 和 `hello_macro_derive` 添加為 `pancakes` crate 的 _Cargo.toml_ 中的依賴項。如果你正在將你的 `hello_macro` 和 `hello_macro_derive` 版本發布到 crates.io，它們將是[常規依賴項](https://crates.io/)；如果不是，你可以將它們指定為 `path` 依賴項，如下所示：
 
 ```toml
 [dependencies]
@@ -1606,7 +1605,7 @@ hello_macro = { path = "../hello_macro" }
 hello_macro_derive = { path = "../hello_macro/hello_macro_derive" }
 ```
 
-將程式碼清單 20-37 中的程式碼放入 *src/main.rs*，然後執行 `cargo run`：它應該印出 `Hello, Macro! My name is Pancakes!`。程序式 macro 中的 `HelloMacro` trait 實作已包含在內，而 `pancakes` crate 無需實作它；`#[derive(HelloMacro)]` 添加了 trait 實作。
+將程式碼清單 20-37 中的程式碼放入 _src/main.rs_，然後執行 `cargo run`：它應該印出 `Hello, Macro! My name is Pancakes!`。程序式 macro 中的 `HelloMacro` trait 實作已包含在內，而 `pancakes` crate 無需實作它；`#[derive(HelloMacro)]` 添加了 trait 實作。
 
 接下來，讓我們探討其他類型的程序式 macros 與自訂 `derive` macros 有何不同。
 

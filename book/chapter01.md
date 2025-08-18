@@ -10,9 +10,9 @@ directory, so all fixes need to be made in `/src/`.
 
 讓我們開始你的 Rust 旅程！要學習的東西很多，但每個旅程都從某個地方開始。在本章中，我們將討論：
 
-* 在 Linux、macOS 和 Windows 上安裝 Rust
-* 編寫一個印出 `Hello, world!` 的程式
-* 使用 `cargo`，Rust 的套件管理器和建構系統
+- 在 Linux、macOS 和 Windows 上安裝 Rust
+- 編寫一個印出 `Hello, world!` 的程式
+- 使用 `cargo`，Rust 的套件管理器和建構系統
 
 ## 安裝
 
@@ -248,7 +248,7 @@ $ ./main # or .\main on Windows
 
 如果你的 `main.rs` 是你的「Hello, world!」程式，這行程式碼會將 `Hello, world!` 印到你的 terminal。
 
-如果你對動態語言更熟悉，例如 Ruby、Python 或 JavaScript，你可能不習慣將程式的編譯和執行分開進行。Rust 是一種 *ahead-of-time compiled* 語言，這表示你可以編譯程式並將 executable 提供給其他人，即使他們沒有安裝 Rust 也能執行它。如果你給某人一個 `.rb`、`.py` 或 `.js` 檔案，他們需要安裝 Ruby、Python 或 JavaScript 的 implementation (分別)。但在這些語言中，你只需要一個命令來編譯和執行你的程式。在 language design 中，一切都是取捨。
+如果你對動態語言更熟悉，例如 Ruby、Python 或 JavaScript，你可能不習慣將程式的編譯和執行分開進行。Rust 是一種 _ahead-of-time compiled_ 語言，這表示你可以編譯程式並將 executable 提供給其他人，即使他們沒有安裝 Rust 也能執行它。如果你給某人一個 `.rb`、`.py` 或 `.js` 檔案，他們需要安裝 Ruby、Python 或 JavaScript 的 implementation (分別)。但在這些語言中，你只需要一個命令來編譯和執行你的程式。在 language design 中，一切都是取捨。
 
 對於簡單的程式來說，單獨使用 `rustc` 編譯是可行的，但隨著你的專案成長，你會希望管理所有選項並輕鬆共享你的程式碼。接下來，我們將向你介紹 Cargo 工具，它將幫助你編寫真實世界的 Rust 程式。
 
@@ -374,11 +374,11 @@ $ cargo check
 
 讓我們回顧一下到目前為止我們學到的關於 Cargo 的知識：
 
-* 我們可以使用 `cargo new` 建立一個專案。
-* 我們可以使用 `cargo build` 建構一個專案。
-* 我們可以使用 `cargo run` 一步建構並執行專案。
-* 我們可以使用 `cargo check` 建構專案而不產生 binary 來檢查錯誤。
-* Cargo 不會將建構結果儲存在與我們的程式碼相同的目錄中，而是將其儲存在 `target/debug` 目錄中。
+- 我們可以使用 `cargo new` 建立一個專案。
+- 我們可以使用 `cargo build` 建構一個專案。
+- 我們可以使用 `cargo run` 一步建構並執行專案。
+- 我們可以使用 `cargo check` 建構專案而不產生 binary 來檢查錯誤。
+- Cargo 不會將建構結果儲存在與我們的程式碼相同的目錄中，而是將其儲存在 `target/debug` 目錄中。
 
 使用 Cargo 的另一個優點是，無論你在哪個作業系統上工作，命令都是相同的。因此，在這一點上，我們將不再提供 Linux 和 macOS 與 Windows 的特定說明。
 
@@ -404,10 +404,10 @@ $ cargo build
 
 你的 Rust 旅程已經有了很好的開始！在本章中，你已經學會了如何：
 
-* 使用 `rustup` 安裝最新穩定版的 Rust
-* 更新到較新的 Rust 版本
-* 開啟本機安裝的文件
-* 直接使用 `rustc` 編寫並執行「Hello, world!」程式
-* 使用 Cargo 的慣例建立並執行新專案
+- 使用 `rustup` 安裝最新穩定版的 Rust
+- 更新到較新的 Rust 版本
+- 開啟本機安裝的文件
+- 直接使用 `rustc` 編寫並執行「Hello, world!」程式
+- 使用 Cargo 的慣例建立並執行新專案
 
 現在正是時候建構一個更實質的程式，以習慣閱讀和編寫 Rust 程式碼。因此，在 [https://doc.rust-lang.org/book/ch02-00-guessing-game.html](https://doc.rust-lang.org/book/ch02-00-guessing-game.html) 中，我們將建構一個猜謎遊戲程式。如果你寧願先學習 Rust 中常見 programming concepts 的運作方式，請參閱 [https://doc.rust-lang.org/book/ch03-00-common-programming-concepts.html](https://doc.rust-lang.org/book/ch03-00-common-programming-concepts.html) 然後再回到 [https://doc.rust-lang.org/book/ch02-00-guessing-game.html](https://doc.rust-lang.org/book/ch02-00-guessing-game.html)。

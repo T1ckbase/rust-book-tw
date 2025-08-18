@@ -18,64 +18,64 @@ directory, so all fixes need to be made in `/src/`.
 
 以下是當前使用的關鍵字列表，並描述了它們的功能。
 
-* `as` - 執行基本型別轉換（primitive casting）、消除 `use` 語句中包含某個項目的特定 trait 歧義，或重新命名項目
-* `async` - 回傳一個 `Future` 而非阻塞當前執行緒
-* `await` - 暫停執行直到 `Future` 的結果準備就緒
-* `break` - 立即跳出迴圈
-* `const` - 定義常數項目或常數原始指標
-* `continue` - 繼續到下一個迴圈迭代
-* `crate` - 在模組路徑中，指稱 crate 根目錄
-* `dyn` - 對 trait object 進行動態分派 (dynamic dispatch)
-* `else` - `if` 和 `if let` 控制流程建構的備用選項
-* `enum` - 定義一個列舉
-* `extern` - 連結一個外部函式或變數
-* `false` - 布林假值字面值
-* `fn` - 定義一個函式或函式指標型別
-* `for` - 迭代器上的項目迴圈，實作 trait，或指定更高階的 lifetime
-* `if` - 根據條件運算式的結果進行分支
-* `impl` - 實作固有的或 trait 的功能
-* `in` - `for` 迴圈語法的一部分
-* `let` - 綁定變數
-* `loop` - 無條件迴圈
-* `match` - 將值與 pattern 進行匹配
-* `mod` - 定義一個模組
-* `move` - 使 closure 取得其所有捕獲的所有權 (ownership)
-* `mut` - 表示 reference、原始指標或 pattern 綁定中的可變性 (mutability)
-* `pub` - 表示 struct 欄位、`impl` 區塊或模組中的公共可見性 (public visibility)
-* `ref` - 以 reference 綁定
-* `return` - 從函式回傳
-* `Self` - 我們正在定義或實作的型別的型別別名
-* `self` - 方法的主體或當前模組
-* `static` - 全域變數或持續整個程式執行期間的 lifetime
-* `struct` - 定義一個結構
-* `super` - 當前模組的父模組
-* `trait` - 定義一個 trait
-* `true` - 布林真值字面值
-* `type` - 定義一個型別別名或關聯型別
-* `union` - 定義一個聯集 (union)；只在 union 宣告中使用時才作為關鍵字
-* `unsafe` - 表示不安全的程式碼、函式、trait 或實作
-* `use` - 將符號帶入作用域；為泛型和 lifetime 邊界指定精確的捕獲
-* `where` - 表示約束型別的子句
-* `while` - 根據運算式結果條件式迴圈
+- `as` - 執行基本型別轉換（primitive casting）、消除 `use` 語句中包含某個項目的特定 trait 歧義，或重新命名項目
+- `async` - 回傳一個 `Future` 而非阻塞當前執行緒
+- `await` - 暫停執行直到 `Future` 的結果準備就緒
+- `break` - 立即跳出迴圈
+- `const` - 定義常數項目或常數原始指標
+- `continue` - 繼續到下一個迴圈迭代
+- `crate` - 在模組路徑中，指稱 crate 根目錄
+- `dyn` - 對 trait object 進行動態分派 (dynamic dispatch)
+- `else` - `if` 和 `if let` 控制流程建構的備用選項
+- `enum` - 定義一個列舉
+- `extern` - 連結一個外部函式或變數
+- `false` - 布林假值字面值
+- `fn` - 定義一個函式或函式指標型別
+- `for` - 迭代器上的項目迴圈，實作 trait，或指定更高階的 lifetime
+- `if` - 根據條件運算式的結果進行分支
+- `impl` - 實作固有的或 trait 的功能
+- `in` - `for` 迴圈語法的一部分
+- `let` - 綁定變數
+- `loop` - 無條件迴圈
+- `match` - 將值與 pattern 進行匹配
+- `mod` - 定義一個模組
+- `move` - 使 closure 取得其所有捕獲的所有權 (ownership)
+- `mut` - 表示 reference、原始指標或 pattern 綁定中的可變性 (mutability)
+- `pub` - 表示 struct 欄位、`impl` 區塊或模組中的公共可見性 (public visibility)
+- `ref` - 以 reference 綁定
+- `return` - 從函式回傳
+- `Self` - 我們正在定義或實作的型別的型別別名
+- `self` - 方法的主體或當前模組
+- `static` - 全域變數或持續整個程式執行期間的 lifetime
+- `struct` - 定義一個結構
+- `super` - 當前模組的父模組
+- `trait` - 定義一個 trait
+- `true` - 布林真值字面值
+- `type` - 定義一個型別別名或關聯型別
+- `union` - 定義一個聯集 (union)；只在 union 宣告中使用時才作為關鍵字
+- `unsafe` - 表示不安全的程式碼、函式、trait 或實作
+- `use` - 將符號帶入作用域；為泛型和 lifetime 邊界指定精確的捕獲
+- `where` - 表示約束型別的子句
+- `while` - 根據運算式結果條件式迴圈
 
 ### 為未來使用而保留的關鍵字
 
 以下關鍵字尚未有任何功能，但已被 Rust 保留以供未來潛在用途。
 
-* `abstract`
-* `become`
-* `box`
-* `do`
-* `final`
-* `gen`
-* `macro`
-* `override`
-* `priv`
-* `try`
-* `typeof`
-* `unsized`
-* `virtual`
-* `yield`
+- `abstract`
+- `become`
+- `box`
+- `do`
+- `final`
+- `gen`
+- `macro`
+- `override`
+- `priv`
+- `try`
+- `typeof`
+- `unsized`
+- `virtual`
+- `yield`
 
 ### 原始識別字
 
@@ -129,64 +129,64 @@ fn main() {
 
 表格 B-1: 運算子
 
-|Operator|Example|Explanation|Overloadable?|
-|--------|-------|-----------|-------------|
-|`!`|`ident!(...)`, `ident!{...}`, `ident![...]`|Macro 擴展||
-|`!`|`!expr`|位元或邏輯補數|`Not`|
-|`!=`|`expr != expr`|不等式比較|`PartialEq`|
-|`%`|`expr % expr`|算術餘數|`Rem`|
-|`%=`|`var %= expr`|算術餘數與賦值|`RemAssign`|
-|`&`|`&expr`, `&mut expr`|借用||
-|`&`|`&type`, `&mut type`, `&'a type`, `&'a mut type`|借用指標型別||
-|`&`|`expr & expr`|位元 AND|`BitAnd`|
-|`&=`|`var &= expr`|位元 AND 與賦值|`BitAndAssign`|
-|`&&`|`expr && expr`|短路邏輯 AND||
-|`*`|`expr * expr`|算術乘法|`Mul`|
-|`*=`|`var *= expr`|算術乘法與賦值|`MulAssign`|
-|`*`|`*expr`|解引用 (Dereference)|`Deref`|
-|`*`|`*const type`, `*mut type`|原始指標||
-|`+`|`trait + trait`, `'a + trait`|複合型別約束||
-|`+`|`expr + expr`|算術加法|`Add`|
-|`+=`|`var += expr`|算術加法與賦值|`AddAssign`|
-|`,`|`expr, expr`|引數與元素分隔符||
-|`-`|`- expr`|算術取負|`Neg`|
-|`-`|`expr - expr`|算術減法|`Sub`|
-|`-=`|`var -= expr`|算術減法與賦值|`SubAssign`|
-|`->`|`fn(...) -> type`, <code>\|...\| -> type</code>|函式與 closure 回傳型別||
-|`.`|`expr.ident`|欄位存取||
-|`.`|`expr.ident(expr, ...)`|方法呼叫||
-|`.`|`expr.0`, `expr.1`, etc.|Tuple 索引||
-|`..`|`..`, `expr..`, `..expr`, `expr..expr`|右側獨佔範圍字面值|`PartialOrd`|
-|`..=`|`..=expr`, `expr..=expr`|右側包含範圍字面值|`PartialOrd`|
-|`..`|`..expr`|Struct 字面值更新語法||
-|`..`|`variant(x, ..)`, `struct_type { x, .. }`|「以及其餘」pattern 綁定||
-|`...`|`expr...expr`|(已棄用，改用 `..=` ) 在 pattern 中：包含範圍 pattern||
-|`/`|`expr / expr`|算術除法|`Div`|
-|`/=`|`var /= expr`|算術除法與賦值|`DivAssign`|
-|`:`|`pat: type`, `ident: type`|約束||
-|`:`|`ident: expr`|Struct 欄位初始化器||
-|`:`|`'a: loop {...}`|迴圈標籤||
-|`;`|`expr;`|語句與項目終止符||
-|`;`|`[...; len]`|固定大小陣列語法的一部分||
-|`<<`|`expr << expr`|左移|`Shl`|
-|`<<=`|`var <<= expr`|左移與賦值|`ShlAssign`|
-|`<`|`expr < expr`|小於比較|`PartialOrd`|
-|`<=`|`expr <= expr`|小於或等於比較|`PartialOrd`|
-|`=`|`var = expr`, `ident = type`|賦值/等價||
-|`==`|`expr == expr`|等式比較|`PartialEq`|
-|`=>`|`pat => expr`|match arm 語法的一部分||
-|`>`|`expr > expr`|大於比較|`PartialOrd`|
-|`>=`|`expr >= expr`|大於或等於比較|`PartialOrd`|
-|`>>`|`expr >> expr`|右移|`Shr`|
-|`>>=`|`var >>= expr`|右移與賦值|`ShrAssign`|
-|`@`|`ident @ pat`|Pattern 綁定||
-|`^`|`expr ^ expr`|位元互斥 OR|`BitXor`|
-|`^=`|`var ^= expr`|位元互斥 OR 與賦值|`BitXorAssign`|
-|<code>\|</code>|<code>pat \| pat</code>|Pattern 替代項||
-|<code>\|</code>|<code>expr \| expr</code>|位元 OR|`BitOr`|
-|<code>\|=</code>|<code>var \|= expr</code>|位元 OR 與賦值|`BitOrAssign`|
-|<code>\|\|</code>|<code>expr \|\| expr</code>|短路邏輯 OR||
-|`?`|`expr?`|錯誤傳播 (Error propagation)||
+| Operator          | Example                                          | Explanation                                           | Overloadable?  |
+| ----------------- | ------------------------------------------------ | ----------------------------------------------------- | -------------- |
+| `!`               | `ident!(...)`, `ident!{...}`, `ident![...]`      | Macro 擴展                                            |                |
+| `!`               | `!expr`                                          | 位元或邏輯補數                                        | `Not`          |
+| `!=`              | `expr != expr`                                   | 不等式比較                                            | `PartialEq`    |
+| `%`               | `expr % expr`                                    | 算術餘數                                              | `Rem`          |
+| `%=`              | `var %= expr`                                    | 算術餘數與賦值                                        | `RemAssign`    |
+| `&`               | `&expr`, `&mut expr`                             | 借用                                                  |                |
+| `&`               | `&type`, `&mut type`, `&'a type`, `&'a mut type` | 借用指標型別                                          |                |
+| `&`               | `expr & expr`                                    | 位元 AND                                              | `BitAnd`       |
+| `&=`              | `var &= expr`                                    | 位元 AND 與賦值                                       | `BitAndAssign` |
+| `&&`              | `expr && expr`                                   | 短路邏輯 AND                                          |                |
+| `*`               | `expr * expr`                                    | 算術乘法                                              | `Mul`          |
+| `*=`              | `var *= expr`                                    | 算術乘法與賦值                                        | `MulAssign`    |
+| `*`               | `*expr`                                          | 解引用 (Dereference)                                  | `Deref`        |
+| `*`               | `*const type`, `*mut type`                       | 原始指標                                              |                |
+| `+`               | `trait + trait`, `'a + trait`                    | 複合型別約束                                          |                |
+| `+`               | `expr + expr`                                    | 算術加法                                              | `Add`          |
+| `+=`              | `var += expr`                                    | 算術加法與賦值                                        | `AddAssign`    |
+| `,`               | `expr, expr`                                     | 引數與元素分隔符                                      |                |
+| `-`               | `- expr`                                         | 算術取負                                              | `Neg`          |
+| `-`               | `expr - expr`                                    | 算術減法                                              | `Sub`          |
+| `-=`              | `var -= expr`                                    | 算術減法與賦值                                        | `SubAssign`    |
+| `->`              | `fn(...) -> type`, <code>\|...\| -> type</code>  | 函式與 closure 回傳型別                               |                |
+| `.`               | `expr.ident`                                     | 欄位存取                                              |                |
+| `.`               | `expr.ident(expr, ...)`                          | 方法呼叫                                              |                |
+| `.`               | `expr.0`, `expr.1`, etc.                         | Tuple 索引                                            |                |
+| `..`              | `..`, `expr..`, `..expr`, `expr..expr`           | 右側獨佔範圍字面值                                    | `PartialOrd`   |
+| `..=`             | `..=expr`, `expr..=expr`                         | 右側包含範圍字面值                                    | `PartialOrd`   |
+| `..`              | `..expr`                                         | Struct 字面值更新語法                                 |                |
+| `..`              | `variant(x, ..)`, `struct_type { x, .. }`        | 「以及其餘」pattern 綁定                              |                |
+| `...`             | `expr...expr`                                    | (已棄用，改用 `..=` ) 在 pattern 中：包含範圍 pattern |                |
+| `/`               | `expr / expr`                                    | 算術除法                                              | `Div`          |
+| `/=`              | `var /= expr`                                    | 算術除法與賦值                                        | `DivAssign`    |
+| `:`               | `pat: type`, `ident: type`                       | 約束                                                  |                |
+| `:`               | `ident: expr`                                    | Struct 欄位初始化器                                   |                |
+| `:`               | `'a: loop {...}`                                 | 迴圈標籤                                              |                |
+| `;`               | `expr;`                                          | 語句與項目終止符                                      |                |
+| `;`               | `[...; len]`                                     | 固定大小陣列語法的一部分                              |                |
+| `<<`              | `expr << expr`                                   | 左移                                                  | `Shl`          |
+| `<<=`             | `var <<= expr`                                   | 左移與賦值                                            | `ShlAssign`    |
+| `<`               | `expr < expr`                                    | 小於比較                                              | `PartialOrd`   |
+| `<=`              | `expr <= expr`                                   | 小於或等於比較                                        | `PartialOrd`   |
+| `=`               | `var = expr`, `ident = type`                     | 賦值/等價                                             |                |
+| `==`              | `expr == expr`                                   | 等式比較                                              | `PartialEq`    |
+| `=>`              | `pat => expr`                                    | match arm 語法的一部分                                |                |
+| `>`               | `expr > expr`                                    | 大於比較                                              | `PartialOrd`   |
+| `>=`              | `expr >= expr`                                   | 大於或等於比較                                        | `PartialOrd`   |
+| `>>`              | `expr >> expr`                                   | 右移                                                  | `Shr`          |
+| `>>=`             | `var >>= expr`                                   | 右移與賦值                                            | `ShrAssign`    |
+| `@`               | `ident @ pat`                                    | Pattern 綁定                                          |                |
+| `^`               | `expr ^ expr`                                    | 位元互斥 OR                                           | `BitXor`       |
+| `^=`              | `var ^= expr`                                    | 位元互斥 OR 與賦值                                    | `BitXorAssign` |
+| <code>\|</code>   | <code>pat \| pat</code>                          | Pattern 替代項                                        |                |
+| <code>\|</code>   | <code>expr \| expr</code>                        | 位元 OR                                               | `BitOr`        |
+| <code>\|=</code>  | <code>var \|= expr</code>                        | 位元 OR 與賦值                                        | `BitOrAssign`  |
+| <code>\|\|</code> | <code>expr \|\| expr</code>                      | 短路邏輯 OR                                           |                |
+| `?`               | `expr?`                                          | 錯誤傳播 (Error propagation)                          |                |
 
 ### 非運算子符號
 
@@ -196,124 +196,124 @@ fn main() {
 
 表格 B-2: 獨立語法
 
-|Symbol|Explanation|
-|------|-----------|
-|`'ident`|命名 lifetime 或迴圈標籤|
-|緊接 `u8`、`i32`、`f64`、`usize` 等的數字|特定型別的數值字面值|
-|`"..."`|字串字面值|
-|`r"..."`, `r#"..."#`, `r##"..."##`, 等|原始字串字面值，不處理跳脫字元|
-|`b"..."`|位元組字串字面值；構成位元組陣列而非字串|
-|`br"..."`, `br#"..."#`, `br##"..."##`, 等|原始位元組字串字面值，原始與位元組字串字面值的組合|
-|`'...'`|字元字面值|
-|`b'...'`|ASCII 位元組字面值|
-|<code>\|...\| expr</code>|Closure|
-|`!`|永不為空的 bottom type，用於發散函式 (diverging functions)|
-|`_`|「忽略」pattern 綁定；也用於讓整數字面值更易讀|
+| Symbol                                    | Explanation                                                |
+| ----------------------------------------- | ---------------------------------------------------------- |
+| `'ident`                                  | 命名 lifetime 或迴圈標籤                                   |
+| 緊接 `u8`、`i32`、`f64`、`usize` 等的數字 | 特定型別的數值字面值                                       |
+| `"..."`                                   | 字串字面值                                                 |
+| `r"..."`, `r#"..."#`, `r##"..."##`, 等    | 原始字串字面值，不處理跳脫字元                             |
+| `b"..."`                                  | 位元組字串字面值；構成位元組陣列而非字串                   |
+| `br"..."`, `br#"..."#`, `br##"..."##`, 等 | 原始位元組字串字面值，原始與位元組字串字面值的組合         |
+| `'...'`                                   | 字元字面值                                                 |
+| `b'...'`                                  | ASCII 位元組字面值                                         |
+| <code>\|...\| expr</code>                 | Closure                                                    |
+| `!`                                       | 永不為空的 bottom type，用於發散函式 (diverging functions) |
+| `_`                                       | 「忽略」pattern 綁定；也用於讓整數字面值更易讀             |
 
 表格 B-3 顯示了在透過模組層次結構到一個項目的路徑上下文中出現的符號。
 
 表格 B-3: 路徑相關語法
 
-|Symbol|Explanation|
-|------|-----------|
-|`ident::ident`|命名空間路徑|
-|`::path`|相對於 extern prelude 的路徑，所有其他 crate 都以此為根（即，包含 crate 名稱的明確絕對路徑）|
-|`self::path`|相對於當前模組的路徑（即，明確的相對路徑）|
-|`super::path`|相對於當前模組的父模組的路徑|
-|`type::ident`, `<type as trait>::ident`|關聯常數、函式和型別|
-|`<type>::...`|無法直接命名的型別的關聯項目（例如，`<&T>::...`、`<[T]>::...` 等）|
-|`trait::method(...)`|透過命名定義方法的 trait 來消除方法呼叫的歧義|
-|`type::method(...)`|透過命名定義方法的型別來消除方法呼叫的歧義|
-|`<type as trait>::method(...)`|透過命名 trait 和型別來消除方法呼叫的歧義|
+| Symbol                                  | Explanation                                                                                  |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `ident::ident`                          | 命名空間路徑                                                                                 |
+| `::path`                                | 相對於 extern prelude 的路徑，所有其他 crate 都以此為根（即，包含 crate 名稱的明確絕對路徑） |
+| `self::path`                            | 相對於當前模組的路徑（即，明確的相對路徑）                                                   |
+| `super::path`                           | 相對於當前模組的父模組的路徑                                                                 |
+| `type::ident`, `<type as trait>::ident` | 關聯常數、函式和型別                                                                         |
+| `<type>::...`                           | 無法直接命名的型別的關聯項目（例如，`<&T>::...`、`<[T]>::...` 等）                           |
+| `trait::method(...)`                    | 透過命名定義方法的 trait 來消除方法呼叫的歧義                                                |
+| `type::method(...)`                     | 透過命名定義方法的型別來消除方法呼叫的歧義                                                   |
+| `<type as trait>::method(...)`          | 透過命名 trait 和型別來消除方法呼叫的歧義                                                    |
 
 表格 B-4 顯示了在使用泛型型別參數的上下文中出現的符號。
 
 表格 B-4: 泛型
 
-|Symbol|Explanation|
-|------|-----------|
-|`path<...>`|在型別中指定泛型型別的參數（例如，`Vec<u8>`）|
-|`path::<...>`, `method::<...>`|在運算式中指定泛型型別、函式或方法的參數；常稱為 turbofish（例如，`"42".parse::<i32>()`）|
-|`fn ident<...> ...`|定義泛型函式|
-|`struct ident<...> ...`|定義泛型結構|
-|`enum ident<...> ...`|定義泛型列舉|
-|`impl<...> ...`|定義泛型實作|
-|`for<...> type`|更高階 lifetime 邊界|
-|`type<ident=type>`|一個或多個關聯型別具有特定賦值的泛型型別（例如，`Iterator<Item=T>`）|
+| Symbol                         | Explanation                                                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `path<...>`                    | 在型別中指定泛型型別的參數（例如，`Vec<u8>`）                                             |
+| `path::<...>`, `method::<...>` | 在運算式中指定泛型型別、函式或方法的參數；常稱為 turbofish（例如，`"42".parse::<i32>()`） |
+| `fn ident<...> ...`            | 定義泛型函式                                                                              |
+| `struct ident<...> ...`        | 定義泛型結構                                                                              |
+| `enum ident<...> ...`          | 定義泛型列舉                                                                              |
+| `impl<...> ...`                | 定義泛型實作                                                                              |
+| `for<...> type`                | 更高階 lifetime 邊界                                                                      |
+| `type<ident=type>`             | 一個或多個關聯型別具有特定賦值的泛型型別（例如，`Iterator<Item=T>`）                      |
 
 表格 B-5 顯示了在用 trait 邊界約束泛型型別參數的上下文中出現的符號。
 
 表格 B-5: Trait 邊界約束
 
-|Symbol|Explanation|
-|------|-----------|
-|`T: U`|泛型參數 `T` 受限於實作 `U` 的型別|
-|`T: 'a`|泛型型別 `T` 必須比 lifetime `'a` 存活更久（意味著該型別不能遞迴包含任何 lifetime 短於 `'a` 的 reference）|
-|`T: 'static`|泛型型別 `T` 不包含除了 `'static` 之外的任何借用 reference|
-|`'b: 'a`|泛型 lifetime `'b` 必須比 lifetime `'a` 存活更久|
-|`T: ?Sized`|允許泛型型別參數為動態大小型別 (dynamically sized type)|
-|`'a + trait`, `trait + trait`|複合型別約束|
+| Symbol                        | Explanation                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `T: U`                        | 泛型參數 `T` 受限於實作 `U` 的型別                                                                         |
+| `T: 'a`                       | 泛型型別 `T` 必須比 lifetime `'a` 存活更久（意味著該型別不能遞迴包含任何 lifetime 短於 `'a` 的 reference） |
+| `T: 'static`                  | 泛型型別 `T` 不包含除了 `'static` 之外的任何借用 reference                                                 |
+| `'b: 'a`                      | 泛型 lifetime `'b` 必須比 lifetime `'a` 存活更久                                                           |
+| `T: ?Sized`                   | 允許泛型型別參數為動態大小型別 (dynamically sized type)                                                    |
+| `'a + trait`, `trait + trait` | 複合型別約束                                                                                               |
 
 表格 B-6 顯示了在呼叫或定義 macro 以及在項目上指定 attribute 的上下文中出現的符號。
 
 表格 B-6: Macro 和 Attribute
 
-|Symbol|Explanation|
-|------|-----------|
-|`#[meta]`|外部 attribute|
-|`#![meta]`|內部 attribute|
-|`$ident`|Macro 替換|
-|`$ident:kind`|Macro 中介變數|
-|`$(...)...`|Macro 重複|
-|`ident!(...)`, `ident!{...}`, `ident![...]`|Macro 呼叫|
+| Symbol                                      | Explanation    |
+| ------------------------------------------- | -------------- |
+| `#[meta]`                                   | 外部 attribute |
+| `#![meta]`                                  | 內部 attribute |
+| `$ident`                                    | Macro 替換     |
+| `$ident:kind`                               | Macro 中介變數 |
+| `$(...)...`                                 | Macro 重複     |
+| `ident!(...)`, `ident!{...}`, `ident![...]` | Macro 呼叫     |
 
 表格 B-7 顯示了建立註解的符號。
 
 表格 B-7: 註解
 
-|Symbol|Explanation|
-|------|-----------|
-|`//`|行註解|
-|`//!`|內部行文件註解|
-|`///`|外部行文件註解|
-|`/*...*/`|區塊註解|
-|`/*!...*/`|內部區塊文件註解|
-|`/**...*/`|外部區塊文件註解|
+| Symbol     | Explanation      |
+| ---------- | ---------------- |
+| `//`       | 行註解           |
+| `//!`      | 內部行文件註解   |
+| `///`      | 外部行文件註解   |
+| `/*...*/`  | 區塊註解         |
+| `/*!...*/` | 內部區塊文件註解 |
+| `/**...*/` | 外部區塊文件註解 |
 
 表格 B-8 顯示了使用括號的上下文。
 
 表格 B-8: 括號
 
-|Symbol|Explanation|
-|------|-----------|
-|`()`|空 tuple（又稱 unit），包含字面值和型別|
-|`(expr)`|括號運算式|
-|`(expr,)`|單元素 tuple 運算式|
-|`(type,)`|單元素 tuple 型別|
-|`(expr, ...)`|Tuple 運算式|
-|`(type, ...)`|Tuple 型別|
-|`expr(expr, ...)`|函式呼叫運算式；也用於初始化 tuple `struct` 和 tuple `enum` 變體|
+| Symbol            | Explanation                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| `()`              | 空 tuple（又稱 unit），包含字面值和型別                          |
+| `(expr)`          | 括號運算式                                                       |
+| `(expr,)`         | 單元素 tuple 運算式                                              |
+| `(type,)`         | 單元素 tuple 型別                                                |
+| `(expr, ...)`     | Tuple 運算式                                                     |
+| `(type, ...)`     | Tuple 型別                                                       |
+| `expr(expr, ...)` | 函式呼叫運算式；也用於初始化 tuple `struct` 和 tuple `enum` 變體 |
 
 表格 B-9 顯示了使用大括號的上下文。
 
 表格 B-9: 大括號
 
-|Context|Explanation|
-|-------|-----------|
-|`{...}`|區塊運算式|
-|`Type {...}`|Struct 字面值|
+| Context      | Explanation   |
+| ------------ | ------------- |
+| `{...}`      | 區塊運算式    |
+| `Type {...}` | Struct 字面值 |
 
 表格 B-10 顯示了使用方括號的上下文。
 
 表格 B-10: 方括號
 
-|Context|Explanation|
-|-------|-----------|
-|`[...]`|陣列字面值|
-|`[expr; len]`|包含 `len` 個 `expr` 複本的陣列字面值|
-|`[type; len]`|包含 `len` 個 `type` 實例的陣列型別|
-|`expr[expr]`|集合索引。可重載 (`Index`, `IndexMut`)|
-|`expr[..]`, `expr[a..]`, `expr[..b]`, `expr[a..b]`|集合索引假裝是集合切片，使用 `Range`, `RangeFrom`, `RangeTo`, 或 `RangeFull` 作為「索引」|
+| Context                                            | Explanation                                                                               |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `[...]`                                            | 陣列字面值                                                                                |
+| `[expr; len]`                                      | 包含 `len` 個 `expr` 複本的陣列字面值                                                     |
+| `[type; len]`                                      | 包含 `len` 個 `type` 實例的陣列型別                                                       |
+| `expr[expr]`                                       | 集合索引。可重載 (`Index`, `IndexMut`)                                                    |
+| `expr[..]`, `expr[a..]`, `expr[..b]`, `expr[a..b]` | 集合索引假裝是集合切片，使用 `Range`, `RangeFrom`, `RangeTo`, 或 `RangeFull` 作為「索引」 |
 
 ## 附錄 C：可實作的 Trait
 
@@ -321,11 +321,11 @@ fn main() {
 
 在本附錄中，我們提供了標準函式庫中所有可用於 `derive` 的 trait 參考。每個章節涵蓋：
 
-* 實作此 trait 將啟用的運算子和方法
-* `derive` 提供的 trait 實作所做的事情
-* 實作該 trait 對於該型別的意義
-* 允許或不允許實作該 trait 的條件
-* 需要該 trait 的操作範例
+- 實作此 trait 將啟用的運算子和方法
+- `derive` 提供的 trait 實作所做的事情
+- 實作該 trait 對於該型別的意義
+- 允許或不允許實作該 trait 的條件
+- 需要該 trait 的操作範例
 
 如果您想要與 `derive` attribute 提供的行為不同的行為，請查閱每個 trait 的[標準函式庫文件](https://doc.rust-lang.org/stable/std/index.html)以了解如何手動實作它們的詳細資訊。
 
@@ -415,7 +415,7 @@ Rust 安裝預設包含 `rustfmt`，因此您的系統上應該已經有 `rustfm
 $ cargo fmt
 ```
 
-執行此命令會重新格式化當前 crate 中的所有 Rust 程式碼。這只會改變程式碼風格，而不會改變程式碼語義。有關 `rustfmt` 的更多資訊，請參閱其文件：*https://github.com/rust-lang/rustfmt*。
+執行此命令會重新格式化當前 crate 中的所有 Rust 程式碼。這只會改變程式碼風格，而不會改變程式碼語義。有關 `rustfmt` 的更多資訊，請參閱其文件：_https://github.com/rust-lang/rustfmt_。
 
 ### 使用 rustfix 修復您的程式碼
 
@@ -455,7 +455,7 @@ $ cargo fix
     Finished dev [unoptimized + debuginfo] target(s) in 0.59s
 ```
 
-當我們再次查看 *src/main.rs* 時，我們會看到 `cargo fix` 已經更改了程式碼：
+當我們再次查看 _src/main.rs_ 時，我們會看到 `cargo fix` 已經更改了程式碼：
 
 檔名: src/main.rs
 
@@ -520,31 +520,31 @@ fn main() {
 }
 ```
 
-有關 Clippy 的更多資訊，請參閱其文件：*https://github.com/rust-lang/rust-clippy*。
+有關 Clippy 的更多資訊，請參閱其文件：_https://github.com/rust-lang/rust-clippy_。
 
 ### 使用 rust-analyzer 整合 IDE
 
-為了幫助 IDE 整合，Rust 社群建議使用 `rust-analyzer`。此工具是一組以 compiler 為中心的實用程式，這些實用程式支援 Language Server Protocol，這是一個用於 IDE 和程式語言之間通訊的規範。不同的客戶端可以使用 `rust-analyzer`，例如適用於 Visual Studio Code 的 Rust analyzer 外掛：*https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer*。
+為了幫助 IDE 整合，Rust 社群建議使用 `rust-analyzer`。此工具是一組以 compiler 為中心的實用程式，這些實用程式支援 Language Server Protocol，這是一個用於 IDE 和程式語言之間通訊的規範。不同的客戶端可以使用 `rust-analyzer`，例如適用於 Visual Studio Code 的 Rust analyzer 外掛：_https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer_。
 
 造訪 `rust-analyzer` 專案的[首頁](https://rust-analyzer.github.io/)以獲取安裝說明，然後在您的特定 IDE 中安裝語言伺服器支援。您的 IDE 將獲得自動完成、跳轉到定義和行內錯誤等功能。
 
 ## 附錄 E - 版次
 
-在[第 1 章](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html)中，您看到 `cargo new` 在您的 *Cargo.toml* 檔案中新增了一些關於版次的 metadata。本附錄將討論這意味著什麼！
+在[第 1 章](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html)中，您看到 `cargo new` 在您的 _Cargo.toml_ 檔案中新增了一些關於版次的 metadata。本附錄將討論這意味著什麼！
 
 Rust 語言和 compiler 每六週發布一次，這表示使用者會不斷獲得新功能。其他程式語言較少發布較大的變更；Rust 則更頻繁地發布較小的更新。一段時間後，所有這些微小的變更都會累積起來。但是從一個版本到另一個版本，很難回過頭來說：「哇，在 Rust 1.10 和 Rust 1.31 之間，Rust 變化很大！」
 
-每兩到三年，Rust 團隊會產生一個新的 Rust *版次*。每個版次將已推出的功能整合到一個清晰的套件中，並附帶完整更新的文件和工具。新版次作為常規的六週發布過程的一部分發布。
+每兩到三年，Rust 團隊會產生一個新的 Rust _版次_。每個版次將已推出的功能整合到一個清晰的套件中，並附帶完整更新的文件和工具。新版次作為常規的六週發布過程的一部分發布。
 
 版次對不同的人有不同的目的：
 
-* 對於活躍的 Rust 使用者來說，新版次將漸進式變更整合到一個易於理解的套件中。
-* 對於非使用者來說，新版次表示一些重大進展已經推出，這可能讓 Rust 值得再次關注。
-* 對於 Rust 的開發者來說，新版次為整個專案提供了一個集結點。
+- 對於活躍的 Rust 使用者來說，新版次將漸進式變更整合到一個易於理解的套件中。
+- 對於非使用者來說，新版次表示一些重大進展已經推出，這可能讓 Rust 值得再次關注。
+- 對於 Rust 的開發者來說，新版次為整個專案提供了一個集結點。
 
 在撰寫本文時，有四個 Rust 版次可用：Rust 2015、Rust 2018、Rust 2021 和 Rust 2024。本書是使用 Rust 2024 版次的慣用語撰寫的。
 
-*Cargo.toml* 中的 `edition` 鍵表示 compiler 應為您的程式碼使用哪個版次。如果該鍵不存在，Rust 出於向後相容性原因，將 `2015` 作為版次值。
+_Cargo.toml_ 中的 `edition` 鍵表示 compiler 應為您的程式碼使用哪個版次。如果該鍵不存在，Rust 出於向後相容性原因，將 `2015` 作為版次值。
 
 每個專案都可以選擇除了預設的 2015 版次之外的版次。版次可能包含不相容的變更，例如包含一個與程式碼中的識別字衝突的新關鍵字。但是，除非您選擇加入這些變更，否則即使您升級您使用的 Rust compiler 版本，您的程式碼仍將繼續編譯。
 
@@ -552,33 +552,33 @@ Rust 語言和 compiler 每六週發布一次，這表示使用者會不斷獲�
 
 需要明確的是：大多數功能將在所有版次上可用。使用任何 Rust 版次的開發人員將繼續看到隨著新穩定版發布而帶來的改進。然而，在某些情況下，主要是當新增關鍵字時，一些新功能可能僅在後續版次中可用。如果您想利用這些功能，您將需要切換版次。
 
-有關更多詳細資訊，請參閱 *[版次指南](https://doc.rust-lang.org/stable/edition-guide/)*，這是一本關於版次的完整書籍，其中列舉了版次之間的差異，並解釋了如何透過 `cargo fix` 將程式碼自動升級到新版次。
+有關更多詳細資訊，請參閱 _[版次指南](https://doc.rust-lang.org/stable/edition-guide/)_，這是一本關於版次的完整書籍，其中列舉了版次之間的差異，並解釋了如何透過 `cargo fix` 將程式碼自動升級到新版次。
 
 ## 附錄 F：本書翻譯
 
-用於非英文語言的資源。大多數仍在進行中；請參閱 *https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations* 上的[翻譯標籤](https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations)以提供幫助或讓我們知道新的翻譯！
+用於非英文語言的資源。大多數仍在進行中；請參閱 _https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations_ 上的[翻譯標籤](https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations)以提供幫助或讓我們知道新的翻譯！
 
-* 葡萄牙語 (BR): *https://github.com/rust-br/rust-book-pt-br*
-* 葡萄牙語 (PT): *https://github.com/nunojesus/rust-book-pt-pt*
-* 簡體中文: KaiserY/trpl-zh-cn at *https://github.com/KaiserY/trpl-zh-cn*, gnu4cn/rust-lang-Zh_CN at *https://github.com/gnu4cn/rust-lang-Zh_CN*
-* 正體中文: *https://github.com/rust-tw/book-tw*
-* 烏克蘭語: *https://rust-lang-ua.github.io/rustbook_ukrainian*
-* 西班牙語: *https://github.com/thecodix/book*, 備用: *https://github.com/ManRR/rust-book-es*, 西班牙語 (RustLangES): *https://github.com/RustLangES/rust-book-es*
-* 俄語: *https://github.com/rust-lang-ru/book*
-* 韓語: *https://github.com/rust-kr/doc.rust-kr.org*
-* 日語: *https://github.com/rust-lang-ja/book-ja*
-* 法語: *https://github.com/Jimskapt/rust-book-fr*
-* 波蘭語: *https://github.com/paytchoo/book-pl*
-* 宿霧語: *https://github.com/agentzero1/book*
-* 他加祿語: *https://github.com/josephace135/book*
-* 世界語: *https://github.com/psychoslave/Rust-libro*
-* 希臘語: *https://github.com/TChatzigiannakis/rust-book-greek*
-* 瑞典語: *https://github.com/sebras/book*
-* 波斯語: *https://github.com/RustFarsi/book*, 波斯語 (FA): *https://github.com/persian-rust/book*
-* 德語: *https://github.com/rust-lang-de/rustbook-de*
-* 印地語: *https://github.com/venkatarun95/rust-book-hindi*
-* 泰語: *https://github.com/rust-lang-th/book-th*
-* 丹麥語: *https://github.com/DanKHansen/book-dk*
+- 葡萄牙語 (BR): _https://github.com/rust-br/rust-book-pt-br_
+- 葡萄牙語 (PT): _https://github.com/nunojesus/rust-book-pt-pt_
+- 簡體中文: KaiserY/trpl-zh-cn at _https://github.com/KaiserY/trpl-zh-cn_, gnu4cn/rust-lang-Zh_CN at _https://github.com/gnu4cn/rust-lang-Zh_CN_
+- 正體中文: _https://github.com/rust-tw/book-tw_
+- 烏克蘭語: _https://rust-lang-ua.github.io/rustbook_ukrainian_
+- 西班牙語: _https://github.com/thecodix/book_, 備用: _https://github.com/ManRR/rust-book-es_, 西班牙語 (RustLangES): _https://github.com/RustLangES/rust-book-es_
+- 俄語: _https://github.com/rust-lang-ru/book_
+- 韓語: _https://github.com/rust-kr/doc.rust-kr.org_
+- 日語: _https://github.com/rust-lang-ja/book-ja_
+- 法語: _https://github.com/Jimskapt/rust-book-fr_
+- 波蘭語: _https://github.com/paytchoo/book-pl_
+- 宿霧語: _https://github.com/agentzero1/book_
+- 他加祿語: _https://github.com/josephace135/book_
+- 世界語: _https://github.com/psychoslave/Rust-libro_
+- 希臘語: _https://github.com/TChatzigiannakis/rust-book-greek_
+- 瑞典語: _https://github.com/sebras/book_
+- 波斯語: _https://github.com/RustFarsi/book_, 波斯語 (FA): _https://github.com/persian-rust/book_
+- 德語: _https://github.com/rust-lang-de/rustbook-de_
+- 印地語: _https://github.com/venkatarun95/rust-book-hindi_
+- 泰語: _https://github.com/rust-lang-th/book-th_
+- 丹麥語: _https://github.com/DanKHansen/book-dk_
 
 ## 附錄 G - Rust 是如何產生的以及「Nightly Rust」
 
@@ -592,11 +592,11 @@ Rust 語言和 compiler 每六週發布一次，這表示使用者會不斷獲�
 
 ### 嗚嗚！發布管道與列車模型
 
-Rust 的開發採用*列車排程*。也就是說，所有開發都在 Rust 程式碼庫的 `master` 分支上完成。發布遵循軟體發布列車模型，該模型已被 Cisco IOS 和其他軟體專案使用。Rust 有三個*發布管道*：
+Rust 的開發採用_列車排程_。也就是說，所有開發都在 Rust 程式碼庫的 `master` 分支上完成。發布遵循軟體發布列車模型，該模型已被 Cisco IOS 和其他軟體專案使用。Rust 有三個_發布管道_：
 
-* Nightly
-* Beta
-* Stable
+- Nightly
+- Beta
+- Stable
 
 大多數 Rust 開發人員主要使用 stable 管道，但那些想要嘗試實驗性新功能的人可能會使用 nightly 或 beta。
 
@@ -676,7 +676,7 @@ Rustup 讓您可以輕鬆地在 Rust 的不同發布管道之間切換，無論�
 $ rustup toolchain install nightly
 ```
 
-您也可以使用 `rustup` 查看所有已安裝的*toolchains*（Rust 及其相關元件的版本）。以下是其中一位作者在 Windows 電腦上的範例：
+您也可以使用 `rustup` 查看所有已安裝的_toolchains_（Rust 及其相關元件的版本）。以下是其中一位作者在 Windows 電腦上的範例：
 
 ```
 > rustup toolchain list
@@ -692,11 +692,11 @@ $ cd ~/projects/needs-nightly
 $ rustup override set nightly
 ```
 
-現在，每次您在 *~/projects/needs-nightly* 內呼叫 `rustc` 或 `cargo` 時，`rustup` 都會確保您使用的是 nightly Rust，而不是預設的 stable Rust。當您有許多 Rust 專案時，這會非常方便！
+現在，每次您在 _~/projects/needs-nightly_ 內呼叫 `rustc` 或 `cargo` 時，`rustup` 都會確保您使用的是 nightly Rust，而不是預設的 stable Rust。當您有許多 Rust 專案時，這會非常方便！
 
 ### RFC 流程與團隊
 
-那麼您如何了解這些新功能呢？Rust 的開發模式遵循*徵求意見稿 (Request For Comments, RFC) 流程*。如果您想改進 Rust，您可以撰寫一份提案，稱為 RFC。
+那麼您如何了解這些新功能呢？Rust 的開發模式遵循_徵求意見稿 (Request For Comments, RFC) 流程_。如果您想改進 Rust，您可以撰寫一份提案，稱為 RFC。
 
 任何人都可以撰寫 RFC 來改進 Rust，並且這些提案會由 Rust 團隊審查和討論，該團隊由許多主題分組團隊組成。Rust 網站上有[團隊的完整列表](https://www.rust-lang.org/governance)，其中包括專案各領域的團隊：語言設計、compiler 實作、基礎設施、文件等。適當的團隊會閱讀提案和評論，撰寫自己的評論，最終達成共識以接受或拒絕該功能。
 
