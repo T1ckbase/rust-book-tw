@@ -85,12 +85,11 @@ async function translateFile({ name, download_url: url }: File) {
   }
 }
 
-const oldGithubShas: Record<string, string> = JSON.parse(Deno.readTextFileSync('./github_shas.json'));
+const githubShas: Record<string, string> = JSON.parse(Deno.readTextFileSync('./github_shas.json'));
 const files = await getFiles();
 
-const githubShas: Record<string, string> = {};
 for (const file of files) {
-  if (oldGithubShas[file.name] && oldGithubShas[file.name] === file.sha) {
+  if (githubShas[file.name] && githubShas[file.name] === file.sha) {
     console.log(`Already translated: ${file.name}`);
     continue;
   }
