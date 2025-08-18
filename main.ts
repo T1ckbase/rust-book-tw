@@ -70,7 +70,7 @@ async function translateFile({ name, download_url: url }: File) {
 
         const data = await apiResponse.json();
         const translation: string = data?.choices[0]?.message?.content;
-        if (translation) {
+        if (!translation) {
           console.dir(data, { depth: null });
           throw Error('Response is empty');
         }
