@@ -4,29 +4,29 @@ This file is periodically generated from the content in the `/src/`
 directory, so all fixes need to be made in `/src/`.
 -->
 
-[目錄](https://doc.rust-lang.org/book/ch00-00-introduction.html)
+[TOC]
 
-# 物件導向程式設計功能
+# 物件導向程式設計特性
 
-物件導向程式設計（OOP）是一種程式建模方式。物件作為程式概念在 1960 年代於程式語言 Simula 中被引入。這些物件影響了 Alan Kay 的程式架構，其中物件彼此傳遞訊息。為描述這種架構，他在 1967 年創造了「_物件導向程式設計_」一詞。許多相互競爭的定義描述了什麼是 OOP，根據其中一些定義，Rust 是物件導向的，但根據另一些定義則不是。在本章中，我們將探討一些通常被認為是物件導向的特性，以及這些特性如何轉化為慣用的 Rust。然後，我們將向您展示如何在 Rust 中實作物件導向的設計模式，並討論這樣做的權衡，相較於使用 Rust 的某些優勢來實作解決方案。
+物件導向程式設計 (Object-oriented programming, OOP) 是一種建立程式模型的方式。物件作為程式設計的概念，是在 1960 年代的 Simula 程式語言中被引入的。這些物件影響了 Alan Kay 的程式設計架構，在該架構中，物件之間會互相傳遞訊息。為了描述這個架構，他在 1967 年創造了「物件導向程式設計 (_object-oriented programming_)」這個詞。對於 OOP 是什麼，有許多相互競爭的定義，根據其中一些定義，Rust 是物件導向的，但根據另一些定義則不是。在本章中，我們將探討一些通常被認為是物件導向的特性，以及這些特性如何轉換為慣用的 Rust 寫法。然後，我們將向您展示如何在 Rust 中實作一個物件導向的設計模式，並討論這樣做與使用 Rust 的一些強項來實作解決方案之間的權衡。
 
 ## 物件導向語言的特性
 
-在程式設計社群中，對於一個語言要被認為是物件導向，必須具備哪些功能並沒有共識。Rust 受到許多程式設計範式的影響，包括 OOP；例如，我們在[第 13 章](https://doc.rust-lang.org/book/ch13-00-functional-features.html)中探討了來自 functional programming 的功能。可以說，OOP 語言共享某些共同特性，即 objects、encapsulation 和 inheritance。讓我們來看看這些特性各代表什麼，以及 Rust 是否支援它們。
+程式設計社群對於一個語言必須具備哪些特性才能被視為物件導向，並沒有共識。Rust 受到了許多程式設計範式的影響，包括 OOP；例如，我們在第 13 章探討了來自函數式程式設計的特性。可以說，OOP 語言共享某些共同的特性，即物件 (objects)、封裝 (encapsulation) 和繼承 (inheritance)。讓我們來看看這些特性各代表什麼意思，以及 Rust 是否支援它們。
 
-### 物件包含資料和行為
+### 物件包含資料與行為
 
-Erich Gamma、Richard Helm、Ralph Johnson 和 John Vlissides 所著的《_設計模式：可重用物件導向軟體元素_》（Addison-Wesley, 1994），俗稱《_四人幫_》一書，是物件導向設計模式的目錄。它以這種方式定義 OOP：
+由 Erich Gamma、Richard Helm、Ralph Johnson 和 John Vlissides 合著的《設計模式：可複用物件導向軟體的元素》（_Design Patterns: Elements of Reusable Object-Oriented Software_，Addison-Wesley，1994），俗稱《四人幫》（_The Gang of Four_）書，是一本物件導向設計模式的目錄。它對 OOP 的定義如下：
 
-> 物件導向程式由 objects 組成。一個 **object** 將 data 和對該 data 進行操作的 procedures 打包在一起。這些 procedures 通常稱為 **methods** 或 **operations**。
+> 物件導向程式是由物件組成的。一個**物件** (object) 同時封裝了資料以及操作該資料的程序。這些程序通常被稱為**方法** (methods) 或**操作** (operations)。
 
-根據這個定義，Rust 是物件導向的：structs 和 enums 擁有 data，而 `impl` blocks 則為 structs 和 enums 提供 methods。儘管帶有 methods 的 structs 和 enums 並不_稱為_ objects，但根據 Gang of Four 對 objects 的定義，它們提供相同的功能。
+根據這個定義，Rust 是物件導向的：`structs` 和 `enums` 擁有資料，而 `impl` 區塊則為 `structs` 和 `enums` 提供方法。儘管帶有方法的 `structs` 和 `enums` 不被*稱為*物件，但根據四人幫對物件的定義，它們提供了相同的功能。
 
-### 隱藏實作細節的 encapsulation
+### 隱藏實作細節的封裝 (Encapsulation)
 
-另一個通常與 OOP 相關聯的方面是 _encapsulation_ 的概念，這表示 object 的實作細節不應被使用該 object 的程式碼存取。因此，與 object 互動的唯一方式是透過其 public API；使用該 object 的程式碼不應該能夠直接深入 object 的內部並更改 data 或 behavior。這使得程式設計師可以更改和重構 object 的內部，而無需更改使用該 object 的程式碼。
+另一個常與 OOP 相關的概念是_封裝_ (encapsulation)，這意味著物件的實作細節對於使用該物件的程式碼是不可存取的。因此，與物件互動的唯一方式是透過其公開的 API；使用物件的程式碼不應該能夠深入物件的內部直接更改資料或行為。這使得程式設計師能夠更改和重構物件的內部結構，而無需更改使用該物件的程式碼。
 
-我們在[第 7 章](https://doc.rust-lang.org/book/ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html)中討論了如何控制 encapsulation：我們可以使用 `pub` keyword 來決定程式碼中哪些 modules、types、functions 和 methods 應該是 public 的，預設情況下，其他所有內容都是 private 的。例如，我們可以定義一個 `AveragedCollection` struct，它有一個包含 `i32` 值 vector 的 field。該 struct 還可以有一個包含 vector 中值平均值的 field，這表示每次有人需要時，都不必按需計算平均值。換句話說，`AveragedCollection` 將為我們快取計算出的平均值。Listing 18-1 顯示了 `AveragedCollection` struct 的定義。
+我們在第 7 章討論過如何控制封裝：我們可以使用 `pub` 關鍵字來決定我們程式碼中的哪些模組、型別、函式和方法應該是公開的，而預設情況下其他所有東西都是私有的。例如，我們可以定義一個 `AveragedCollection` struct，它有一個欄位包含一個 `i32` 值的 vector。這個 struct 也可以有一個欄位包含 vector 中值的平均值，這意味著每當有人需要平均值時，就不必即時計算。換句話說，`AveragedCollection` 會為我們快取計算好的平均值。列表 18-1 顯示了 `AveragedCollection` struct 的定義。
 
 src/lib.rs
 
@@ -37,9 +37,9 @@ pub struct AveragedCollection {
 }
 ```
 
-Listing 18-1：一個 `AveragedCollection` struct，它維護一個整數列表和集合中項目的平均值
+列表 18-1：一個 `AveragedCollection` struct，它維護一個整數列表以及集合中項目的平均值
 
-該 struct 被標記為 `pub`，以便其他程式碼可以使用它，但 struct 中的 fields 仍然是 private 的。在這種情況下，這很重要，因為我們希望確保每當值從 `list` 中新增或移除時，`average` 也會更新。我們透過在 struct 上實作 `add`、`remove` 和 `average` methods 來實現這一點，如 Listing 18-2 所示。
+這個 struct 被標記為 `pub`，這樣其他程式碼才能使用它，但 struct 內的欄位仍然是私有的。在這種情況下，這點很重要，因為我們希望確保每當有值被加入或從列表中移除時，平均值也會被更新。我們透過在 struct 上實作 `add`、`remove` 和 `average` 方法來做到這一點，如列表 18-2 所示。
 
 src/lib.rs
 
@@ -72,59 +72,59 @@ impl AveragedCollection {
 }
 ```
 
-Listing 18-2：`AveragedCollection` 上 public methods `add`、`remove` 和 `average` 的實作
+列表 18-2：在 `AveragedCollection` 上實作公開方法 `add`、`remove` 和 `average`
 
-public methods `add`、`remove` 和 `average` 是存取或修改 `AveragedCollection` 實例中 data 的唯一方式。當使用 `add` method 將項目新增到 `list` 或使用 `remove` method 移除時，每個實作都會呼叫 private 的 `update_average` method，該 method 同時負責更新 `average` field。
+公開的 `add`、`remove` 和 `average` 方法是存取或修改 `AveragedCollection` 實體中資料的唯一途徑。當使用 `add` 方法將項目加入 `list` 或使用 `remove` 方法移除項目時，每個方法的實作都會呼叫私有的 `update_average` 方法，該方法負責更新 `average` 欄位。
 
-我們將 `list` 和 `average` fields 保留為 private，以便外部程式碼無法直接將項目新增或移除到 `list` field；否則，當 `list` 更改時，`average` field 可能會不同步。`average` method 會傳回 `average` field 中的值，允許外部程式碼讀取 `average` 但不能修改它。
+我們將 `list` 和 `average` 欄位設為私有，這樣外部程式碼就無法直接對 `list` 欄位進行新增或移除項目；否則，當 `list` 改變時，`average` 欄位可能會變得不同步。`average` 方法回傳 `average` 欄位中的值，讓外部程式碼可以讀取 `average` 但不能修改它。
 
-由於我們已經對 `AveragedCollection` struct 的實作細節進行了 encapsulation，因此將來我們可以輕鬆更改方面，例如資料結構。例如，我們可以為 `list` field 使用 `HashSet<i32>` 而不是 `Vec<i32>`。只要 `add`、`remove` 和 `average` public methods 的 signature 保持不變，使用 `AveragedCollection` 的程式碼就不需要更改。如果我們將 `list` 設為 public，情況就不一定如此：`HashSet<i32>` 和 `Vec<i32>` 具有不同的新增和移除項目 method，因此如果外部程式碼直接修改 `list`，它可能必須更改。
+因為我們已經封裝了 `AveragedCollection` struct 的實作細節，所以我們未來可以輕易地改變某些方面，例如資料結構。舉例來說，我們可以使用 `HashSet<i32>` 來代替 `Vec<i32>` 作為 `list` 欄位。只要 `add`、`remove` 和 `average` 這些公開方法的簽名保持不變，使用 `AveragedCollection` 的程式碼就不需要更改。如果我們將 `list` 設為公開，情況就未必如此了：`HashSet<i32>` 和 `Vec<i32>` 有不同的新增和移除項目的方法，所以如果外部程式碼是直接修改 `list` 的話，它很可能需要更改。
 
-如果 encapsulation 是語言被視為物件導向所必需的方面，那麼 Rust 就滿足了這個要求。針對程式碼的不同部分選擇使用 `pub` 或不使用，可以實現實作細節的 encapsulation。
+如果封裝是一個語言被視為物件導向的必要條件，那麼 Rust 符合這個要求。對程式碼的不同部分選擇使用或不使用 `pub`，使得實作細節的封裝成為可能。
 
-### 作為型別系統和程式碼共享的 inheritance
+### 作為型別系統與程式碼共享的繼承 (Inheritance)
 
-_Inheritance_ 是一種機制，透過它，一個 object 可以從另一個 object 的定義中繼承 elements，從而獲得父 object 的 data 和 behavior，而無需您再次定義它們。
+_繼承_ (Inheritance) 是一種機制，一個物件可以從另一個物件的定義中繼承元素，從而獲得父物件的資料和行為，而無需再次定義它們。
 
-如果一個語言必須擁有 inheritance 才能成為物件導向，那麼 Rust 就不是這樣的語言。在 Rust 中，沒有辦法定義一個 struct，使其在不使用 macro 的情況下繼承父 struct 的 fields 和 method 實作。
+如果一個語言必須有繼承才能算是物件導向，那麼 Rust 就不是這樣的語言。如果不使用 macro，就無法定義一個繼承父 struct 欄位和方法實作的 struct。
 
-然而，如果您習慣於在程式工具箱中使用 inheritance，您可以根據您最初尋求 inheritance 的原因，在 Rust 中使用其他解決方案。
+然而，如果你習慣在你的程式設計工具箱中使用繼承，你可以根據你最初想使用繼承的原因，在 Rust 中使用其他解決方案。
 
-您選擇 inheritance 的主要原因有兩個。一個是程式碼的重用：您可以為一種 type 實作特定的 behavior，而 inheritance 使您能夠將該實作重用於不同的 type。您可以使用 default trait method implementations 在 Rust 程式碼中以有限的方式做到這一點，您在 Listing 10-14 中看到了這一點，當時我們在 `Summary` trait 上新增了 `summarize` method 的 default 實作。任何實作 `Summary` trait 的 type 都將擁有 `summarize` method，而無需任何進一步的程式碼。這類似於父 class 擁有 method 的實作，而繼承的子 class 也擁有 method 的實作。我們也可以在實作 `Summary` trait 時 override `summarize` method 的 default 實作，這類似於子 class override 從父 class 繼承的 method 的實作。
+你會選擇繼承主要有兩個原因。一個是為了程式碼的重用：你可以為一種型別實作特定的行為，而繼承讓你能夠為另一種型別重用該實作。在 Rust 程式碼中，你可以透過預設 trait 方法實作來有限度地做到這一點，這點你在列表 10-14 中我們在 `Summary` trait 上加入 `summarize` 方法的預設實作時已經看過了。任何實作 `Summary` trait 的型別都會擁有 `summarize` 方法，而無需任何額外的程式碼。這類似於父類別有一個方法的實作，而繼承的子類別也擁有該方法的實作。我們也可以在實作 `Summary` trait 時覆寫 `summarize` 方法的預設實作，這類似於子類別覆寫從父類別繼承來的方法的實作。
 
-使用 inheritance 的另一個原因與 type system 有關：為了使 child type 可以在與 parent type 相同的位置使用。這也稱為 _polymorphism_，這表示您可以在 runtime 相互替換多個 objects，如果它們共享某些特性。
+使用繼承的另一個原因與型別系統有關：讓子型別能夠在與父型別相同的地方被使用。這也稱為_多型_ (polymorphism)，意思是如果多個物件共享某些特性，你可以在執行期用它們互相替換。
 
-> ### Polymorphism
+> ### 多型 (Polymorphism)
 >
-> 對於許多人來說，polymorphism 與 inheritance 是同義詞。但它實際上是一個更通泛的概念，指的是可以處理多種 types 資料的程式碼。對於 inheritance 而言，這些 types 通常是 subclasses。
+> 對許多人來說，多型與繼承是同義詞。但它其實是一個更廣泛的概念，指的是能夠處理多種型別資料的程式碼。對於繼承來說，這些型別通常是子類別。
 >
-> Rust 則使用 generics 來抽象化不同的可能 types，並使用 trait bounds 來對這些 types 必須提供的內容施加限制。這有時被稱為 _bounded parametric polymorphism_。
+> Rust 則是使用泛型 (generics) 來抽象化不同的可能型別，並使用 trait bounds 來對這些型別必須提供的功能施加約束。這有時被稱為_有界參數多型_ (bounded parametric polymorphism)。
 
-Rust 透過不提供 inheritance 選擇了一組不同的 trade-offs。Inheritance 常常有共用超出必要程式碼的風險。Subclasses 不應該總是共用其 parent class 的所有特性，但透過 inheritance 會如此。這會使程式的設計靈活性降低。它還引入了在 subclasses 上呼叫不合理或導致錯誤的 methods 的可能性，因為這些 methods 不適用於 subclass。此外，有些語言只允許 _單一繼承_ (meaning 一個 subclass 只能繼承一個 class)，這進一步限制了程式設計的靈活性。
+Rust 選擇了一套不同的權衡，不提供繼承。繼承常常有共享過多不必要程式碼的風險。子類別不應該總是共享其父類別的所有特性，但透過繼承卻會如此。這會讓程式的設計彈性降低。它還引入了在子類別上呼叫無意義或導致錯誤的方法的可能性，因為這些方法不適用於子類別。此外，有些語言只允許_單一繼承_ (single inheritance)（意味著一個子類別只能繼承自一個類別），這進一步限制了程式設計的彈性。
 
-基於這些原因，Rust 採用了不同的方法，即使用 trait objects 而不是 inheritance 來實現 polymorphism。讓我們看看 trait objects 是如何運作的。
+基於這些原因，Rust 採取了不同的方法，使用 trait objects 而非繼承來實現多型。讓我們來看看 trait objects 是如何運作的。
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="using-trait-objects-that-allow-for-values-of-different-types"></a>
 
-## 使用 Trait Objects 抽象化共享行為
+## 使用 Trait 物件來抽象化共享行為
 
-在[第 8 章](https://doc.rust-lang.org/book/ch08-01-vectors.html)中，我們提到 vectors 的一個限制是它們只能儲存單一 type 的 elements。我們在 Listing 8-9 中建立了一個 workaround，其中我們定義了一個 `SpreadsheetCell` enum，它有 variants 可以儲存 integers、floats 和 text。這意味著我們可以在每個 cell 中儲存不同 types 的 data，並且仍然有一個代表一排 cells 的 vector。當我們的可互換項目是程式碼編譯時已知的固定 types 集合時，這是一個完美的解決方案。
+在第 8 章，我們提到 vector 的一個限制是它們只能儲存單一型別的元素。我們在列表 8-9 中建立了一個變通方法，定義了一個 `SpreadsheetCell` enum，它有變體可以容納整數、浮點數和文字。這意味著我們可以在每個儲存格中儲存不同型別的資料，同時仍然有一個代表一列儲存格的 vector。當我們的可互換項目是一組在程式碼編譯時已知的固定型別時，這是一個非常好的解決方案。
 
-然而，有時候我們希望 library 的使用者能夠擴展在特定情況下有效的 types 集合。為了展示如何做到這一點，我們將建立一個 graphical user interface (GUI) 工具範例，該工具會迭代項目列表，在每個項目上呼叫 `draw` method 將其繪製到螢幕上——這是 GUI 工具的常見技術。我們將建立一個名為 `gui` 的 library crate，其中包含 GUI library 的結構。這個 crate 可能會包含一些供人們使用的 types，例如 `Button` 或 `TextField`。此外，`gui` 的使用者會希望建立他們自己的可繪製 types：例如，一個程式設計師可能會新增 `Image`，而另一個可能會新增 `SelectBox`。
+然而，有時候我們希望我們的函式庫使用者能夠擴展在特定情況下有效的型別集合。為了展示我們如何能達成這個目標，我們將建立一個圖形化使用者介面 (GUI) 工具的範例，它會迭代一個項目列表，並在每個項目上呼叫 `draw` 方法將其繪製到螢幕上——這是 GUI 工具的常用技巧。我們將建立一個名為 `gui` 的函式庫 crate，它包含了 GUI 函式庫的結構。這個 crate 可能會包含一些供人們使用的型別，例如 `Button` 或 `TextField`。此外，`gui` 的使用者會想要建立他們自己的可繪製型別：例如，一個程式設計師可能會新增 `Image`，另一個可能會新增 `SelectBox`。
 
-在撰寫 library 時，我們無法知道並定義其他程式設計師可能想建立的所有 types。但我們確實知道 `gui` 需要追蹤許多不同 types 的 values，並且需要在這些不同 types 的 values 上呼叫 `draw` method。它不需要知道當我們呼叫 `draw` method 時會發生什麼，只需要知道該 value 將有該 method 供我們呼叫即可。
+在撰寫函式庫時，我們無法預知並定義其他程式設計師可能想要建立的所有型別。但我們確實知道 `gui` 需要追蹤許多不同型別的值，並且需要在這些不同型別的值上呼叫 `draw` 方法。它不需要確切知道當我們呼叫 `draw` 方法時會發生什麼，只需要知道該值會有這個方法可供我們呼叫。
 
-要在具有 inheritance 的語言中執行此操作，我們可能會定義一個名為 `Component` 的 class，並在其上定義一個名為 `draw` 的 method。其他 classes，例如 `Button`、`Image` 和 `SelectBox`，將從 `Component` 繼承，因此繼承 `draw` method。它們可以各自 override `draw` method 來定義其自訂行為，但 framework 可以將所有 types 視為 `Component` 實例並在其上呼叫 `draw`。但由於 Rust 沒有 inheritance，我們需要另一種方式來組織 `gui` library，以允許使用者建立與 library 相容的新 types。
+要在有繼承的語言中做到這一點，我們可能會定義一個名為 `Component` 的類別，它有一個名為 `draw` 的方法。其他的類別，如 `Button`、`Image` 和 `SelectBox`，會繼承自 `Component`，從而繼承 `draw` 方法。它們可以各自覆寫 `draw` 方法來定義自己的客製化行為，但框架可以將所有這些型別都視為 `Component` 的實體，並在它們上面呼叫 `draw`。但因為 Rust 沒有繼承，我們需要另一種方式來建構 `gui` 函式庫，以允許使用者建立與函式庫相容的新型別。
 
-### 定義通用行為的 Trait
+### 為共通行為定義一個 Trait
 
-為了實作我們希望 `gui` 擁有的行為，我們將定義一個名為 `Draw` 的 trait，它將有一個名為 `draw` 的 method。然後我們可以定義一個接受 trait object 的 vector。_trait object_ 同時指向一個實作我們指定 trait 的 type 實例，以及一個在 runtime 用於查詢該 type 上 trait methods 的 table。我們透過指定某種 pointer，例如 `&` reference 或 `Box<T>` smart pointer，然後是 `dyn` keyword，然後指定相關的 trait 來建立 trait object。（我們將在[第 20 章](https://doc.rust-lang.org/book/ch20-00-final-project.html)的「動態大小型別與 `Sized` Trait」中討論 trait objects 必須使用 pointer 的原因。）我們可以使用 trait objects 來代替 generic 或 concrete type。無論我們在哪裡使用 trait object，Rust 的 type system 都會在 compile time 確保在此 context 中使用的任何 value 都會實作 trait object 的 trait。因此，我們不需要在 compile time 知道所有可能的 types。
+為了實作我們希望 `gui` 擁有的行為，我們將定義一個名為 `Draw` 的 trait，它將有一個名為 `draw` 的方法。然後我們可以定義一個 vector 來存放 trait object。_trait object_ 指向一個實作了我們指定 trait 的型別實體，以及一個在執行期用來查找該型別上 trait 方法的表格。我們透過指定某種指標（例如 `&` 參考或 `Box<T>` 智慧指標），接著是 `dyn` 關鍵字，然後指定相關的 trait 來建立一個 trait object。（我們將在第 20 章的「動態大小型別與 `Sized` Trait」中討論為什麼 trait objects 必須使用指標。）我們可以在泛型或具體型別的位置使用 trait objects。無論我們在哪裡使用 trait object，Rust 的型別系統都會在編譯時期確保在該上下文中使用的任何值都會實作該 trait object 的 trait。因此，我們不需要在編譯時期知道所有可能的型別。
 
-我們曾提到，在 Rust 中，我們避免將 structs 和 enums 稱為「objects」，以將它們與其他語言的 objects 區分開來。在 struct 或 enum 中，struct fields 中的 data 和 `impl` blocks 中的 behavior 是分離的，而在其他語言中，data 和 behavior 組合為一個概念通常被標記為 object。Trait objects 與其他語言的 objects 不同之處在於我們無法將 data 新增到 trait object。Trait objects 不像其他語言的 objects 那樣普遍有用：它們的特定目的是允許跨通用行為進行 abstraction。
+我們提過，在 Rust 中，我們避免稱呼 `structs` 和 `enums` 為「物件」，以區別於其他語言的物件。在 struct 或 enum 中，struct 欄位中的資料和 `impl` 區塊中的行為是分開的，而在其他語言中，資料和行為結合為一個概念通常被標記為物件。Trait objects 與其他語言中的物件不同之處在於，我們無法向 trait object 新增資料。Trait objects 不像其他語言中的物件那樣普遍有用：它們的特定目的是允許跨共通行為進行抽象化。
 
-Listing 18-3 顯示了如何定義一個名為 `Draw` 的 trait，其中包含一個名為 `draw` 的 method。
+列表 18-3 展示了如何定義一個名為 `Draw` 的 trait，它有一個名為 `draw` 的方法。
 
 src/lib.rs
 
@@ -134,9 +134,9 @@ pub trait Draw {
 }
 ```
 
-Listing 18-3：`Draw` trait 的定義
+列表 18-3：`Draw` trait 的定義
 
-這個語法應該與我們在[第 10 章](https://doc.rust-lang.org/book/ch10-02-traits.html)中討論如何定義 traits 的內容相似。接下來是一些新語法：Listing 18-4 定義了一個名為 `Screen` 的 struct，其中包含一個名為 `components` 的 vector。這個 vector 的 type 是 `Box<dyn Draw>`，這是一個 trait object；它代表了 `Box` 內部任何實作 `Draw` trait 的 type。
+這個語法應該看起來很熟悉，來自我們在第 10 章關於如何定義 trait 的討論。接下來是一些新的語法：列表 18-4 定義了一個名為 `Screen` 的 struct，它包含一個名為 `components` 的 vector。這個 vector 的型別是 `Box<dyn Draw>`，這是一個 trait object；它是任何在 `Box` 中且實作了 `Draw` trait 的型別的替代品。
 
 src/lib.rs
 
@@ -146,9 +146,9 @@ pub struct Screen {
 }
 ```
 
-Listing 18-4：`Screen` struct 的定義，其中 `components` field 包含一個實作 `Draw` trait 的 trait objects vector
+列表 18-4：`Screen` struct 的定義，其 `components` 欄位持有一個 trait object 的 vector，這些 trait object 實作了 `Draw` trait
 
-在 `Screen` struct 上，我們將定義一個名為 `run` 的 method，它將在每個 `components` 上呼叫 `draw` method，如 Listing 18-5 所示。
+在 `Screen` struct 上，我們將定義一個名為 `run` 的方法，它會在它的每個 `components` 上呼叫 `draw` 方法，如列表 18-5 所示。
 
 src/lib.rs
 
@@ -162,9 +162,9 @@ impl Screen {
 }
 ```
 
-Listing 18-5：`Screen` 上的 `run` method，在每個 component 上呼叫 `draw` method
+列表 18-5：`Screen` 上的 `run` 方法，它會在每個 component 上呼叫 `draw` 方法
 
-這與定義一個使用 generic type parameter 和 trait bounds 的 struct 不同。Generic type parameter 一次只能替換為一個 concrete type，而 trait objects 允許在 runtime 將多個 concrete types 填充到 trait object 中。例如，我們可以像 Listing 18-6 中那樣使用 generic type 和 trait bound 來定義 `Screen` struct。
+這與定義一個使用泛型型別參數和 trait bounds 的 struct 不同。一個泛型型別參數一次只能被一種具體型別取代，而 trait objects 則允許多種具體型別在執行期填補 trait object 的位置。例如，我們本可以像列表 18-6 那樣，使用泛型和 trait bound 來定義 `Screen` struct。
 
 src/lib.rs
 
@@ -185,15 +185,15 @@ where
 }
 ```
 
-Listing 18-6：`Screen` struct 及其 `run` method 的替代實作，使用 generics 和 trait bounds
+列表 18-6：使用泛型和 trait bounds 的 `Screen` struct 及其 `run` 方法的另一種實作方式
 
-這將我們限制在 `Screen` 實例中，該實例的 component 列表全部是 `Button` type 或全部是 `TextField` type。如果您總是只有 homogeneous collections，那麼使用 generics 和 trait bounds 是更好的選擇，因為定義將在 compile time 被 monomorphized 以使用 concrete types。
+這將我們限制在一個 `Screen` 實體，其 components 列表中的所有元素要嘛都是 `Button` 型別，要嘛都是 `TextField` 型別。如果你只會有同質的集合，使用泛型和 trait bounds 會是更好的選擇，因為定義將在編譯時期被單態化 (monomorphized) 以使用具體型別。
 
-另一方面，使用 trait objects 的 method，一個 `Screen` 實例可以包含一個 `Vec<T>`，其中包含 `Box<Button>` 和 `Box<TextField>`。讓我們看看這是如何運作的，然後我們將討論 runtime performance 的影響。
+另一方面，使用 trait objects 的方法，一個 `Screen` 實體可以持有一個 `Vec<T>`，其中同時包含 `Box<Button>` 和 `Box<TextField>`。讓我們來看看這是如何運作的，然後我們再討論執行期效能的影響。
 
 ### 實作 Trait
 
-現在我們將新增一些實作 `Draw` trait 的 types。我們將提供 `Button` type。再次強調，實際實作 GUI library 超出了本書的範圍，因此 `draw` method 的 body 中不會有任何有用的實作。要想像實作可能長什麼樣子，`Button` struct 可能會有 `width`、`height` 和 `label` 的 fields，如 Listing 18-7 所示。
+現在我們將新增一些實作 `Draw` trait 的型別。我們將提供 `Button` 型別。再次強調，實際實作一個 GUI 函式庫超出了本書的範圍，所以 `draw` 方法的主體中不會有任何有用的實作。為了想像實作可能會是什麼樣子，一個 `Button` struct 可能會有 `width`、`height` 和 `label` 等欄位，如列表 18-7 所示。
 
 src/lib.rs
 
@@ -211,11 +211,11 @@ impl Draw for Button {
 }
 ```
 
-Listing 18-7：一個實作 `Draw` trait 的 `Button` struct
+列表 18-7：一個實作了 `Draw` trait 的 `Button` struct
 
-`Button` 上的 `width`、`height` 和 `label` fields 將不同於其他 components 上的 fields；例如，`TextField` type 可能會有這些相同的 fields 加上一個 `placeholder` field。我們想要在螢幕上繪製的每個 type 都將實作 `Draw` trait，但在 `draw` method 中使用不同的程式碼來定義如何繪製該特定 type，就像 `Button` 在這裡所做的那樣（如前所述，沒有實際的 GUI 程式碼）。例如，`Button` type 可能會有一個額外的 `impl` block，其中包含與使用者點擊按鈕時發生什麼有關的 methods。這些 methods 不適用於 `TextField` 等 types。
+`Button` 上的 `width`、`height` 和 `label` 欄位將與其他 component 的欄位不同；例如，一個 `TextField` 型別可能會有相同的欄位，再加上一個 `placeholder` 欄位。我們希望在螢幕上繪製的每種型別都將實作 `Draw` trait，但在 `draw` 方法中會使用不同的程式碼來定義如何繪製該特定型別，就像這裡的 `Button` 一樣（如前所述，沒有實際的 GUI 程式碼）。例如，`Button` 型別可能會有一個額外的 `impl` 區塊，包含與使用者點擊按鈕時發生什麼事相關的方法。這類方法將不適用於像 `TextField` 這樣的型別。
 
-如果使用我們 library 的人決定實作一個具有 `width`、`height` 和 `options` fields 的 `SelectBox` struct，他們也將在 `SelectBox` type 上實作 `Draw` trait，如 Listing 18-8 所示。
+如果使用我們函式庫的人決定實作一個具有 `width`、`height` 和 `options` 欄位的 `SelectBox` struct，他們也會在 `SelectBox` 型別上實作 `Draw` trait，如列表 18-8 所示。
 
 src/main.rs
 
@@ -235,9 +235,9 @@ impl Draw for SelectBox {
 }
 ```
 
-Listing 18-8：另一個 crate 使用 `gui` 並在 `SelectBox` struct 上實作 `Draw` trait
+列表 18-8：另一個使用 `gui` 的 crate，並在 `SelectBox` struct 上實作 `Draw` trait
 
-我們的 library 使用者現在可以編寫他們的 `main` function 來建立一個 `Screen` 實例。他們可以透過將 `SelectBox` 和 `Button` 各自放入 `Box<T>` 中成為 trait object，將它們新增到 `Screen` 實例中。然後他們可以在 `Screen` 實例上呼叫 `run` method，這將在每個 components 上呼叫 `draw`。Listing 18-9 顯示了這個實作。
+我們函式庫的使用者現在可以撰寫他們的 `main` 函式來建立一個 `Screen` 實體。他們可以將 `SelectBox` 和 `Button` 加入到 `Screen` 實體中，方法是將它們各自放入 `Box<T>` 中，使其成為一個 trait object。然後他們可以在 `Screen` 實體上呼叫 `run` 方法，這將會在每個 component 上呼叫 `draw`。列表 18-9 展示了這個實作。
 
 src/main.rs
 
@@ -268,15 +268,15 @@ fn main() {
 }
 ```
 
-Listing 18-9：使用 trait objects 儲存實作相同 trait 的不同 types 值
+列表 18-9：使用 trait objects 來儲存實作相同 trait 的不同型別的值
 
-當我們編寫 library 時，我們不知道有人可能會新增 `SelectBox` type，但我們的 `Screen` 實作能夠對新 type 進行操作並繪製它，因為 `SelectBox` 實作了 `Draw` trait，這表示它實作了 `draw` method。
+當我們撰寫這個函式庫時，我們並不知道有人可能會新增 `SelectBox` 型別，但我們的 `Screen` 實作能夠操作這個新型別並將其繪製出來，因為 `SelectBox` 實作了 `Draw` trait，這意味著它實作了 `draw` 方法。
 
-這個概念——只關心 value 回應的 message，而不是 value 的 concrete type——類似於 dynamically typed languages 中的 _duck typing_ 概念：如果它像鴨子一樣走路，像鴨子一樣呱呱叫，那麼它一定是鴨子！在 Listing 18-5 中 `Screen` 上 `run` 的實作中，`run` 不需要知道每個 component 的 concrete type 是什麼。它不檢查 component 是否是 `Button` 或 `SelectBox` 的實例，它只是在 component 上呼叫 `draw` method。透過將 `Box<dyn Draw>` 指定為 `components` vector 中值的 type，我們已經定義 `Screen` 需要可以呼叫 `draw` method 的值。
+這個概念——只關心一個值能回應哪些訊息，而不是這個值的具體型別——與動態型別語言中的_鴨子型別_ (duck typing) 概念相似：如果它走起路來像鴨子，叫起來也像鴨子，那它肯定就是一隻鴨子！在列表 18-5 中 `Screen` 的 `run` 實作中，`run` 不需要知道每個 component 的具體型別是什麼。它不檢查一個 component 是 `Button` 的實體還是 `SelectBox` 的實體，它只是在 component 上呼叫 `draw` 方法。透過將 `components` vector 中值的型別指定為 `Box<dyn Draw>`，我們已經定義了 `Screen` 需要的是我們可以呼叫 `draw` 方法的值。
 
-使用 trait objects 和 Rust 的 type system 編寫類似於使用 duck typing 的程式碼的優點是，我們永遠不必在 runtime 檢查 value 是否實作了特定 method，也不必擔心如果 value 沒有實作 method 但我們仍然呼叫它會導致錯誤。如果 values 沒有實作 trait objects 所需的 traits，Rust 將不會編譯我們的程式碼。
+使用 trait objects 和 Rust 的型別系統來撰寫類似於使用鴨子型別的程式碼的優點是，我們永遠不需要在執行期檢查一個值是否實作了某個特定的方法，也不用擔心如果一個值沒有實作某個方法但我們卻呼叫了它會出錯。如果值沒有實作 trait objects 所需的 traits，Rust 根本不會編譯我們的程式碼。
 
-例如，Listing 18-10 顯示了如果我們嘗試使用 `String` 作為 component 來建立 `Screen` 會發生什麼。
+例如，列表 18-10 展示了如果我們試圖用 `String` 作為 component 來建立一個 `Screen` 會發生什麼事。
 
 src/main.rs
 
@@ -292,7 +292,7 @@ fn main() {
 }
 ```
 
-Listing 18-10：嘗試使用未實作 trait object trait 的 type
+列表 18-10：嘗試使用一個沒有實作 trait object 的 trait 的型別
 
 我們會得到這個錯誤，因為 `String` 沒有實作 `Draw` trait：
 
@@ -312,38 +312,38 @@ For more information about this error, try `rustc --explain E0277`.
 error: could not compile `gui` (bin "gui") due to 1 previous error
 ```
 
-這個錯誤讓我們知道，我們要嘛傳遞了我們不打算傳遞的東西給 `Screen`，因此應該傳遞一個不同的 type，要嘛我們應該在 `String` 上實作 `Draw`，以便 `Screen` 能夠在它上面呼叫 `draw`。
+這個錯誤讓我們知道，我們可能傳遞了不該傳遞給 `Screen` 的東西，應該傳遞一個不同的型別，或者我們應該在 `String` 上實作 `Draw`，這樣 `Screen` 才能在它上面呼叫 `draw`。
 
-### Trait Objects 執行 Dynamic Dispatch
+### Trait 物件執行動態分派 (Dynamic Dispatch)
 
-回想一下[第 10 章](https://doc.rust-lang.org/book/ch10-02-traits.html#performance-of-code-using-generics)中「使用泛型程式碼的效能」討論的，compiler 對泛型執行 monomorphization 過程：compiler 為我們用於替換泛型 type parameter 的每個 concrete type 生成非泛型函數和 method 實作。monomorphization 產生的程式碼執行的是 _static dispatch_，也就是 compiler 在 compile time 就知道您正在呼叫哪個 method。這與 _dynamic dispatch_ 相反，後者是 compiler 在 compile time 無法判斷您正在呼叫哪個 method。在 dynamic dispatch 的情況下，compiler 會發出在 runtime 才知道要呼叫哪個 method 的程式碼。
+回想一下在第 10 章的「使用泛型的程式碼效能」中，我們討論過編譯器對泛型執行的單態化 (monomorphization) 過程：編譯器會為我們用來取代泛型型別參數的每個具體型別，產生非泛型的函式和方法實作。單態化產生的程式碼執行的是_靜態分派_ (static dispatch)，也就是編譯器在編譯時期就知道你正在呼叫哪個方法。這與_動態分派_ (dynamic dispatch) 相對，動態分派是指編譯器在編譯時期無法判斷你正在呼叫哪個方法。在動態分派的情況下，編譯器會產生程式碼，在執行期時才知道要呼叫哪個方法。
 
-當我們使用 trait objects 時，Rust 必須使用 dynamic dispatch。compiler 不知道所有可能與使用 trait objects 的程式碼一起使用的 types，因此它不知道要呼叫哪個 type 上實作的哪個 method。相反，在 runtime，Rust 使用 trait object 內部的 pointers 來知道要呼叫哪個 method。這種查詢會產生 runtime cost，而 static dispatch 則不會。Dynamic dispatch 也阻止 compiler 選擇 inline method 的程式碼，這反過來又阻止了一些優化，並且 Rust 對於您可以在哪裡以及不能在哪裡使用 dynamic dispatch 有一些規則，稱為 _dyn compatibility_，網址為 _https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility_。然而，我們確實從 Listing 18-5 中編寫的程式碼中獲得了額外的靈活性，並且能夠在 Listing 18-9 中支援，所以這是一個需要考慮的 trade-off。
+當我們使用 trait objects 時，Rust 必須使用動態分派。編譯器不知道所有可能與使用 trait objects 的程式碼一起使用的型別，所以它不知道要呼叫哪個型別上實作的哪個方法。相反地，在執行期，Rust 使用 trait object 內部的指標來知道要呼叫哪個方法。這個查找會產生執行期成本，而靜態分派則不會。動態分派也阻止了編譯器選擇將方法的程式碼內聯 (inline)，這反過來又阻止了一些最佳化，而且 Rust 對於你可以在哪裡和不可以在哪裡使用動態分派有一些規則，稱為 _dyn compatibility_，網址為 _https://doc.rust-lang.org/reference/items/traits.html#dyn-compatibility_。然而，我們確實在列表 18-5 撰寫的程式碼中獲得了額外的彈性，並且能夠在列表 18-9 中支援它，所以這是一個需要考慮的權衡。
 
-## 實作物件導向設計模式
+## 實作一個物件導向設計模式
 
-_State pattern_ 是一種物件導向的設計模式。該模式的關鍵在於我們定義了 value 在內部可以擁有一組 states。這些 states 由一組 _state objects_ 表示，而 value 的 behavior 會根據其 state 改變。我們將透過一個部落格文章 struct 的範例來進行，該 struct 有一個 field 用於儲存其 state，該 state 將是來自「草稿 (draft)」、「審核中 (review)」或「已發布 (published)」集合的 state object。
+_狀態模式_ (state pattern) 是一個物件導向的設計模式。這個模式的核心是我們定義了一組值在內部可能擁有的狀態。這些狀態由一組_狀態物件_ (state objects) 來表示，而值的行為會根據其狀態而改變。我們將透過一個部落格貼文 struct 的例子來進行，這個 struct 有一個欄位用來存放其狀態，這個狀態將會是「草稿」(draft)、「審核中」(review) 或「已發布」(published) 這組狀態物件中的一個。
 
-state objects 共享功能：在 Rust 中，我們當然使用 structs 和 traits，而不是 objects 和 inheritance。每個 state object 負責自己的 behavior，並管理何時應轉換到另一個 state。持有 state object 的 value 對 states 的不同 behavior 或何時在 states 之間轉換一無所知。
+狀態物件共享功能性：在 Rust 中，我們當然是使用 structs 和 traits，而不是物件和繼承。每個狀態物件負責自身的行為，以及決定何時應該轉變為另一個狀態。持有狀態物件的值對於狀態的不同行為或何時在狀態間轉換一無所知。
 
-使用 state pattern 的優點是，當程式的業務需求改變時，我們不需要改變持有 state 的 value 的程式碼，也不需要改變使用該 value 的程式碼。我們只需要更新其中一個 state objects 內部的程式碼來改變其規則，或者可能新增更多 state objects。
+使用狀態模式的優點是，當程式的業務需求改變時，我們不需要更改持有狀態的值的程式碼，也不需要更改使用該值的程式碼。我們只需要更新其中一個狀態物件內部的程式碼來改變其規則，或者可能新增更多的狀態物件。
 
-首先，我們將以更傳統的物件導向方式實作 state pattern，然後我們將使用一種在 Rust 中更自然的方法。讓我們深入研究逐步實作使用 state pattern 的部落格文章工作流程。
+首先，我們將以一種更傳統的物件導向方式來實作狀態模式，然後我們將使用一種在 Rust 中更自然的方法。讓我們逐步實作一個使用狀態模式的部落格貼文工作流程。
 
-最終的功能將會是這樣：
+最終的功能將如下所示：
 
-1. 一篇部落格文章以空白草稿開始。
-2. 當草稿完成時，會請求審核文章。
-3. 當文章獲批准時，它會被發布。
-4. 只有已發布的部落格文章才會傳回內容供列印，因此未批准的文章不會不小心被發布。
+1. 一篇部落格貼文開始時是一個空的草稿。
+2. 當草稿完成後，會請求對貼文進行審核。
+3. 當貼文被批准後，它就會被發布。
+4. 只有已發布的部落格貼文會回傳內容以供列印，所以未經批准的貼文不會被意外發布。
 
-對貼文進行的任何其他更改都不應產生任何效果。例如，如果我們在請求審核之前嘗試批准草稿部落格貼文，則該貼文應保持未發布的草稿狀態。
+任何對貼文嘗試進行的其他更改都應該沒有效果。例如，如果我們在請求審核之前嘗試批准一篇草稿部落格貼文，該貼文應保持未發布的草稿狀態。
 
-### 傳統物件導向嘗試
+### 一個傳統的物件導向嘗試
 
-有無限種方式可以構造程式碼來解決相同的問題，每種方式都有不同的 trade-offs。本節的實作更偏向傳統物件導向風格，這在 Rust 中是可能編寫的，但並未充分利用 Rust 的某些優勢。稍後，我們將展示另一種解決方案，它仍然使用物件導向設計模式，但其結構對於有物件導向經驗的程式設計師來說可能不那麼熟悉。我們將比較這兩種解決方案，以體驗與其他語言的程式碼設計方式不同的 Rust 程式碼的 trade-offs。
+解決同一個問題有無限多種建構程式碼的方式，每種方式都有不同的權衡。本節的實作更偏向傳統的物件導向風格，這在 Rust 中是可行的，但沒有利用 Rust 的一些強項。稍後，我們將展示一個不同的解決方案，它仍然使用物件導向設計模式，但其結構方式對於有物件導向經驗的程式設計師來說可能不太熟悉。我們將比較這兩種解決方案，以體驗在 Rust 中設計程式碼與在其他語言中設計程式碼的不同權衡。
 
-Listing 18-11 顯示了這個工作流程的程式碼形式：這是我們將在名為 `blog` 的 library crate 中實作的 API 的範例用法。這目前還無法編譯，因為我們尚未實作 `blog` crate。
+列表 18-11 以程式碼形式展示了這個工作流程：這是一個我們將在名為 `blog` 的函式庫 crate 中實作的 API 的使用範例。這段程式碼還不能編譯，因為我們還沒有實作 `blog` crate。
 
 src/main.rs
 
@@ -364,19 +364,19 @@ fn main() {
 }
 ```
 
-Listing 18-11：展示我們希望 `blog` crate 擁有的所需行為的程式碼
+列表 18-11：展示我們希望 `blog` crate 擁有的期望行為的程式碼
 
-我們希望允許使用者使用 `Post::new` 建立一個新的草稿部落格文章。我們希望允許將文字新增到部落格文章中。如果我們在批准之前立即嘗試取得文章的 `content`，我們不應該得到任何文字，因為文章仍然是草稿。我們在程式碼中新增了 `assert_eq!` 以用於示範目的。一個極好的 unit test 會斷言草稿部落格文章從 `content` method 傳回空字串，但我們不會為這個範例編寫 tests。
+我們希望允許使用者使用 `Post::new` 建立一篇新的草稿部落格貼文。我們希望允許向部落格貼文新增文字。如果我們在批准前立即嘗試獲取貼文的內容，我們不應該得到任何文字，因為貼文仍然是草稿。我們在程式碼中加入了 `assert_eq!` 是為了示範。一個很好的單元測試應該是斷言一篇草稿部落格貼文的 `content` 方法會回傳一個空字串，但我們不會為這個範例撰寫測試。
 
-接下來，我們希望啟用貼文審核請求，並且我們希望在等待審核期間 `content` 傳回空字串。當貼文獲得批准後，它應該被發布，這意味著當呼叫 `content` 時，貼文的文字將被傳回。
+接下來，我們希望能夠請求對貼文進行審核，並且我們希望在等待審核期間 `content` 回傳空字串。當貼文獲得批准時，它應該被發布，這意味著當呼叫 `content` 時將回傳貼文的文字。
 
-請注意，我們從 crate 互動的唯一 type 是 `Post` type。這個 type 將使用 state pattern，並將持有表示貼文所處各種狀態（草稿、審核中或已發布）的三個 state objects 之一。從一個 state 轉換到另一個 state 將在 `Post` type 內部進行管理。states 會響應我們的 library 使用者在 `Post` 實例上呼叫的 methods 而改變，但他們不必直接管理 state 更改。此外，使用者不能在 states 方面犯錯，例如在未審核之前發布貼文。
+請注意，我們從 crate 中互動的唯一型別是 `Post` 型別。這個型別將使用狀態模式，並持有一個值，該值將是代表貼文可能處於的三種狀態之一的狀態物件——草稿、審核中或已發布。從一個狀態轉變到另一個狀態將在 `Post` 型別內部管理。狀態的改變是為了回應我們函式庫的使用者在 `Post` 實體上呼叫的方法，但他們不必直接管理狀態的改變。此外，使用者不會在狀態上犯錯，例如在審核前就發布貼文。
 
-#### 定義 Post 並以草稿狀態建立新實例
+#### 定義 Post 並在草稿狀態下建立新實體
 
-讓我們開始實作 library 吧！我們知道我們需要一個 public 的 `Post` struct 來儲存一些 content，所以我們將從 struct 的定義和一個相關的 public `new` function 開始，以建立一個 `Post` 的實例，如 Listing 18-12 所示。我們還將建立一個 private 的 `State` trait，它將定義 `Post` 的所有 state objects 必須具備的 behavior。
+讓我們開始實作這個函式庫吧！我們知道我們需要一個公開的 `Post` struct 來存放一些內容，所以我們從 struct 的定義和一個相關的公開 `new` 函式開始，用來建立 `Post` 的實體，如列表 18-12 所示。我們也會建立一個私有的 `State` trait，它將定義一個 `Post` 的所有狀態物件必須具備的行為。
 
-然後 `Post` 將在名為 `state` 的 private field 中，在 `Option<T>` 內部持有一個 `Box<dyn State>` 的 trait object，以儲存 state object。您稍後會明白為什麼 `Option<T>` 是必需的。
+然後 `Post` 將在一個名為 `state` 的私有欄位中，於 `Option<T>` 內持有一個 `Box<dyn State>` 的 trait object 來存放狀態物件。你稍後會看到為什麼 `Option<T>` 是必要的。
 
 src/lib.rs
 
@@ -402,15 +402,15 @@ struct Draft {}
 impl State for Draft {}
 ```
 
-Listing 18-12：`Post` struct 的定義和建立新 `Post` 實例的 `new` function，一個 `State` trait，以及一個 `Draft` struct
+列表 18-12：`Post` struct 的定義和一個建立新 `Post` 實體的 `new` 函式、一個 `State` trait 和一個 `Draft` struct
 
-`State` trait 定義了不同貼文狀態共享的 behavior。state objects 是 `Draft`、`PendingReview` 和 `Published`，它們都將實作 `State` trait。目前，該 trait 沒有任何 methods，我們將從只定義 `Draft` 狀態開始，因為這是我們希望貼文開始的狀態。
+`State` trait 定義了不同貼文狀態所共享的行為。狀態物件有 `Draft`、`PendingReview` 和 `Published`，它們都將實作 `State` trait。目前，這個 trait 沒有任何方法，我們將從只定義 `Draft` 狀態開始，因為這是我們希望一篇貼文開始時的狀態。
 
-當我們建立一個新的 `Post` 時，我們將其 `state` field 設定為 `Some` 值，其中包含一個 `Box`。這個 `Box` 指向 `Draft` struct 的一個新實例。這確保了每當我們建立一個 `Post` 的新實例時，它都會以草稿開始。由於 `Post` 的 `state` field 是 private 的，因此無法以任何其他 state 建立 `Post`！在 `Post::new` function 中，我們將 `content` field 設定為一個新的、空的 `String`。
+當我們建立一個新的 `Post` 時，我們將其 `state` 欄位設定為一個 `Some` 值，該值持有一個 `Box`。這個 `Box` 指向 `Draft` struct 的一個新實體。這確保了每當我們建立一個 `Post` 的新實體時，它都會以草稿狀態開始。因為 `Post` 的 `state` 欄位是私有的，所以沒有辦法以任何其他狀態建立 `Post`！在 `Post::new` 函式中，我們將 `content` 欄位設定為一個新的、空的 `String`。
 
-#### 儲存文章內容的文字
+#### 儲存貼文內容的文字
 
-我們在 Listing 18-11 中看到，我們希望能夠呼叫一個名為 `add_text` 的 method，並傳遞一個 `&str` 給它，然後將其作為部落格文章的文字內容新增。我們將其作為一個 method 實作，而不是將 `content` field 公開為 `pub`，這樣我們以後可以實作一個 method 來控制 `content` field 的 data 如何讀取。`add_text` method 非常直接，所以讓我們在 Listing 18-13 中將實作新增到 `impl Post` block。
+我們在列表 18-11 中看到，我們希望能夠呼叫一個名為 `add_text` 的方法，並傳遞一個 `&str` 給它，這個 `&str` 會被新增為部落格貼文的文字內容。我們將此實作為一個方法，而不是將 `content` 欄位公開為 `pub`，這樣我們稍後可以實作一個方法來控制 `content` 欄位資料的讀取方式。`add_text` 方法相當直接，所以讓我們將列表 18-13 中的實作加入到 `impl Post` 區塊中。
 
 src/lib.rs
 
@@ -423,13 +423,13 @@ impl Post {
 }
 ```
 
-Listing 18-13：實作 `add_text` method 以新增文字到文章的 `content`
+列表 18-13：實作 `add_text` 方法以將文字新增到貼文的 `content` 中
 
-`add_text` method 接受 `self` 的 mutable reference，因為我們正在更改我們呼叫 `add_text` 的 `Post` 實例。然後我們在 `content` 中的 `String` 上呼叫 `push_str`，並傳遞 `text` 參數以新增到儲存的 `content`。此 behavior 不取決於貼文所處的 state，因此它不是 state pattern 的一部分。`add_text` method 完全不與 `state` field 互動，但它是我們希望支援的 behavior 的一部分。
+`add_text` 方法接受一個 `self` 的可變參考，因為我們正在改變我們呼叫 `add_text` 的 `Post` 實體。然後我們在 `content` 中的 `String` 上呼叫 `push_str`，並傳入 `text` 參數以新增到已儲存的 `content` 中。這個行為不依賴於貼文所處的狀態，所以它不是狀態模式的一部分。`add_text` 方法完全不與 `state` 欄位互動，但它是我們想要支援的行為的一部分。
 
-#### 確保草稿文章內容為空
+#### 確保草稿貼文的內容是空的
 
-即使我們已經呼叫了 `add_text` 並新增了一些內容到我們的文章中，我們仍然希望 `content` method 傳回一個空的字串 slice，因為文章仍處於草稿狀態，如 Listing 18-11 第 7 行所示。現在，讓我們以最簡單的方式實作 `content` method 來滿足這個要求：總是傳回一個空的字串 slice。一旦我們實作了更改文章狀態使其可以發布的能力，我們稍後會更改這個。到目前為止，文章只能處於草稿狀態，所以文章內容應該總是空的。Listing 18-14 顯示了這個 placeholder 實作。
+即使我們呼叫了 `add_text` 並為我們的貼文新增了一些內容，我們仍然希望 `content` 方法回傳一個空的字串切片，因為貼文仍處於草稿狀態，如列表 18-11 的第 7 行所示。現在，讓我們用最簡單的方式來實作 `content` 方法以滿足這個要求：總是回傳一個空的字串切片。一旦我們實作了改變貼文狀態以便發布的功能後，我們會再更改它。到目前為止，貼文只能處於草稿狀態，所以貼文內容應該總是空的。列表 18-14 顯示了這個佔位實作。
 
 src/lib.rs
 
@@ -442,17 +442,17 @@ impl Post {
 }
 ```
 
-Listing 18-14：在 `Post` 上為 `content` method 新增一個 placeholder 實作，它總是傳回一個空的字串 slice
+列表 18-14：為 `Post` 上的 `content` 方法新增一個總是回傳空字串切片的佔位實作
 
-新增這個 `content` method 後，Listing 18-11 直到第 7 行的一切都按預期運作。
+有了這個新增的 `content` 方法，列表 18-11 中直到第 7 行的所有內容都如預期般運作。
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="requesting-a-review-of-the-post-changes-its-state"></a>
 
-#### 請求審核更改貼文的狀態
+#### 請求審核會改變貼文的狀態
 
-接下來，我們需要新增功能來請求對貼文進行審核，這應該將其狀態從 `Draft` 更改為 `PendingReview`。Listing 18-15 顯示了這段程式碼。
+接下來，我們需要新增功能來請求審核貼文，這應該將其狀態從 `Draft` 改變為 `PendingReview`。列表 18-15 顯示了這段程式碼。
 
 src/lib.rs
 
@@ -487,29 +487,29 @@ impl State for PendingReview {
 }
 ```
 
-Listing 18-15：在 `Post` 和 `State` trait 上實作 `request_review` methods
+列表 18-15：在 `Post` 和 `State` trait 上實作 `request_review` 方法
 
-我們給 `Post` 一個名為 `request_review` 的 public method，它將接受 `self` 的 mutable reference。然後我們在 `Post` 的當前狀態上呼叫一個 internal 的 `request_review` method，這個第二個 `request_review` method 會消耗當前狀態並傳回一個新狀態。
+我們給 `Post` 一個名為 `request_review` 的公開方法，它會接受一個 `self` 的可變參考。然後我們在 `Post` 的目前狀態上呼叫一個內部的 `request_review` 方法，而這個第二個 `request_review` 方法會消耗掉目前的狀態並回傳一個新的狀態。
 
-我們將 `request_review` method 新增到 `State` trait；所有實作該 trait 的 types 現在都需要實作 `request_review` method。請注意，該 method 的第一個參數不是 `self`、`&self` 或 `&mut self`，而是 `self: Box<Self>`。此語法表示該 method 僅在 `Box` 持有該 type 時才有效。此語法取得 `Box<Self>` 的 ownership，使舊狀態失效，以便 `Post` 的 state 值可以轉換為新狀態。
+我們將 `request_review` 方法新增到 `State` trait 中；所有實作該 trait 的型別現在都需要實作 `request_review` 方法。請注意，我們不是將 `self`、`&self` 或 `&mut self` 作為方法的第一個參數，而是 `self: Box<Self>`。這個語法意味著該方法只有在一個持有該型別的 `Box` 上呼叫時才有效。這個語法會取得 `Box<Self>` 的 ownership，使舊的狀態失效，這樣 `Post` 的狀態值才能轉換為一個新的狀態。
 
-為了消耗舊狀態，`request_review` method 需要取得 state 值的 ownership。這就是 `Post` 的 `state` field 中的 `Option` 的用武之地：我們呼叫 `take` method 從 `state` field 中取出 `Some` 值，並在其位置留下 `None`，因為 Rust 不允許我們在 structs 中有未填充的 fields。這讓我們可以將 `state` 值從 `Post` 中移出，而不是借用它。然後我們將貼文的 `state` 值設定為此操作的結果。
+為了消耗舊的狀態，`request_review` 方法需要取得狀態值的 ownership。這就是 `Post` 的 `state` 欄位中 `Option` 的用處：我們呼叫 `take` 方法從 `state` 欄位中取出 `Some` 值，並在原地留下一個 `None`，因為 Rust 不允許我們在 structs 中有未填入的欄位。這讓我們可以將 `state` 值移出 `Post`，而不是借用它。然後，我們會將貼文的 `state` 值設定為這個操作的結果。
 
-我們需要暫時將 `state` 設定為 `None`，而不是直接使用類似 `self.state = self.state.request_review();` 的程式碼來設定它，以取得 `state` 值的 ownership。這確保了在我們將 `state` 轉換為新狀態後，`Post` 無法使用舊的 `state` 值。
+我們需要暫時將 `state` 設為 `None`，而不是直接用像 `self.state = self.state.request_review();` 這樣的程式碼來設定它，是為了取得 `state` 值的 ownership。這確保了 `Post` 在我們將舊的 `state` 值轉換為新狀態後，不能再使用它。
 
-`Draft` 上的 `request_review` method 傳回一個新的、boxed 的 `PendingReview` struct 實例，它表示貼文等待審核的狀態。`PendingReview` struct 也實作了 `request_review` method，但沒有做任何轉換。相反，它傳回自身，因為當我們對已經處於 `PendingReview` 狀態的貼文請求審核時，它應該保持在 `PendingReview` 狀態。
+`Draft` 上的 `request_review` 方法會回傳一個新的、被 boxed 的新 `PendingReview` struct 實體，它代表貼文等待審核的狀態。`PendingReview` struct 也實作了 `request_review` 方法，但它不做任何轉換。相反地，它回傳自己，因為當我們對一個已經處於 `PendingReview` 狀態的貼文請求審核時，它應該保持在 `PendingReview` 狀態。
 
-現在我們可以開始看到 state pattern 的優點：`Post` 上的 `request_review` method 不管其 `state` 值如何都是相同的。每個 state 都負責自己的規則。
+現在我們可以看到狀態模式的優點了：不論 `state` 的值是什麼，`Post` 上的 `request_review` 方法都是一樣的。每個狀態都負責自己的規則。
 
-我們將 `Post` 上的 `content` method 保持不變，傳回一個空的字串 slice。我們現在可以讓 `Post` 處於 `PendingReview` 狀態以及 `Draft` 狀態，但我們希望在 `PendingReview` 狀態下有相同的 behavior。Listing 18-11 現在一直到第 10 行都正常運作了！
+我們將 `Post` 上的 `content` 方法保持原樣，回傳一個空的字串切片。我們現在可以讓 `Post` 處於 `PendingReview` 狀態以及 `Draft` 狀態，但我們希望在 `PendingReview` 狀態下有相同的行為。列表 18-11 現在到第 10 行都可以正常運作了！
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="adding-the-approve-method-that-changes-the-behavior-of-content"></a>
 
-#### 新增 `approve` 以更改 `content` 的行為
+#### 新增 `approve` 方法來改變 `content` 的行為
 
-`approve` method 將類似於 `request_review` method：它會將 `state` 設定為當前 state 表示在獲批准時應有的值，如 Listing 18-16 所示。
+`approve` 方法將會與 `request_review` 方法相似：它會將 `state` 設定為目前狀態在被批准時應該具有的值，如列表 18-16 所示。
 
 src/lib.rs
 
@@ -559,13 +559,13 @@ impl State for Published {
 }
 ```
 
-Listing 18-16：在 `Post` 和 `State` trait 上實作 `approve` method
+列表 18-16：在 `Post` 和 `State` trait 上實作 `approve` 方法
 
-我們將 `approve` method 新增到 `State` trait，並新增一個實作 `State` 的新 struct，即 `Published` 狀態。
+我們將 `approve` 方法新增到 `State` trait 中，並新增一個實作 `State` 的新 struct，即 `Published` 狀態。
 
-類似於 `PendingReview` 上的 `request_review` 方法，如果我們在 `Draft` 上呼叫 `approve` 方法，它將沒有任何效果，因為 `approve` 會傳回 `self`。當我們在 `PendingReview` 上呼叫 `approve` 時，它會傳回一個新的、boxed 的 `Published` struct 實例。`Published` struct 實作 `State` trait，對於 `request_review` 和 `approve` 方法，它都會傳回自身，因為在這些情況下，文章應該保持在 `Published` 狀態。
+與 `PendingReview` 上的 `request_review` 運作方式類似，如果我們在 `Draft` 上呼叫 `approve` 方法，它將沒有任何效果，因為 `approve` 會回傳 `self`。當我們在 `PendingReview` 上呼叫 `approve` 時，它會回傳一個新的、被 boxed 的 `Published` struct 實體。`Published` struct 實作了 `State` trait，對於 `request_review` 和 `approve` 方法，它都會回傳自己，因為在這些情況下，貼文應該保持在 `Published` 狀態。
 
-現在我們需要更新 `Post` 上的 `content` method。我們希望從 `content` 傳回的值取決於 `Post` 的當前狀態，因此我們將讓 `Post` 委派給在其 `state` 上定義的 `content` method，如 Listing 18-17 所示。
+現在我們需要更新 `Post` 上的 `content` 方法。我們希望從 `content` 回傳的值取決於 `Post` 的目前狀態，所以我們將讓 `Post` 委派給在其 `state` 上定義的 `content` 方法，如列表 18-17 所示。
 
 src/lib.rs
 
@@ -579,15 +579,15 @@ impl Post {
 }
 ```
 
-Listing 18-17：更新 `Post` 上的 `content` method 以委派給 `State` 上的 `content` method
+列表 18-17：更新 `Post` 上的 `content` 方法，以委派給 `State` 上的 `content` 方法
 
-由於目標是將所有這些規則保留在實作 `State` 的 structs 內部，我們在 `state` 中的 value 上呼叫 `content` method，並將 post 實例（即 `self`）作為參數傳遞。然後我們傳回使用 `state` value 上的 `content` method 所傳回的值。
+因為目標是將所有這些規則都保留在實作 `State` 的 structs 內部，所以我們在 `state` 中的值上呼叫 `content` 方法，並將貼文實體（也就是 `self`）作為參數傳入。然後我們回傳從 `state` 值上使用 `content` 方法所回傳的值。
 
-我們在 `Option` 上呼叫 `as_ref` method，因為我們想要 `Option` 內部值的 reference，而不是值的 ownership。由於 `state` 是一個 `Option<Box<dyn State>>`，當我們呼叫 `as_ref` 時，會傳回 `Option<&Box<dyn State>>`。如果我們不呼叫 `as_ref`，就會得到一個錯誤，因為我們無法將 `state` 從函數參數的 borrowed `&self` 中移出。
+我們在 `Option` 上呼叫 `as_ref` 方法，因為我們想要 `Option` 內部值的參考，而不是值的 ownership。因為 `state` 是 `Option<Box<dyn State>>`，當我們呼叫 `as_ref` 時，會回傳 `Option<&Box<dyn State>>`。如果我們不呼叫 `as_ref`，我們會得到一個錯誤，因為我們不能將 `state` 從函式參數的借用 `&self` 中移出。
 
-然後我們呼叫 `unwrap` method，我們知道這永遠不會 panic，因為我們知道 `Post` 上的 methods 確保當這些 methods 完成時，`state` 將始終包含 `Some` 值。這是我們在[第 9 章](https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html#cases-in-which-you-have-more-information-than-the-compiler)「比編譯器擁有更多資訊的情況」一節中討論的情況之一，當時我們知道 `None` 值永遠不可能出現，即使 compiler 無法理解這一點。
+然後我們呼叫 `unwrap` 方法，我們知道這個方法永遠不會 panic，因為我們知道 `Post` 上的方法確保了當這些方法完成後，`state` 將永遠包含一個 `Some` 值。這是我們在第 9 章的「你比編譯器擁有更多資訊的情況」一節中討論過的其中一個案例，當我們知道 `None` 值永遠不可能出現，即使編譯器無法理解這一點。
 
-此刻，當我們在 `&Box<dyn State>` 上呼叫 `content` 時，deref coercion 將作用於 `&` 和 `Box`，因此 `content` method 最終將在實作 `State` trait 的 type 上呼叫。這意味著我們需要將 `content` 新增到 `State` trait 定義中，這就是我們將根據我們擁有的狀態決定要傳回什麼內容的邏輯所在，如 Listing 18-18 所示。
+此時，當我們在 `&Box<dyn State>` 上呼叫 `content` 時，deref coercion 將對 `&` 和 `Box` 生效，所以 `content` 方法最終會被呼叫在實作 `State` trait 的型別上。這意味著我們需要將 `content` 加入到 `State` trait 的定義中，而這也正是我們將根據所處狀態來決定回傳什麼內容的邏輯放置的地方，如列表 18-18 所示。
 
 src/lib.rs
 
@@ -610,45 +610,45 @@ impl State for Published {
 }
 ```
 
-Listing 18-18：將 `content` method 新增到 `State` trait
+列表 18-18：將 `content` 方法新增到 `State` trait 中
 
-我們為 `content` method 新增了一個 default 實作，它會傳回一個空的字串 slice。這表示我們不需要在 `Draft` 和 `PendingReview` structs 上實作 `content`。`Published` struct 將 override `content` method 並傳回 `post.content` 中的值。儘管方便，但在 `State` 上有 `content` method 來決定 `Post` 的 `content` 模糊了 `State` 的職責和 `Post` 的職責之間的界限。
+我們為 `content` 方法新增了一個預設實作，它回傳一個空的字串切片。這意味著我們不需要在 `Draft` 和 `PendingReview` structs 上實作 `content`。`Published` struct 將會覆寫 `content` 方法並回傳 `post.content` 中的值。雖然方便，但讓 `State` 上的 `content` 方法決定 `Post` 的 `content`，模糊了 `State` 和 `Post` 的職責界線。
 
-請注意，我們需要在此 method 上使用 lifetime annotations，正如我們在[第 10 章](https://doc.rust-lang.org/book/ch10-03-lifetimes.html)中所討論的那樣。我們將 `post` 的 reference 作為參數，並傳回 `post` 的一部分的 reference，因此傳回 reference 的 lifetime 與 `post` 參數的 lifetime 相關。
+請注意，我們需要在此方法上加上 lifetime 註釋，正如我們在第 10 章所討論的。我們接受一個 `post` 的參考作為參數，並回傳該 `post` 的一部分的參考，所以回傳的參考的 lifetime 與 `post` 參數的 lifetime 相關。
 
-我們完成了——Listing 18-11 的所有內容現在都正常運作了！我們已經實作了 state pattern，並遵循部落格文章工作流程的規則。與規則相關的邏輯存在於 state objects 中，而不是分散在 `Post` 中。
+我們完成了——列表 18-11 的所有內容現在都可以運作了！我們已經用部落格貼文工作流程的規則實作了狀態模式。與規則相關的邏輯存在於狀態物件中，而不是散佈在 `Post` 的各處。
 
-> ### 為什麼不使用 Enum？
+> ### 為何不用 Enum？
 >
-> 您可能一直在想，為什麼我們沒有使用 `enum`，並將不同的貼文狀態作為 variants。這當然是一個可能的解決方案；試試看並比較最終結果，看看您更喜歡哪一個！使用 enum 的一個缺點是，每個檢查 enum 值的程式碼都需要一個 `match` expression 或類似的結構來處理每個可能的 variant。這可能會比這種 trait object 解決方案更重複。
+> 你可能一直在想，我們為什麼不使用一個 `enum`，並將不同的貼文狀態作為變體。這當然是一個可能的解決方案；試試看，並將最終結果與你偏好的方案進行比較！使用 enum 的一個缺點是，每個檢查 enum 值的地方都需要一個 `match` 表達式或類似的東西來處理每個可能的變體。這可能會比這個 trait object 的解決方案更為重複。
 
-#### State Pattern 的權衡
+#### 狀態模式的權衡取捨
 
-我們已經證明 Rust 能夠實作物件導向的 state pattern，以將貼文在每個狀態下應有的不同行為類型進行 encapsulation。`Post` 上的 methods 對於各種行為一無所知。我們組織程式碼的方式，我們只需要在一個地方查找，就能知道已發布貼文的各種行為方式：`Published` struct 上 `State` trait 的實作。
+我們已經展示了 Rust 能夠實作物件導向的狀態模式，以封裝一篇貼文在每個狀態下應有的不同行為。`Post` 上的方法對於各種行為一無所知。按照我們的程式碼組織方式，我們只需要查看一個地方就能知道一篇已發布貼文可以有的不同行為：`Published` struct 上對 `State` trait 的實作。
 
-如果我們要建立一個不使用 state pattern 的替代實作，我們可能會改為在 `Post` 上的 methods 中使用 `match` expressions，甚至在 `main` 程式碼中檢查貼文狀態並在這些地方改變 behavior。這意味著我們必須在多個地方查找才能了解貼文處於已發布狀態的所有影響。
+如果我們要建立一個不使用狀態模式的替代實作，我們可能會在 `Post` 的方法中，甚至在 `main` 程式碼中使用 `match` 表達式，在這些地方檢查貼文的狀態並改變行為。這意味著我們必須查看好幾個地方才能理解一篇貼文處於已發布狀態的所有含義。
 
-透過 state pattern，`Post` methods 和我們使用 `Post` 的地方不需要 `match` expressions，而且要新增一個新 state，我們只需要新增一個新 struct 並在一個位置上實作該 struct 上的 trait methods。
+使用狀態模式，`Post` 的方法和我們使用 `Post` 的地方不需要 `match` 表達式，而且要新增一個新狀態，我們只需要新增一個新的 struct 並在一個地方對該 struct 實作 trait 方法即可。
 
-使用 state pattern 的實作很容易擴展以新增更多功能。為了了解維護使用 state pattern 的程式碼的簡單性，請嘗試以下幾個建議：
+使用狀態模式的實作很容易擴展以新增更多功能。為了體會維護使用狀態模式的程式碼的簡便性，請嘗試以下幾個建議：
 
-- 新增一個 `reject` method，將貼文的狀態從 `PendingReview` 變回 `Draft`。
-- 要求兩次呼叫 `approve` 後狀態才能更改為 `Published`。
-- 允許使用者僅在貼文處於 `Draft` 狀態時新增文字內容。提示：讓 state object 負責內容可能發生的變化，但不負責修改 `Post`。
+- 新增一個 `reject` 方法，將貼文的狀態從 `PendingReview` 變回 `Draft`。
+- 要求兩次呼叫 `approve` 後，狀態才能變為 `Published`。
+- 只允許使用者在貼文處於 `Draft` 狀態時新增文字內容。提示：讓狀態物件負責內容可能發生的變化，但不要負責修改 `Post`。
 
-state pattern 的一個缺點是，由於 states 實作了 states 之間的轉換，因此某些 states 彼此耦合。如果我們在 `PendingReview` 和 `Published` 之間新增另一個 state，例如 `Scheduled`，我們就必須更改 `PendingReview` 中的程式碼以轉換為 `Scheduled`。如果 `PendingReview` 不需要隨著新 state 的新增而改變，那麼工作量會更少，但這意味著要切換到另一種設計模式。
+狀態模式的一個缺點是，因為狀態實作了狀態之間的轉換，所以某些狀態是相互耦合的。如果我們在 `PendingReview` 和 `Published` 之間新增另一個狀態，例如 `Scheduled`，我們就必須修改 `PendingReview` 中的程式碼，使其轉換到 `Scheduled`。如果 `PendingReview` 不需要隨著新狀態的增加而改變，工作量會更少，但那樣就意味著要轉換到另一種設計模式。
 
-另一個缺點是我們重複了一些邏輯。為了消除一些重複，我們可能會嘗試為 `State` trait 上的 `request_review` 和 `approve` methods 製作 default 實作，它們會傳回 `self`。然而，這行不通：當使用 `State` 作為 trait object 時，該 trait 不知道 concrete 的 `self` 將確切是什麼，因此在 compile time 無法知道傳回 type。（這是前面提到的 `dyn` 相容性規則之一。）
+另一個缺點是我們重複了一些邏輯。為了消除一些重複，我們可能會嘗試為 `State` trait 上的 `request_review` 和 `approve` 方法建立預設實作，讓它們回傳 `self`。然而，這行不通：當使用 `State` 作為 trait object 時，trait 不知道具體的 `self` 會是什麼，所以回傳型別在編譯時期是未知的。（這是前面提到的 `dyn` 相容性規則之一。）
 
-其他重複的內容包括 `Post` 上 `request_review` 和 `approve` methods 的類似實作。這兩種 methods 都委派給 `Option` 的 `state` field 中值的相同 method 實作，並將 `state` field 的新值設定為結果。如果我們在 `Post` 上有很多遵循此模式的 methods，我們可能會考慮定義一個 macro 來消除重複（參見[第 20 章](https://doc.rust-lang.org/book/ch20-00-final-project.html)中的「巨集」部分）。
+其他的重複包括 `Post` 上的 `request_review` 和 `approve` 方法的相似實作。兩個方法都委派給 `Option` 中 `state` 欄位值的同名方法實作，並將 `state` 欄位的新值設定為結果。如果我們在 `Post` 上有很多遵循這種模式的方法，我們可能會考慮定義一個 macro 來消除重複（參見第 20 章的「巨集」一節）。
 
-透過完全按照為物件導向語言定義的 state pattern 實作，我們並未充分利用 Rust 的優勢。讓我們看看我們可以對 `blog` crate 進行的一些更改，這些更改可以將無效狀態和轉換變成 compile-time 錯誤。
+透過完全按照物件導向語言的定義來實作狀態模式，我們沒有像我們本可以做到的那樣，充分利用 Rust 的強項。讓我們來看一些我們可以對 `blog` crate 做的改變，這些改變可以讓無效的狀態和轉換變成編譯時期的錯誤。
 
-### 將 States 和 Behavior 編碼為 Types
+### 將狀態與行為編碼為型別
 
-我們將向您展示如何重新思考 state pattern 以獲得一組不同的 trade-offs。我們不會完全 encapsulation states 和 transitions，讓外部程式碼對它們一無所知，而是將 states 編碼到不同的 types 中。因此，Rust 的 type checking system 將透過發出 compiler error 來阻止在只允許發布文章的地方使用草稿文章的嘗試。
+我們將向您展示如何重新思考狀態模式，以獲得一組不同的權衡。我們不再將狀態和轉換完全封裝起來，讓外部程式碼對它們一無所知，而是將狀態編碼為不同的型別。因此，Rust 的型別檢查系統將透過發出編譯器錯誤，來防止在只允許已發布貼文的地方嘗試使用草稿貼文。
 
-讓我們考慮 Listing 18-11 中 `main` 的第一部分：
+讓我們來看看列表 18-11 中 `main` 的第一部分：
 
 src/main.rs
 
@@ -661,7 +661,7 @@ fn main() {
 }
 ```
 
-我們仍然允許使用 `Post::new` 建立新的草稿文章，並允許將文字新增到文章內容中。但我們不再讓草稿文章上的 `content` method 傳回空字串，而是讓草稿文章根本沒有 `content` method。這樣，如果我們嘗試取得草稿文章的內容，我們將會得到一個 compiler error，告訴我們該 method 不存在。因此，我們不可能在 production 中意外顯示草稿文章內容，因為該程式碼甚至無法編譯。Listing 18-19 顯示了 `Post` struct 和 `DraftPost` struct 的定義，以及它們各自的 methods。
+我們仍然允許使用 `Post::new` 來建立草稿狀態的新貼文，並且能夠向貼文的內容新增文字。但我們不再讓草稿貼文有一個回傳空字串的 `content` 方法，而是讓草稿貼文根本沒有 `content` 方法。這樣一來，如果我們試圖獲取草稿貼文的內容，我們會得到一個編譯器錯誤，告訴我們該方法不存在。結果就是，我們不可能在生產環境中意外地顯示草稿貼文的內容，因為那樣的程式碼根本無法編譯。列表 18-19 顯示了 `Post` struct 和 `DraftPost` struct 的定義，以及它們各自的方法。
 
 src/lib.rs
 
@@ -693,19 +693,19 @@ impl DraftPost {
 }
 ```
 
-Listing 18-19：一個帶有 `content` method 的 `Post` 和一個沒有 `content` method 的 `DraftPost`
+列表 18-19：一個帶有 `content` 方法的 `Post` 和一個沒有 `content` 方法的 `DraftPost`
 
-`Post` 和 `DraftPost` struct 都有一個 private 的 `content` field，用於儲存部落格文章的文字。這些 structs 不再有 `state` field，因為我們將 state 的 encoding 移到 structs 的 types 中。`Post` struct 將表示已發布的文章，並且它有一個 `content` method 會傳回 `content`。
+`Post` 和 `DraftPost` structs 都有一個私有的 `content` 欄位來儲存部落格貼文的文字。這些 structs 不再有 `state` 欄位，因為我們正在將狀態的編碼轉移到 structs 的型別上。`Post` struct 將代表一篇已發布的貼文，它有一個 `content` 方法會回傳 `content`。
 
-我們仍然有一個 `Post::new` function，但它不是傳回 `Post` 的實例，而是傳回 `DraftPost` 的實例。由於 `content` 是 private 的，並且沒有任何函數會傳回 `Post`，所以目前無法建立 `Post` 的實例。
+我們仍然有一個 `Post::new` 函式，但它不再回傳 `Post` 的實體，而是回傳 `DraftPost` 的實體。因為 `content` 是私有的，而且沒有任何函式會回傳 `Post`，所以現在不可能建立 `Post` 的實體。
 
-`DraftPost` struct 有一個 `add_text` method，所以我們可以像以前一樣將文字新增到 `content` 中，但請注意 `DraftPost` 沒有定義 `content` method！所以現在程式確保所有文章都以草稿文章開始，並且草稿文章的內容無法供顯示。任何繞過這些限制的嘗試都將導致 compiler error。
+`DraftPost` struct 有一個 `add_text` 方法，所以我們可以像以前一樣向 `content` 新增文字，但請注意 `DraftPost` 並沒有定義 `content` 方法！所以現在程式確保所有貼文都以草稿貼文開始，而且草稿貼文的內容無法被顯示。任何試圖繞過這些限制的嘗試都會導致編譯器錯誤。
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="implementing-transitions-as-transformations-into-different-types"></a>
 
-那麼我們如何獲得已發布的文章呢？我們希望強制執行一項規則：草稿文章必須經過審核和批准才能發布。處於待審核狀態的文章仍然不應顯示任何內容。讓我們透過新增另一個 struct `PendingReviewPost` 來實作這些限制，在 `DraftPost` 上定義 `request_review` method 以傳回 `PendingReviewPost`，並在 `PendingReviewPost` 上定義 `approve` method 以傳回 `Post`，如 Listing 18-20 所示。
+那麼我們如何得到一篇已發布的貼文呢？我們希望強制執行一條規則，即草稿貼文必須經過審核和批准才能發布。處於待審核狀態的貼文仍然不應該顯示任何內容。讓我們透過新增另一個 struct，`PendingReviewPost`，在 `DraftPost` 上定義 `request_review` 方法以回傳 `PendingReviewPost`，並在 `PendingReviewPost` 上定義一個 `approve` 方法以回傳 `Post` 來實作這些約束，如列表 18-20 所示。
 
 src/lib.rs
 
@@ -732,11 +732,11 @@ impl PendingReviewPost {
 }
 ```
 
-Listing 18-20：一個透過在 `DraftPost` 上呼叫 `request_review` 建立的 `PendingReviewPost`，以及一個將 `PendingReviewPost` 轉換為已發布 `Post` 的 `approve` method
+列表 18-20：一個 `PendingReviewPost`，透過在 `DraftPost` 上呼叫 `request_review` 來建立，以及一個將 `PendingReviewPost` 變成已發布 `Post` 的 `approve` 方法
 
-`request_review` 和 `approve` methods 會取得 `self` 的 ownership，從而消耗 `DraftPost` 和 `PendingReviewPost` 實例，並將它們分別轉換為 `PendingReviewPost` 和已發布的 `Post`。這樣一來，我們在呼叫它們的 `request_review` 後就不會有任何殘留的 `DraftPost` 實例了，依此類推。`PendingReviewPost` struct 沒有定義 `content` method，因此嘗試讀取其內容會導致 compiler error，就像 `DraftPost` 一樣。由於唯一獲得已發布 `Post` 實例（它確實有定義 `content` method）的方法是在 `PendingReviewPost` 上呼叫 `approve` method，而唯一獲得 `PendingReviewPost` 的方法是在 `DraftPost` 上呼叫 `request_review` method，所以我們現在已將部落格文章工作流程編碼到 type system 中。
+`request_review` 和 `approve` 方法取得了 `self` 的 ownership，因此消耗了 `DraftPost` 和 `PendingReviewPost` 實體，並將它們分別轉換為 `PendingReviewPost` 和已發布的 `Post`。這樣一來，在我們對 `DraftPost` 呼叫 `request_review` 之後，就不會再有殘留的 `DraftPost` 實體了，以此類推。`PendingReviewPost` struct 上沒有定義 `content` 方法，所以嘗試讀取其內容會導致編譯器錯誤，就像 `DraftPost` 一樣。因為唯一能得到一個定義了 `content` 方法的已發布 `Post` 實體的方法，是在 `PendingReviewPost` 上呼叫 `approve` 方法，而唯一能得到 `PendingReviewPost` 的方法，是在 `DraftPost` 上呼叫 `request_review` 方法，所以我們現在已經將部落格貼文的工作流程編碼到型別系統中了。
 
-但我們也必須對 `main` 進行一些小幅更改。`request_review` 和 `approve` methods 傳回新的實例，而不是修改它們被呼叫的 struct，所以我們需要新增更多的 `let post =` shadowing assignments 來儲存傳回的實例。我們也不能對草稿和待審核文章的內容斷言為空字串，也不需要它們：我們無法再編譯嘗試使用這些狀態文章內容的程式碼。`main` 中更新的程式碼如 Listing 18-21 所示。
+但我們也必須對 `main` 做一些小小的修改。`request_review` 和 `approve` 方法回傳的是新的實體，而不是修改它們被呼叫的 struct，所以我們需要新增更多的 `let post =` 遮蔽 (shadowing) 賦值來儲存回傳的實體。我們也不能再對草稿和待審核貼文的內容進行空字串的斷言，也不再需要它們了：我們已經無法編譯試圖使用這些狀態下貼文內容的程式碼了。更新後的 `main` 程式碼如列表 18-21 所示。
 
 src/main.rs
 
@@ -756,12 +756,16 @@ fn main() {
 }
 ```
 
-Listing 18-21：`main` 中的修改，以使用部落格文章工作流程的新實作
+列表 18-21：修改 `main` 以使用部落格貼文工作流程的新實作
 
-我們需要對 `main` 進行更改以重新賦值 `post`，這表示此實作不再完全遵循物件導向的 state pattern：狀態之間的轉換不再完全封裝在 `Post` 實作中。然而，我們的收穫是現在無效狀態已不可能，這歸因於 type system 和在 compile time 發生的 type checking！這確保了某些 bugs，例如顯示未發布文章的內容，將在投入 production 之前被發現。
+我們需要對 `main` 進行修改以重新賦值 `post`，這意味著這個實作不再完全遵循物件導向的狀態模式了：狀態之間的轉換不再完全封裝在 `Post` 的實作中。然而，我們的收穫是，由於型別系統和編譯時期的型別檢查，無效的狀態現在是不可能的！這確保了某些錯誤，例如顯示未發布貼文的內容，將在它們進入生產環境之前被發現。
 
-嘗試在本節開頭建議的 `blog` crate 上執行任務，如 Listing 18-21 之後所示，看看您對此版本程式碼的設計有何看法。請注意，某些任務可能已經在此設計中完成。
+請嘗試在本節開頭建議的任務，對列表 18-21 之後的 `blog` crate 進行操作，看看您對這個版本的程式碼設計有何看法。請注意，某些任務可能在這個設計中已經完成了。
 
-我們已經看到，儘管 Rust 能夠實作物件導向設計模式，但其他模式，例如將狀態編碼到型別系統中，在 Rust 中也可用。這些模式具有不同的權衡。儘管您可能非常熟悉物件導向模式，但重新思考問題以利用 Rust 的功能可以提供好處，例如在編譯時防止一些錯誤。由於某些功能（例如所有權）是物件導向語言所沒有的，因此物件導向模式不一定是利用 Rust 優勢的最佳方式，但它是一個可用的選項。
+我們已經看到，即使 Rust 能夠實作物件導向的設計模式，Rust 中也還有其他模式可用，例如將狀態編碼到型別系統中。這些模式有不同的權衡。儘管您可能非常熟悉物件導向模式，但重新思考問題以利用 Rust 的特性可以帶來好處，例如在編譯時期防止某些錯誤。由於某些特性，例如物件導向語言所沒有的 ownership，物件導向模式在 Rust 中不一定總是最佳解決方案。
 
-接下來，我們將探討 patterns，這是 Rust 的另一個提供極大靈活性的功能。我們在本書中曾簡要提及它們，但尚未完全了解它們的全部能力。讓我們開始吧！
+## 總結
+
+無論您在閱讀本章後是否認為 Rust 是一種物件導向語言，您現在都知道您可以使用 trait objects 來在 Rust 中獲得一些物件導向的特性。動態分派可以為您的程式碼帶來一些彈性，代價是一些執行期效能。您可以使用這種彈性來實作物件導向模式，這有助於提高程式碼的可維護性。Rust 也有其他物件導向語言所沒有的特性，比如 ownership。物件導向模式不一定總是利用 Rust 強項的最佳方式，但它是一個可用的選項。
+
+接下來，我們將看看模式 (patterns)，這是 Rust 另一個能帶來極大彈性的特性。我們在整本書中都曾簡要地看過它們，但還沒有見識過它們的全部能力。我們開始吧！

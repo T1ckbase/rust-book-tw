@@ -6,90 +6,92 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-# 介紹
+# 前言
 
-> 備註：本書籍版本與 _https://nostarch.com/rust-programming-language-2nd-edition_ 上《The Rust Programming Language》一書的內容相同，該書的印刷版和電子書版本可在 No Starch Press 的 _https://nostarch.com/_ 取得。
+> 請注意：本書版本與 No Starch Press 出版的《The Rust Programming Language》實體書與電子書（網址 _https://nostarch.com/rust-programming-language-2nd-edition_）內容相同。可於 _https://nostarch.com/_ 購買。
 
-歡迎閱讀《The Rust Programming Language》，這是一本關於 Rust 的入門書。Rust 程式語言可以幫助你編寫更快、更可靠的軟體。高層次的人體工學（ergonomics）和低層次控制在程式語言設計中經常相互衝突；Rust 挑戰了這種衝突。透過平衡強大的技術能力和出色的開發者體驗，Rust 讓你能夠控制低層次細節（例如記憶體使用），同時避免了傳統上與此類控制相關的所有麻煩。
+歡迎閱讀《The Rust Programming Language》，一本關於 Rust 的入門書籍。
+Rust 程式語言能幫助你寫出更快、更可靠的軟體。
+高階的人體工學（ergonomics）和低階的控制能力在程式語言設計中往往是互相矛盾的；Rust 挑戰了這個衝突。透過平衡強大的技術能力和優異的開發者體驗，Rust 讓你能夠選擇控制低階細節（例如記憶體使用），而無需承受傳統上與這類控制相關的麻煩。
 
-## Rust 適合誰
+## Rust 的適用對象
 
-Rust 因多種原因而適合許多人。讓我們來看看其中幾個最重要的群體。
+基於各種原因，Rust 對許多人來說都是理想的選擇。讓我們來看看幾個最重要的群體。
 
 ### 開發團隊
 
-Rust 被證明是一種高效的工具，可用於擁有不同系統程式設計知識水平的大型開發團隊之間的協作。低層次程式碼容易出現各種微妙的 bug，在大多數其他語言中，這些 bug 只能透過大量的測試和經驗豐富的開發人員仔細的 code review 才能發現。在 Rust 中，compiler 扮演著守門員的角色，它會拒絕編譯帶有這些難以發現的 bug 的程式碼，包括 concurrency bug。透過與 compiler 協同工作，團隊可以將時間花在專注於程式的邏輯上，而不是追查 bug。
+對於擁有不同系統程式設計知識水準的大型開發團隊來說，Rust 已被證明是一個高效的協作工具。低階程式碼容易出現各種細微的 bug，在大多數其他語言中，這些 bug 只能透過廣泛的測試和經驗豐富的開發者仔細的程式碼審查才能發現。在 Rust 中，編譯器扮演著守門員的角色，它會拒絕編譯帶有這些難以捉摸的 bug 的程式碼，包括 concurrency bug。透過與編譯器協同工作，團隊可以將時間專注於程式的邏輯，而不是追查 bug。
 
-Rust 也為系統程式設計世界帶來了現代化的開發工具：
+Rust 也為系統程式設計領域帶來了現代化的開發工具：
 
-- 內建的 dependency manager 和 build tool `Cargo`，讓在整個 Rust ecosystem 中新增、編譯和管理 dependency 變得輕鬆且一致。
-- `Rustfmt` 格式化工具確保開發人員之間有著一致的 coding style。
-- `rust-analyzer` 支援 Integrated Development Environment (IDE) 整合，提供 code completion 和 inline error messages。
+- `Cargo`，內建的依賴管理器和建置工具，讓新增、編譯和管理依賴變得輕鬆且在整個 Rust 生態系中保持一致。
+- `Rustfmt` 格式化工具確保了開發者之間擁有一致的程式碼風格。
+- `rust-analyzer` 為整合開發環境（IDE）提供支援，實現程式碼自動完成和行內錯誤訊息。
 
-透過使用這些以及 Rust ecosystem 中的其他工具，開發人員在編寫系統級程式碼時可以保持高效。
+透過使用 Rust 生態系中的這些及其他工具，開發者在撰寫系統層級的程式碼時也能保持高生產力。
 
 ### 學生
 
-Rust 適用於學生以及對學習系統概念感興趣的人。透過使用 Rust，許多人學到了作業系統開發等主題。Rust 社群非常熱情，樂意回答學生的問題。透過本書等努力，Rust 團隊希望讓更多人，特別是程式設計新手，更容易接觸到系統概念。
+Rust 適合學生以及對學習系統概念感興趣的人。許多人透過使用 Rust 學會了作業系統開發等主題。社群非常友善，樂於回答學生的問題。透過本書等努力，Rust 團隊希望讓更多人，特別是程式設計新手，更容易接觸到系統概念。
 
-### 公司
+### 公司企業
 
-數百家大小公司在生產環境中使用 Rust 執行各種任務，包括 command line tools、web services、DevOps tooling、embedded devices、音訊和視訊分析與轉碼、cryptocurrencies、bioinformatics、search engines、Internet of Things 應用程式、machine learning，甚至是 Firefox web browser 的主要部分。
+數以百計的大大小小的公司在生產環境中使用 Rust 來執行各種任務，包括命令列工具、網路服務、DevOps 工具、嵌入式設備、音訊和影片分析與轉碼、加密貨幣、生物資訊學、搜尋引擎、物聯網應用、機器學習，甚至是 Firefox 網路瀏覽器的主要部分。
 
 ### 開源開發者
 
-Rust 適用於那些希望構建 Rust 程式語言、社群、開發工具和函式庫的人。我們非常歡迎你為 Rust 語言貢獻力量。
+Rust 適合那些想要建構 Rust 程式語言、社群、開發工具和函式庫的人。我們非常歡迎你為 Rust 語言做出貢獻。
 
-### 重視速度和穩定性的人
+### 重視速度與穩定性的人
 
-Rust 適用於那些渴望語言的速度和穩定性的人。所謂速度，我們指的是 Rust 程式碼的執行速度以及 Rust 讓你編寫程式的速度。Rust compiler 的檢查透過功能新增和 refactoring 來確保穩定性。這與沒有這些檢查的語言中脆弱的 legacy code 形成對比，開發人員往往害怕修改它們。透過追求 zero-cost abstractions——即更高層次的功能編譯成與手動編寫的程式碼一樣快的低層次程式碼——Rust 致力於讓安全程式碼也能快速執行。
+Rust 適合那些渴望語言兼具速度和穩定性的人。所謂的速度，我們指的是 Rust 程式碼的執行速度以及 Rust 讓你編寫程式的速度。Rust 編譯器的檢查確保了在新增功能和重構過程中的穩定性。這與那些沒有這些檢查的語言中脆弱的舊程式碼形成對比，開發者通常不敢修改那些程式碼。透過追求零成本抽象（zero-cost abstractions）——即能編譯成與手寫低階程式碼一樣快的程式碼的高階功能——Rust 致力於讓安全的程式碼也同樣是快速的程式碼。
 
-Rust 語言也希望支援許多其他使用者；這裡提到的只是其中一些最大的利害關係人。總體而言，Rust 最偉大的目標是透過提供安全*性*與生產力，速度*與*人體工學來消除程式設計師幾十年來所接受的取捨。試試 Rust，看看它的選擇是否適合你。
+Rust 語言也希望能支援許多其他使用者；這裡提到的僅僅是一些最大的利害關係人。總體而言，Rust 最大的抱負是透過同時提供安全性*和*生產力、速度*和*人體工學，來消除程式設計師數十年來一直接受的權衡。試試 Rust，看看它的選擇是否適合你。
 
-## 本書適合誰
+## 本書的適用讀者
 
-本書假設你曾經使用其他程式語言編寫過程式碼，但沒有對是哪種語言做出任何假設。我們已盡力使內容廣泛適用於來自各種程式設計背景的人。我們沒有花大量時間討論程式設計*是什麼*或如何思考它。如果你是程式設計的完全新手，那麼閱讀一本專門提供程式設計入門的書籍會更適合你。
+本書假設你曾經用另一種程式語言寫過程式，但並不假設是哪一種。我們試圖讓本書的內容對來自各種程式設計背景的讀者都易於理解。我們不會花太多時間討論什麼是程式設計*或*如何思考它。如果你是程式設計的全新手，閱讀一本專門介紹程式設計的書會更適合你。
 
 ## 如何使用本書
 
-通常，本書假設你按照順序從頭到尾閱讀。後面的章節建立在前面章節的概念之上，而前面的章節可能不會深入探討特定主題的細節，但會在後面的章節中重新討論該主題。
+一般來說，本書假設你會從頭到尾按順序閱讀。後面的章節會建立在前面章節的概念之上，而前面的章節可能不會深入探討某個主題的細節，但在後面的章節中會重新討論。
 
-本書有兩種類型的章節：概念章節和專案章節。在概念章節中，你將學習 Rust 的某個方面。在專案章節中，我們將一起建立小型程式，應用你目前所學到的知識。第 2、12 和 21 章是專案章節；其餘的都是概念章節。
+你會在本書中找到兩種章節：概念章節和專案章節。在概念章節中，你會學習 Rust 的某個方面。在專案章節中，我們將一起建構小型程式，應用你目前所學的知識。第 2、12 和 21 章是專案章節；其餘的都是概念章節。
 
-第 1 章解釋了如何安裝 Rust，如何編寫「Hello, world!」程式，以及如何使用 Rust 的套件管理器和建構工具 `Cargo`。第 2 章是 Rust 程式設計的實務入門，讓你建立一個數字猜謎遊戲。在這裡，我們高層次地涵蓋了概念，後面的章節將提供更多細節。如果你想立即動手實作，第 2 章就是一個好開始。第 3 章涵蓋了與其他程式語言相似的 Rust 功能，在第 4 章中你將學習 Rust 的 ownership system。如果你是一個特別細心、喜歡在進入下一個主題之前學習所有細節的學習者，你可能會想跳過第 2 章，直接跳到第 3 章，等到你想應用所學的細節來製作一個專案時再回到第 2 章。
+第 1 章解釋如何安裝 Rust、如何撰寫一個「Hello, world!」程式，以及如何使用 Cargo——Rust 的套件管理器和建置工具。第 2 章是一個實作入門，讓你建構一個猜數字遊戲。在這裡，我們將從較高的層次介紹概念，後面的章節會提供更多細節。如果你想馬上動手，第 2 章就是你的最佳選擇。第 3 章涵蓋了與其他程式語言相似的 Rust 特性，而在第 4 章你將學習 Rust 的 ownership 系統。如果你是一個特別細心的學習者，喜歡在進入下一階段前學習所有細節，你可能會想跳過第 2 章，直接進入第 3 章，然後在你想要動手做專案應用所學細節時再回到第 2 章。
 
-第 5 章討論 structs 和 methods，第 6 章涵蓋 enums、`match` expressions 和 `if let` control flow construct。你將使用 structs 和 enums 在 Rust 中建立自定義型別。
+第 5 章討論 structs 和 methods，第 6 章涵蓋 enums、`match` 運算式和 `if let` 控制流程結構。你將使用 structs 和 enums 在 Rust 中製作自訂型別。
 
-在第 7 章中，你將學習 Rust 的 module system 以及組織程式碼及其 public Application Programming Interface (API) 的 privacy rules。第 8 章討論了標準函式庫提供的一些常見 collection data structures，例如 vectors、strings 和 hash maps。第 9 章探討了 Rust 的 error-handling 哲學和技術。
+在第 7 章，你將學習 Rust 的模組系統以及用於組織程式碼及其公開應用程式介面（API）的隱私規則。第 8 章討論標準函式庫提供的一些常見集合資料結構，例如 vector、string 和 hash map。第 9 章探討 Rust 的錯誤處理哲學和技巧。
 
-第 10 章深入探討了 generics、traits 和 lifetimes，它們賦予你定義適用於多種型別程式碼的能力。第 11 章完全關於 testing，即使有 Rust 的 safety guarantees，它對於確保程式邏輯正確也是必要的。在第 12 章中，我們將實作 `grep` command line tool 功能的一個子集，該工具用於在檔案中搜尋文字。為此，我們將使用前面章節中討論的許多概念。
+第 10 章深入探討 generics、traits 和 lifetimes，這些功能讓你能夠定義適用於多種類型的程式碼。第 11 章完全是關於測試，即使有 Rust 的安全保證，測試對於確保你的程式邏輯正確仍然是必要的。在第 12 章，我們將建構一個我們自己版本的 `grep` 命令列工具的部分功能，用於在檔案中搜尋文字。為此，我們將使用前面章節中討論過的許多概念。
 
-第 13 章探討 closures 和 iterators：這些是 Rust 源自 functional programming languages 的功能。在第 14 章中，我們將更深入地研究 `Cargo`，並討論與他人共享函式庫的最佳實踐。第 15 章討論了標準函式庫提供的 smart pointers 以及啟用其功能的 traits。
+第 13 章探討 closures 和 iterators：這些是源自函數式程式語言的 Rust 特性。在第 14 章，我們將更深入地研究 Cargo，並討論與他人分享你的函式庫的最佳實踐。第 15 章討論標準函式庫提供的 smart pointers 以及啟用其功能的 traits。
 
-在第 16 章中，我們將探討不同的 concurrent programming 模型，並討論 Rust 如何幫助你無懼地在 multiple threads 中編寫程式。在第 17 章中，我們將在此基礎上探討 Rust 的 async 和 await 語法以及它們支援的 lightweight concurrency model。
+在第 16 章，我們將介紹不同的 concurrent programming 模型，並討論 Rust 如何幫助你無所畏懼地進行多執行緒程式設計。在第 17 章，我們將在此基礎上探索 Rust 的 `async` 和 `await` 語法以及它們支援的輕量級 concurrency 模型。
 
-第 18 章探討了 Rust idioms 與你可能熟悉的 object-oriented programming 原則之間的比較。
+第 18 章探討 Rust 的慣用語法與你可能熟悉的物件導向程式設計原則的比較。
 
-第 19 章是關於 patterns 和 pattern matching 的參考資料，它們是在整個 Rust 程式中表達思想的強大方式。第 20 章包含了一系列有趣的進階主題，包括 unsafe Rust、macros，以及更多關於 lifetimes、traits、types、functions 和 closures 的內容。
+第 19 章是關於 patterns 和 pattern matching 的參考資料，它們是整個 Rust 程式中表達想法的強大方式。第 20 章包含了一系列感興趣的進階主題，包括 unsafe Rust、macros，以及更多關於 lifetimes、traits、型別、函數和 closures 的內容。
 
-在第 21 章中，我們將完成一個專案，其中我們將實作一個 low-level multithreaded web server！
+在第 21 章，我們將完成一個專案，實現一個低階的多執行緒網路伺服器！
 
-最後，一些附錄包含語言的有用資訊，格式更像參考資料。**附錄 A** 涵蓋 Rust 的 keywords，**附錄 B** 涵蓋 Rust 的 operators 和 symbols，**附錄 C** 涵蓋標準函式庫提供的 derivable traits，**附錄 D** 涵蓋一些有用的 development tools，**附錄 E** 解釋 Rust editions。在 **附錄 F** 中，你可以找到本書的翻譯版本，在 **附錄 G** 中，我們將介紹 Rust 是如何製作的以及什麼是 nightly Rust。
+最後，一些附錄以更像參考資料的形式包含了關於語言的有用資訊。**附錄 A** 涵蓋 Rust 的關鍵字，**附錄 B** 涵蓋 Rust 的運算子和符號，**附錄 C** 涵蓋標準函式庫提供的可派生 traits，**附錄 D** 涵蓋一些有用的開發工具，**附錄 E** 解釋 Rust 的版本（editions）。在**附錄 F**，你可以找到本書的翻譯版本，而在**附錄 G**，我們將介紹 Rust 是如何製作的以及什麼是 nightly Rust。
 
-閱讀本書沒有錯誤的方法：如果你想跳著讀，那就去吧！如果你遇到任何困惑，可能需要跳回前面的章節。但做任何對你有效的事情。
+閱讀本書沒有錯誤的方式：如果你想跳著讀，那就去做吧！如果你感到困惑，可能需要跳回前面的章節。但無論如何，做對你有用的事。
 
 <span id="ferris">
 
-學習 Rust 過程的一個重要部分是學習如何閱讀 compiler 顯示的 error messages：這些將引導你編寫出可運行的程式碼。因此，我們將提供許多無法編譯的範例以及 compiler 在每種情況下將顯示的 error message。請記住，如果你輸入並運行一個隨機範例，它可能無法編譯！請務必閱讀周圍的文字，以查看你嘗試運行的範例是否預期會出錯。Ferris 也會幫助你區分不預期能正常運行的程式碼：
+學習 Rust 的一個重要過程是學會閱讀編譯器顯示的錯誤訊息：這些訊息將引導你寫出可運作的程式碼。因此，我們將提供許多無法編譯的範例，並附上編譯器在每種情況下會顯示的錯誤訊息。請注意，如果你輸入並執行一個隨機的範例，它可能無法編譯！請務必閱讀周圍的文字，看看你正在嘗試執行的範例是否本來就會出錯。Ferris 也會幫助你區分那些本來就不能運作的程式碼：
 
-| Ferris                                                                                                                                   | 含義                           |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| <img src="https://doc.rust-lang.org/book/img/ferris/does_not_compile.svg" class="ferris-explain" alt="帶有問號的 Ferris"/>               | 這段程式碼無法編譯！           |
-| <img src="https://doc.rust-lang.org/book/img/ferris/panics.svg" class="ferris-explain" alt="雙手向上舉的 Ferris"/>                       | 這段程式碼會 panic！           |
-| <img src="https://doc.rust-lang.org/book/img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="一隻爪子抬起，聳肩的 Ferris"/> | 這段程式碼不會產生預期的行為。 |
+| Ferris                                                                                                                                          | 意義                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| <img src="https://doc.rust-lang.org/book/img/ferris/does_not_compile.svg" class="ferris-explain" alt="Ferris with a question mark"/>            | 這段程式碼無法編譯！           |
+| <img src="https://doc.rust-lang.org/book/img/ferris/panics.svg" class="ferris-explain" alt="Ferris throwing up their hands"/>                   | 這段程式碼會 panic！           |
+| <img src="https://doc.rust-lang.org/book/img/ferris/not_desired_behavior.svg" class="ferris-explain" alt="Ferris with one claw up, shrugging"/> | 這段程式碼不會產生預期的行為。 |
 
-在大多數情況下，我們將引導你找到任何無法編譯程式碼的正確版本。
+在大多數情況下，對於任何無法編譯的程式碼，我們都會引導你找到正確的版本。
 
-## 原始碼
+## 原始程式碼
 
-本書的原始檔可在 GitHub 上找到：_https://github.com/rust-lang/book/tree/main/src_。
+產生本書的原始檔案可以在 GitHub 上找到，網址為 _https://github.com/rust-lang/book/tree/main/src_。

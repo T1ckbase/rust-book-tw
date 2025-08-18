@@ -6,57 +6,57 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-## 附錄 A: 關鍵字
+## 附錄 A：關鍵字
 
-以下列表包含了 Rust 語言目前或未來保留使用的關鍵字。因此，它們不能用作 identifiers（除非是 raw identifiers，我們將在「原始識別字」頁面 XX 中討論）。_Identifiers_ 是函式、變數、參數、struct 欄位、模組、crate、常數、macro、static 值、屬性、型別、trait 或 lifetime 的名稱。
+以下列表包含了 Rust 語言保留供目前或未來使用的關鍵字。因此，它們不能被用作識別碼（除了作為 raw identifier，我們將在 XX 頁的「Raw Identifier」中討論）。_Identifier_ 是指函式、變數、參數、struct 欄位、模組、crate、常數、macro、靜態值、屬性、型別、trait 或 lifetime 的名稱。
 
 ## 目前使用的關鍵字
 
-以下是目前使用的關鍵字列表，並描述其功能。
+以下是目前使用的關鍵字列表，並附有其功能描述。
 
-- **`as` **: 執行 primitive casting、消除包含某個項目的特定 trait 的歧義，或在 `use` 敘述中重新命名項目
-- **`async` **: 返回一個 `Future` 而不是阻塞當前執行緒
+- **`as` **: 執行基本型別轉換、消除特定 trait 中項目的歧義，或在 `use` 陳述句中重新命名項目
+- **`async` **: 回傳一個 `Future` 而不是阻塞目前執行緒
 - **`await` **: 暫停執行直到 `Future` 的結果準備就緒
-- **`break` **: 立即結束迴圈
-- **`const` **: 定義常數項目或常數原始指標
-- **`continue` **: 繼續下一個迴圈迭代
-- **`crate` **: 在模組路徑中，指稱 crate 根目錄
+- **`break` **: 立即離開迴圈
+- **`const` **: 定義常數項目或常數 raw pointer
+- **`continue` **: 繼續下一次迴圈迭代
+- **`crate` **: 在模組路徑中，指稱 crate 的根
 - **`dyn` **: 對 trait object 進行動態分派
-- **`else` **: `if` 和 `if let` 控制流程結構的備用選項
+- **`else` **: `if` 和 `if let` 控制流程結構的備用分支
 - **`enum` **: 定義一個列舉
 - **`extern` **: 連結外部函式或變數
-- **`false` **: 布林值 false 字面值
-- **`fn` **: 定義函式或函式指標型別
-- **`for` **: 迭代器中的項目進行迴圈、實作一個 trait，或指定更高階的 lifetime
-- **`if` **: 根據條件表達式結果進行分支
-- **`impl` **: 實作固有或 trait 功能
+- **`false` **: 布林值的 false 字面值
+- **`fn` **: 定義一個函式或函式指標型別
+- **`for` **: 遍歷來自 iterator 的項目、實作一個 trait，或指定一個 higher-ranked lifetime
+- **`if` **: 根據條件表達式的結果進行分支
+- **`impl` **: 實作固有的或 trait 的功能
 - **`in` **: `for` 迴圈語法的一部分
-- **`let` **: 繫結變數
+- **`let` **: 綁定一個變數
 - **`loop` **: 無條件迴圈
-- **`match` **: 將值與模式匹配
+- **`match` **: 將一個值與模式進行比對
 - **`mod` **: 定義一個模組
-- **`move` **: 使 closure 取得其所有捕獲值的 ownership
-- **`mut` **: 表示參照、原始指標或模式繫結的 mutability
-- **`pub` **: 表示 struct 欄位、`impl` 區塊或模組的 public visibility
-- **`ref` **: 透過參照繫結
-- **`return` **: 從函式返回
+- **`move` **: 使一個 closure 取得其所有捕獲變數的 ownership
+- **`mut` **: 在 reference、raw pointer 或模式綁定中表示可變性
+- **`pub` **: 在 struct 欄位、`impl` 區塊或模組中表示公開可見性
+- **`ref` **: 透過 reference 綁定
+- **`return` **: 從函式回傳
 - **`Self` **: 我們正在定義或實作的型別的型別別名
 - **`self` **: 方法的主體或當前模組
 - **`static` **: 全域變數或持續整個程式執行期間的 lifetime
-- **`struct` **: 定義一個結構
+- **`struct` **: 定義一個結構體
 - **`super` **: 當前模組的父模組
 - **`trait` **: 定義一個 trait
-- **`true` **: 布林值 true 字面值
-- **`type` **: 定義型別別名或關聯型別
+- **`true` **: 布林值的 true 字面值
+- **`type` **: 定義一個型別別名或關聯型別
 - **`union` **: 定義一個 union；只有在 union 宣告中使用時才是關鍵字
-- **`unsafe` **: 表示 unsafe 程式碼、函式、trait 或實作
+- **`unsafe` **: 表示不安全的程式碼、函式、trait 或實作
 - **`use` **: 將符號引入作用域
-- **`where` **: 表示約束型別的子句
-- **`while` **: 根據表達式結果有條件地迴圈
+- **`where` **: 表示用來約束型別的子句
+- **`while` **: 根據表達式的結果進行條件式迴圈
 
 ## 保留供未來使用的關鍵字
 
-以下關鍵字目前沒有任何功能，但 Rust 已將它們保留供未來潛在用途：
+以下關鍵字目前還沒有任何功能，但由 Rust 保留以供未來可能使用：
 
 - `abstract`
 - `become`
@@ -72,9 +72,9 @@ directory, so all fixes need to be made in `/src/`.
 - `virtual`
 - `yield`
 
-## 原始識別字
+## Raw Identifier
 
-_原始識別字_ 是一種語法，讓您可以在通常不允許的地方使用關鍵字。您可以使用 `r#` 作為關鍵字的前綴來使用原始識別字。
+_Raw identifier_ 是一種語法，讓您可以在通常不允許使用關鍵字的地方使用它們。您可以透過在關鍵字前加上 `r#` 來使用 raw identifier。
 
 例如，`match` 是一個關鍵字。如果您嘗試編譯以下使用 `match` 作為其名稱的函式：
 
@@ -86,7 +86,7 @@ fn match(needle: &str, haystack: &str) -> bool {
 }
 ```
 
-您將會收到以下錯誤：
+您會收到這個錯誤：
 
 ```
 error: expected identifier, found keyword `match`
@@ -96,7 +96,7 @@ error: expected identifier, found keyword `match`
   |    ^^^^^ expected identifier, found keyword
 ```
 
-這個錯誤顯示您不能使用關鍵字 `match` 作為函式 identifier。要將 `match` 用作函式名稱，您需要使用原始識別字語法，像這樣：
+這個錯誤顯示您不能使用關鍵字 `match` 作為函式識別碼。若要使用 `match` 作為函式名稱，您需要使用 raw identifier 語法，如下所示：
 
 檔案名稱：src/main.rs
 
@@ -110,6 +110,6 @@ fn main() {
 }
 ```
 
-這段程式碼將會編譯成功，不會有任何錯誤。請注意函式定義中以及在 `main` 函式中呼叫該函式時，函式名稱前的 `r#` 前綴。
+這段程式碼將會編譯成功，不會有任何錯誤。請注意函式名稱在其定義中以及在 `main` 中呼叫它的地方都有 `r#` 前綴。
 
-原始識別字允許您使用任何您選擇的單字作為 identifier，即使該單字恰好是保留的關鍵字。這賦予我們更大的自由來選擇 identifier 名稱，同時也讓我們能夠與以這些單字不是關鍵字的語言所編寫的程式整合。此外，原始識別字允許您使用與您的 crate 使用的 Rust edition 不同的函式庫。例如，`try` 在 2015 edition 中不是關鍵字，但在 2018、2021 和 2024 edition 中是。如果您依賴於使用 2015 edition 編寫且具有 `try` 函式的函式庫，則在較新版本中，您需要使用原始識別字語法（在這種情況下是 `r#try`）來從您的程式碼呼叫該函式。有關 edition 的更多資訊，請參閱附錄 E。
+Raw identifier 允許您使用任何您選擇的詞作為識別碼，即使該詞恰好是保留的關鍵字。這給了我們更多選擇識別碼名稱的自由，也讓我們能夠與那些在其語言中這些詞不是關鍵字的程式進行整合。此外，raw identifier 允許您使用與您的 crate 不同 Rust edition 編寫的函式庫。例如，`try` 在 2015 edition 中不是關鍵字，但在 2018、2021 和 2024 edition 中是。如果您依賴一個使用 2015 edition 編寫且具有 `try` 函式的函式庫，您就需要使用 raw identifier 語法，在這種情況下是 `r#try`，才能在較新的 edition 中從您的程式碼呼叫該函式。有關 edition 的更多資訊，請參閱附錄 E。

@@ -8,23 +8,23 @@ directory, so all fixes need to be made in `/src/`.
 
 ## 附錄 D：實用的開發工具
 
-在本附錄中，我們將討論 Rust 專案提供的一些實用開發工具。我們將了解自動排版、快速應用警告修復、程式碼檢查工具 (linter)，以及與 IDE 整合。
+在本附錄中，我們將討論 Rust 專案提供的一些實用開發工具。我們將看看自動格式化、快速應用警告修正的方法、一個 linter，以及與 IDE 整合。
 
-## 使用 rustfmt 自動排版
+## 使用 rustfmt 自動格式化
 
-`rustfmt` 工具會根據社群的程式碼風格重新排版你的程式碼。許多協作專案使用 `rustfmt` 來避免關於在編寫 Rust 時應使用哪種風格的爭論：每個人都使用該工具來排版他們的程式碼。
+`rustfmt` 工具會根據社群的程式碼風格來重新格式化你的程式碼。許多協作專案都使用 `rustfmt` 來避免因撰寫 Rust 時該用哪種風格而產生爭論：每個人都用這個工具來格式化自己的程式碼。
 
-Rust 安裝預設包含 `rustfmt`，所以你的系統上應該已經有 `rustfmt` 和 `cargo-fmt` 程式。這兩個指令類似於 `rustc` 和 `cargo`，因為 `rustfmt` 允許更精細的控制，而 `cargo-fmt` 則理解使用 Cargo 專案的慣例。要排版任何 Cargo 專案，請輸入以下內容：
+Rust 的安裝預設就包含了 `rustfmt`，所以你的系統上應該已經有 `rustfmt` 和 `cargo-fmt` 這兩個程式了。這兩個指令類似於 `rustc` 和 `cargo`，其中 `rustfmt` 允許更細微的控制，而 `cargo-fmt` 則理解使用 Cargo 的專案慣例。若要格式化任何 Cargo 專案，請輸入以下指令：
 
-```sh
+```
 $ cargo fmt
 ```
 
-執行此指令會重新排版目前 crate 中的所有 Rust 程式碼。這應該只會改變程式碼風格，而不是程式碼語意。有關 `rustfmt` 的更多資訊，請參閱其文件：_https://github.com/rust-lang/rustfmt_。
+執行這個指令會重新格式化目前 crate 中的所有 Rust 程式碼。這應該只會改變程式碼的風格，而不會改變程式碼的語意。想了解更多關於 `rustfmt` 的資訊，請參閱其文件，網址為 _https://github.com/rust-lang/rustfmt_。
 
 ## 使用 rustfix 修正你的程式碼
 
-`rustfix` 工具包含在 Rust 安裝中，可以自動修正編譯器警告，這些警告有明確的修正方法，而且很可能是你想要的結果。你可能以前看過編譯器警告。例如，考慮這段程式碼：
+`rustfix` 工具已包含在 Rust 的安裝中，它可以自動修正編譯器的警告，前提是這些問題有明確的修正方式，且很可能就是你想要的結果。你之前可能已經看過編譯器的警告了。例如，看看這段程式碼：
 
 檔案名稱：src/main.rs
 
@@ -35,9 +35,9 @@ fn main() {
 }
 ```
 
-這裡，我們將變數 `x` 定義為 mutable，但我們從未真正改變它。Rust 會對此發出警告：
+這裡，我們將變數 `x` 定義為可變的，但我們從未真正改變它。Rust 會對此提出警告：
 
-```sh
+```
 $ cargo build
    Compiling myprogram v0.1.0 (file:///projects/myprogram)
 warning: variable does not need to be mutable
@@ -51,16 +51,16 @@ warning: variable does not need to be mutable
   = note: `#[warn(unused_mut)]` on by default
 ```
 
-該警告建議我們移除 `mut` 關鍵字。我們可以透過執行 `cargo fix` 指令來自動應用該建議，使用 `rustfix` 工具：
+這個警告建議我們移除 `mut` 關鍵字。我們可以使用 `rustfix` 工具，透過執行 `cargo fix` 指令來自動套用這個建議：
 
-```sh
+```
 $ cargo fix
     Checking myprogram v0.1.0 (file:///projects/myprogram)
       Fixing src/main.rs (1 fix)
     Finished dev [unoptimized + debuginfo] target(s) in 0.59s
 ```
 
-當我們再次查看 _src/main.rs_ 時，我們會看到 `cargo fix` 已經改變了程式碼：
+當我們再次查看 _src/main.rs_ 時，會發現 `cargo fix` 已經修改了程式碼：
 
 檔案名稱：src/main.rs
 
@@ -71,21 +71,21 @@ fn main() {
 }
 ```
 
-變數 `x` 現在是 immutable，並且警告不再出現。
+變數 `x` 現在是不可變的了，警告也不再出現。
 
-你也可以使用 `cargo fix` 指令在不同的 Rust editions 之間轉換你的程式碼。Editions 將在附錄 E 中介紹。
+你也可以使用 `cargo fix` 指令來將你的程式碼在不同的 Rust editions 之間轉換。關於 Editions 的內容，會在[附錄 E](https://doc.rust-lang.org/book/appendix-05-editions.html) 中介紹。
 
-## 使用 Clippy 進行更多 Lint 檢查
+## 使用 Clippy 進行更多 Lints
 
-Clippy 工具是 lints 的集合，用於分析你的程式碼，以便你可以捕捉常見錯誤並改進你的 Rust 程式碼。Clippy 包含在標準 Rust 安裝中。
+Clippy 工具是一系列 lints 的集合，用來分析你的程式碼，以便你能夠捕捉常見的錯誤並改善你的 Rust 程式碼。Clippy 已包含在標準的 Rust 安裝中。
 
-要在任何 Cargo 專案上執行 Clippy 的 lints，請輸入以下內容：
+要在任何 Cargo 專案上執行 Clippy 的 lints，請輸入以下指令：
 
-```sh
+```
 $ cargo clippy
 ```
 
-例如，假設你編寫了一個使用數學常數（例如 pi）的近似值的程式，如下所示：
+舉例來說，假設你寫了一個程式，使用了一個數學常數（例如 pi）的近似值，就像這個程式一樣：
 
 檔案名稱：src/main.rs
 
@@ -97,9 +97,9 @@ fn main() {
 }
 ```
 
-在此專案上執行 `cargo clippy` 會導致此錯誤：
+在這個專案上執行 `cargo clippy` 會得到以下錯誤：
 
-```sh
+```
 error: approximate value of `f{32, 64}::consts::PI` found
  --> src/main.rs:2:13
   |
@@ -112,9 +112,9 @@ error: approximate value of `f{32, 64}::consts::PI` found
 clippy/master/index.html#approx_constant
 ```
 
-此錯誤會讓你知道 Rust 已經定義了一個更精確的 `PI` 常數，如果你使用該常數，你的程式會更正確。然後你會更改你的程式碼以使用 `PI` 常數。
+這個錯誤告訴你 Rust 已經定義了一個更精確的 `PI` 常數，如果使用該常數，你的程式會更正確。然後你就可以修改你的程式碼來使用 `PI` 常數。
 
-以下程式碼不會導致 Clippy 的任何錯誤或警告：
+以下程式碼不會從 Clippy 收到任何錯誤或警告：
 
 檔案名稱：src/main.rs
 
@@ -126,10 +126,10 @@ fn main() {
 }
 ```
 
-有關 Clippy 的更多資訊，請參閱其文件：_https://github.com/rust-lang/rust-clippy_。
+想了解更多關於 Clippy 的資訊，請參閱其文件，網址為 _https://github.com/rust-lang/rust-clippy_。
 
-## 使用 rust-analyzer 整合 IDE
+## 使用 rust-analyzer 進行 IDE 整合
 
-為了幫助 IDE 整合，Rust 社群建議使用 `rust-analyzer`。此工具是一組以編譯器為中心的公用程式，它們使用 Language Server Protocol 進行通訊，該協定是 IDE 和程式語言之間通訊的規範。不同的客戶端可以使用 `rust-analyzer`，例如 Visual Studio Code 的 Rust analyzer 插件：_https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer_。
+為了幫助進行 IDE 整合，Rust 社群推薦使用 `rust-analyzer`。這個工具是一套以編譯器為中心的工具程式，它遵循 Language Server Protocol，這是一個讓 IDE 和程式語言之間互相溝通的規範。不同的客戶端都可以使用 `rust-analyzer`，例如 Visual Studio Code 的 Rust analyzer 插件，其網址為 _https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer_。
 
-請造訪 `rust-analyzer` 專案的首頁 _https://rust-analyzer.github.io_ 以獲取安裝說明，然後在你特定的 IDE 中安裝語言伺服器支援。你的 IDE 將獲得諸如 autocompletion、jump to definition 和 inline errors 等功能。
+請造訪 `rust-analyzer` 專案的首頁 _https://rust-analyzer.github.io_ 以取得安裝說明，然後在你特定的 IDE 中安裝語言伺服器支援。你的 IDE 將會獲得像是自動完成、跳至定義以及行內錯誤等功能。

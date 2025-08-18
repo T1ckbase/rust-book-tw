@@ -6,28 +6,28 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-## 附錄 E：版本
+## 附錄 E：Edition
 
-在第 1 章中，你曾看到 `cargo new` 會在你的 _Cargo.toml_ 檔案中新增一些關於 edition 的 metadata。本附錄將說明其意義！
+在第一章中，你看到了 `cargo new` 會在你的 _Cargo.toml_ 檔案中加入一些關於 edition 的元資料。本附錄將會探討其意義！
 
-Rust 語言和 compiler 具有六週的 release cycle，這表示使用者可以持續獲得新的 features。其他 programming languages 較不常發布較大的變更；Rust 則更頻繁地發布較小的 updates。過了一段時間後，這些微小的變更都會累積起來。但從一個 release 到另一個 release，很難回頭說：「哇，從 Rust 1.10 到 Rust 1.31，Rust 改變了好多！」
+Rust 語言與編譯器有著六週的發布週期，這代表使用者會不斷收到新功能。其他程式語言較不常發布大型變更；Rust 則更頻繁地發布較小的更新。一段時間後，所有這些微小的變更會累積起來。但從一個版本到下一個版本，很難回過頭來說：「哇，在 Rust 1.10 和 Rust 1.31 之間，Rust 改變了很多！」
 
-每隔兩到三年，Rust 團隊就會推出新的 Rust _edition_。每個 edition 都會將已推出的 features 整合到一個清晰的 package 中，並提供完整更新的 documentation 和 tooling。新 edition 會作為標準的六週 release process 的一部分發布。
+每隔兩到三年，Rust 團隊會推出一個新的 Rust _edition_。每個 edition 都會將已發布的功能整合到一個清晰的套件中，並附上完整的更新文件和工具。新的 edition 會作為平常六週發布流程的一部分推出。
 
-Editions 對於不同的人有不同的用途：
+Edition 對不同的人有不同的用途：
 
-- 對於活躍的 Rust 使用者來說，新的 edition 將漸進的變更整合到一個易於理解的 package 中。
-- 對於非使用者來說，新的 edition 表示一些重大的改進已經完成，這可能會讓 Rust 值得再次關注。
-- 對於那些開發 Rust 的人來說，新的 edition 為整個 project 提供了一個凝聚點。
+- 對於活躍的 Rust 使用者來說，新的 edition 將增量變更整合到一個易於理解的套件中。
+- 對於非使用者而言，新的 edition 意味著一些重大的進展已經實現，這可能讓 Rust 值得再次關注。
+- 對於開發 Rust 的人來說，新的 edition 為整個專案提供了一個凝聚點。
 
-在撰寫本文時，有三個 Rust edition 可用：Rust 2015、Rust 2018 和 Rust 2021。本書使用 Rust 2021 edition 的慣用語來撰寫。
+在本書撰寫時，共有三個 Rust edition 可用：Rust 2015、Rust 2018 和 Rust 2021。本書是使用 Rust 2021 edition 的風格編寫的。
 
-`edition` key 在 _Cargo.toml_ 中指出 compiler 應該為你的程式碼使用哪個 edition。如果該 key 不存在，Rust 會為了 backward compatibility 的原因，使用 `2015` 作為 edition 的值。
+_Cargo.toml_ 中的 `edition` 鍵值指出編譯器應該為你的程式碼使用哪個 edition。如果該鍵值不存在，Rust 會基於向後相容性的原因，使用 `2015` 作為 edition 的值。
 
-每個 project 都可以選擇使用除了 default 的 2015 edition 以外的 edition。Editions 可能包含 incompatible 的變更，例如新增一個與程式碼中的 identifiers 衝突的 new keyword。然而，除非你選擇啟用這些變更，否則即使你升級了所使用的 Rust compiler 版本，你的程式碼仍將繼續 compile。
+每個專案都可以選擇使用預設 2015 edition 以外的版本。Edition 可能包含不相容的變更，例如加入一個與程式碼中識別字衝突的新 keyword。然而，除非你選擇加入這些變更，否則即使你升級了所使用的 Rust 編譯器版本，你的程式碼仍然可以繼續編譯。
 
-所有 Rust compiler 版本都支援在該 compiler 發布之前存在的任何 edition，並且它們可以將任何受支援 edition 的 crates 連結在一起。Edition 的變更只會影響 compiler 最初解析程式碼的方式。因此，如果你使用 Rust 2015 並且你的其中一個 dependencies 使用 Rust 2018，你的 project 將會 compile 並能夠使用該 dependency。你的 project 使用 Rust 2018 而 dependency 使用 Rust 2015 的相反情況也同樣可行。
+所有 Rust 編譯器版本都支援在該編譯器發布之前就已存在的任何 edition，並且它們可以將任何受支援 edition 的 crate 連結在一起。Edition 的變更只會影響編譯器初始解析程式碼的方式。因此，如果你正在使用 Rust 2015，而你的某個依賴項使用的是 Rust 2018，你的專案將能夠編譯並使用該依賴項。反之亦然，如果你的專案使用 Rust 2018，而依賴項使用 Rust 2015，也是可行的。
 
-需要澄清的是：大多數 features 將在所有 editions 上可用。使用任何 Rust edition 的開發者都將隨著新的 stable releases 而持續看到改進。然而，在某些情況下，主要是當新增了 new keywords 時，某些新 features 可能只在較新的 editions 中可用。如果你想利用這些 features，你需要切換 editions。
+需要澄清的是：大多數功能在所有 edition 中都可用。無論使用哪個 Rust edition 的開發者，都會隨著新的穩定版本發布而看到改進。然而，在某些情況下，主要是當加入新的 keyword 時，一些新功能可能只在較新的 edition 中提供。如果你想利用這些功能，就需要切換 edition。
 
-欲了解更多詳細資訊，_The_ _Edition Guide_ (位於 _https://doc.rust-lang.org/stable/edition-guide_) 是一本關於 editions 的完整書籍，其中列舉了 editions 之間的差異，並解釋了如何透過 `cargo fix` 自動將你的程式碼升級到新的 edition。
+想了解更多細節，《_Edition 指南_》（_The_ _Edition Guide_）位於 _https://doc.rust-lang.org/stable/edition-guide_，它是一本關於 edition 的完整書籍，其中列舉了各 edition 之間的差異，並解釋了如何透過 `cargo fix` 自動將你的程式碼升級到新的 edition。

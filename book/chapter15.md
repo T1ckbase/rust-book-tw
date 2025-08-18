@@ -6,43 +6,43 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-# 智慧型指標（Smart Pointers）
+# 智慧型指標
 
-_指標_（pointer）是一個通用概念，代表一個包含記憶體位址的變數。這個位址指向（“points at”）某些其他資料。在 Rust 中最常見的指標類型是參考（reference），你在第四章學過。參考由 `&` 符號表示，並借用它們所指向的值。除了指向資料以外，它們沒有任何特殊功能，而且沒有額外的開銷（overhead）。
+_pointer_ 是一個通用的概念，指的是一個包含記憶體位址的變數。這個位址指向，或「指著」某些其他的資料。在 Rust 中，最常見的 pointer 類型是 reference，你在第四章已經學過了。Reference 是由 `&` 符號表示，並 borrow 它們所指向的值。除了參考資料外，它們沒有任何特殊的功能，也沒有額外的開銷。
 
-另一方面，_智慧型指標_（smart pointers）是資料結構，它們像指標一樣運作，但同時也具有額外的中繼資料和功能。智慧型指標的概念並非 Rust 獨有：智慧型指標起源於 C++，也存在於其他語言中。Rust 的標準函式庫中定義了多種智慧型指標，提供超越參考所能提供的功能。為了探索這個通用概念，我們將看幾個不同的智慧型指標範例，包括一種_參考計數_（reference counting）智慧型指標類型。這種指標能讓你透過追蹤 owner 的數量來允許資料有多個 owner，當沒有 owner 剩下時，會清理資料。
+另一方面，_智慧型指標_ (Smart pointers) 是一些資料結構，它們的行為像 pointer，但還帶有額外的 metadata 和功能。智慧型指標的概念並非 Rust 獨有：它們源於 C++，也存在於其他語言中。Rust 的標準函式庫中定義了多種智慧型指標，提供了超出 reference 所提供的功能。為了探索這個通用概念，我們將看幾個不同的智慧型指標範例，包含一個_引用計數_ (reference counting) 智慧型指標類型。這種指標能夠讓你允許多個 owner 擁有資料，方法是追蹤 owner 的數量，並在沒有任何 owner 存在時清理資料。
 
-Rust 透過其 ownership 和 borrowing 的概念，使得參考和智慧型指標之間有額外的區別：雖然參考只是借用資料，但在許多情況下，智慧型指標*擁有*它們指向的資料。
+Rust 透過其 ownership 和 borrowing 的概念，在 reference 和智慧型指標之間有著一個額外的差異：reference 只 borrow 資料，而在許多情況下，智慧型指標會_擁有_ (own) 它們指向的資料。
 
-智慧型指標通常是使用 struct 實作的。與普通 struct 不同，智慧型指標實作了 `Deref` 和 `Drop` trait。`Deref` trait 允許智慧型指標 struct 的實例表現得像參考，這樣你就可以編寫程式碼，使其同時適用於參考或智慧型指標。`Drop` trait 允許你客製化當智慧型指標實例超出作用域時執行的程式碼。在本章中，我們將討論這兩個 trait，並展示它們對智慧型指標的重要性。
+智慧型指標通常是使用 struct 實作的。與普通 struct 不同，智慧型指標實作了 `Deref` 和 `Drop` trait。`Deref` trait 允許智慧型指標 struct 的實例表現得像一個 reference，這樣你就可以編寫能同時適用於 reference 或智慧型指標的程式碼。`Drop` trait 則讓你能夠自訂當智慧型指標實例離開作用域時所執行的程式碼。在本章中，我們將討論這兩個 trait，並展示它們對智慧型指標為何如此重要。
 
-鑑於智慧型指標模式是 Rust 中經常使用的通用設計模式，本章不會涵蓋所有現有的智慧型指標。許多函式庫都有自己的智慧型指標，你甚至可以編寫自己的智慧型指標。我們將涵蓋標準函式庫中最常見的智慧型指標：
+鑑於智慧型指標模式是 Rust 中經常使用的一種通用設計模式，本章不會涵蓋所有現存的智慧型指標。許多函式庫有自己的智慧型指標，你甚至可以編寫自己的。我們將涵蓋標準函式庫中最常見的智慧型指標：
 
-- `Box<T>`：用於在 heap 上分配值。
-- `Rc<T>`：一種參考計數類型，允許多個 ownership。
-- `Ref<T>` 和 `RefMut<T>`：透過 `RefCell<T>` 存取，一種在 runtime 而非 compile time 強制執行 borrowing 規則的類型。
+- `Box<T>`，用於在 heap 上配置值
+- `Rc<T>`，一個引用計數類型，能夠實現多重 ownership
+- `Ref<T>` 和 `RefMut<T>`，透過 `RefCell<T>` 存取，這是一個在 runtime 而非編譯時期強制執行 borrowing 規則的類型
 
-此外，我們將涵蓋_內部可變性_（interior mutability）模式，其中一個不可變類型會暴露出用於改變內部值的 API。我們還將討論參考循環（reference cycles）：它們如何導致記憶體洩漏，以及如何避免它們。
+此外，我們將涵蓋_內部可變性_ (interior mutability) 模式，即一個不可變類型公開一個 API 來改變其內部的值。我們還會討論_引用循環_ (reference cycles)：它們如何洩漏記憶體以及如何防止它們。
 
-讓我們深入研究！
+讓我們開始吧！
 
 ## 使用 Box<T> 指向 Heap 上的資料
 
-最直接的智慧型指標是 box，其類型寫為 `Box<T>`。_Box_ 允許你將資料儲存在 heap 而不是 stack 上。留在 stack 上的是指向 heap 資料的指標。請參考第四章以複習 stack 和 heap 之間的差異。
+最直接的智慧型指標是 box，其類型寫作 `Box<T>`。_Box_ 允許你將資料儲存在 heap 而非 stack 上。留在 stack 上的則是指向 heap 資料的指標。請參考第四章來複習 stack 與 heap 之間的差異。
 
-Box 沒有效能開銷，除了將資料儲存在 heap 而不是 stack 上之外。但它們也沒有太多額外的功能。你最常在這些情況下使用它們：
+除了將資料儲存在 heap 而非 stack 上，box 沒有性能上的開銷。但它們也沒有太多額外的功能。你最常在以下情況使用它們：
 
-- 當你有一種在 compile time 無法確定大小的類型，並且你希望在需要確切大小的上下文中實用該類型的值時。
-- 當你擁有大量資料並希望轉移 ownership 但確保資料在轉移時不會被複製時。
-- 當你想要擁有一個值，並且只關心它是一個實作了特定 trait 的類型，而不是特定類型時。
+- 當你擁有一個在編譯時期無法知道大小的類型，而你又想在需要確切大小的上下文中使用該類型的值時
+- 當你有大量的資料，並且想要轉移 ownership，但要確保在轉移時資料不會被複製時
+- 當你想要擁有一個值，且你只關心它是一個實作了特定 trait 的類型，而不是某個具體類型時
 
-我們將在「透過 Box 啟用遞迴型別」中展示第一種情況。在第二種情況中，轉移大量資料的 ownership 可能會花費很長時間，因為資料會在 stack 上被複製。為改善這種情況下的效能，我們可以將大量資料儲存在 box 的 heap 上。然後，只有少量的指標資料會在 stack 上複製，而它所參考的資料則會留在 heap 上的單一位置。第三種情況稱為 _trait object_，第十八章中的「使用 Trait Object 允許不同類型的值」專門討論這個主題。所以你在此學到的知識將在該部分再次應用！
+我們將在「使用 Box 啟用遞迴型別」一節中展示第一種情況。在第二種情況中，轉移大量資料的 ownership 可能會花費很長時間，因為資料會在 stack 上被複製。為了在這種情況下提升性能，我們可以將大量的資料儲存在 heap 上的 box 中。這樣一來，只有少量的指標資料會在 stack 上被複製，而它所引用的資料則會留在 heap 上的同一個位置。第三種情況稱為_trait object_，「第十八章的〈使用 Trait Object 來允許不同型別的值〉」專門討論這個主題。所以你在這裡學到的知識將會在那一節再次應用！
 
-### 使用 Box<T> 將資料儲存在 Heap 上
+### 使用 Box<T> 將資料儲存在 Heap
 
-在我們討論 `Box<T>` 的 heap 儲存使用案例之前，我們將涵蓋語法以及如何與儲存在 `Box<T>` 內的值互動。
+在我們討論 `Box<T>` 用於 heap 儲存的案例之前，我們先來看看語法以及如何與儲存在 `Box<T>` 內的值互動。
 
-範例 15-1 顯示了如何使用 box 將 `i32` 值儲存在 heap 上。
+列表 15-1 展示了如何使用 box 在 heap 上儲存一個 `i32` 值。
 
 src/main.rs
 
@@ -53,33 +53,33 @@ fn main() {
 }
 ```
 
-範例 15-1：使用 box 將 `i32` 值儲存在 heap 上
+列表 15-1：使用 box 在 heap 上儲存一個 `i32` 值
 
-我們將變數 `b` 定義為一個 `Box` 的值，該 `Box` 指向值 `5`，而 `5` 被分配在 heap 上。此程式將印出 `b = 5`；在這種情況下，我們可以像資料在 stack 上一樣存取 box 中的資料。就像任何 owned 的值一樣，當 box 超出作用域時，就像 `b` 在 `main` 結束時一樣，它將被解除分配。解除分配會同時發生在 box（儲存在 stack 上）和它指向的資料（儲存在 heap 上）。
+我們定義變數 `b` 的值為一個指向 `5` 的 `Box`，這個值被配置在 heap 上。這個程式會印出 `b = 5`；在這種情況下，我們可以像資料在 stack 上一樣存取 box 中的資料。就像任何 owned value 一樣，當一個 box 離開作用域時（如 `b` 在 `main` 函式結尾時），它會被釋放。這個釋放過程同時發生在 box 本身（儲存在 stack 上）和它指向的資料（儲存在 heap 上）。
 
-將單個值放在 heap 上並沒有多大用處，因此你不會經常以這種方式單獨使用 box。在大多數情況下，將像單個 `i32` 這樣的值放在 stack 上（它們預設儲存的位置）更合適。讓我們看一個 box 允許我們定義如果沒有 box 就無法定義的類型的情況。
+將單一值放在 heap 上不是很有用，所以你不會經常單獨這樣使用 box。在大多數情況下，將像單一 `i32` 這樣的值放在 stack 上（這是它們預設的儲存位置）是更合適的。讓我們來看一個案例，在這種情況下，如果沒有 box，我們將無法定義某些類型。
 
-### 透過 Box 啟用遞迴型別
+### 使用 Box 啟用遞迴型別
 
-_遞迴型別_（recursive type）的值可以將同類型的另一個值作為其自身的一部分。遞迴型別會帶來一個問題，因為 Rust 需要在 compile time 知道類型佔用多少空間。然而，遞迴型別的值的巢狀結構在理論上可以無限繼續下去，因此 Rust 無法知道該值需要多少空間。由於 box 有已知大小，我們可以透過在遞迴類型定義中插入一個 box 來啟用遞迴類型。
+一個_遞迴型別_ (recursive type) 的值，可以將另一個同類型的值作為其自身的一部分。遞迴型別會帶來一個問題，因為 Rust 需要在編譯時期知道一個型別佔用多少空間。然而，遞迴型別的值的巢狀結構理論上可以無限延伸，所以 Rust 無法知道該值需要多少空間。因為 box 有一個已知的大小，我們可以在遞迴型別的定義中插入一個 box 來啟用遞迴型別。
 
-作為遞迴型別的一個範例，讓我們探索_串列（cons list）_。這是一種在函數式程式語言中常見的資料類型。我們將定義的串列類型除了遞迴之外都很簡單；因此，我們將使用的範例中的概念在任何你遇到涉及遞迴型別的更複雜情況時都會很有用。
+作為遞迴型別的一個例子，讓我們來探討_cons list_。這是一種在函數式程式語言中常見的資料類型。我們將定義的 cons list 類型除了遞迴之外都很直接；因此，我們將要處理的範例中的概念，在你遇到更複雜的遞迴型別情境時將會很有用。
 
-#### 關於串列的更多資訊
+#### 關於 Cons List 的更多資訊
 
-_串列_（cons list）是一種來自 Lisp 程式語言及其方言的資料結構，由巢狀對（nested pairs）組成，是 Lisp 版本的 linked list。其名稱來自 Lisp 中的 `cons` 函數（construct function 的縮寫），該函數從其兩個參數建構一個新對。透過在包含一個值和另一個對的對上呼叫 `cons`，我們可以建構由遞迴對組成的串列。
+_cons list_ 是一種源自 Lisp 程式語言及其方言的資料結構，由巢狀的 pair 組成，是 Lisp 版本的鏈結串列。它的名字來自於 Lisp 中的 `cons` 函式（_construct function_ 的縮寫），該函式從其兩個參數中建構一個新的 pair。透過對一個由值和另一個 pair 組成的 pair 呼叫 `cons`，我們可以建構出由遞迴 pair 組成的 cons list。
 
-例如，這是一個包含 `1, 2, 3` 列表的串列的偽程式碼表示，每個對都在括號中：
+例如，這是一個包含列表 `1, 2, 3` 的 cons list 的虛擬碼表示法，每個 pair 都用括號括起來：
 
 ```
 (1, (2, (3, Nil)))
 ```
 
-串列中的每個項目都包含兩個元素：目前項目的值和下一個項目。清單中的最後一個項目只包含一個名為 `Nil` 的值，沒有下一個項目。串列是透過遞迴呼叫 `cons` 函數產生的。表示遞迴基本情況的標準名稱是 `Nil`。請注意，這與第六章中討論的「null」或「nil」概念不同，該概念表示無效或不存在的值。
+cons list 中的每個項目包含兩個元素：當前項目的值和下一個項目。列表中的最後一個項目只包含一個名為 `Nil` 的值，而沒有下一個項目。cons list 是透過遞迴呼叫 `cons` 函式產生的。用來表示遞迴基礎案例的標準名稱是 `Nil`。請注意，這與第六章討論的「null」或「nil」概念不同，後者指的是無效或不存在的值。
 
-串列在 Rust 中不是常用的資料結構。大多數情況下，當你在 Rust 中有一個項目列表時，`Vec<T>` 是一個更好的選擇。其他更複雜的遞迴資料類型在各種情況下*都*很有用，但本章從串列開始，可以讓我們在不分散注意力的情況下探索 box 如何讓我們定義遞迴資料類型。
+cons list 在 Rust 中不是一個常用的資料結構。在 Rust 中，當你有一列項目時，`Vec<T>` 通常是更好的選擇。其他更複雜的遞迴資料型別在各種情況下*是*有用的，但透過本章從 cons list 開始，我們可以探索 box 如何讓我們在不受太多干擾的情況下定義一個遞迴資料型別。
 
-範例 15-2 包含串列的 enum 定義。請注意，這段程式碼尚無法編譯，因為 `List` 類型沒有已知大小，我們將會展示這一點。
+列表 15-2 包含了一個 cons list 的 enum 定義。請注意，這段程式碼還不能編譯，因為 `List` 型別沒有已知的大小，我們將會展示這一點。
 
 src/main.rs
 
@@ -90,11 +90,11 @@ enum List {
 }
 ```
 
-範例 15-2：第一次嘗試定義一個 enum 來表示 `i32` 值的串列資料結構
+列表 15-2：第一次嘗試定義一個 enum 來表示 `i32` 值的 cons list 資料結構
 
-> 注意：為了這個範例的目的，我們實作了一個只持有 `i32` 值 的串列。我們可以使用泛型來實作它，就像我們在第十章中討論的那樣，以定義一個可以儲存任何類型值的串列類型。
+> 注意：為了這個範例的目的，我們實作了一個只持有 `i32` 值的 cons list。我們本可以像第十章討論的那樣使用泛型來實作，定義一個可以儲存任何型別值的 cons list 型別。
 
-使用 `List` 類型來儲存 `1, 2, 3` 列表將如下範例 15-3 所示。
+使用 `List` 型別來儲存列表 `1, 2, 3` 看起來會像列表 15-3 中的程式碼。
 
 src/main.rs
 
@@ -108,11 +108,11 @@ fn main() {
 }
 ```
 
-範例 15-3：使用 `List` enum 儲存 `1, 2, 3` 列表
+列表 15-3：使用 `List` enum 來儲存列表 `1, 2, 3`
 
-第一個 `Cons` 值持有 `1` 和另一個 `List` 值。這個 `List` 值是另一個 `Cons` 值，它持有 `2` 和另一個 `List` 值。這個 `List` 值是再一個 `Cons` 值，它持有 `3` 和一個 `List` 值，這個 `List` 值最終是 `Nil`，這是表示列表結束的非遞迴 variant。
+第一個 `Cons` 值持有 `1` 和另一個 `List` 值。這個 `List` 值是另一個 `Cons` 值，持有 `2` 和另一個 `List` 值。這個 `List` 值又是另一個 `Cons` 值，持有 `3` 和一個 `List` 值，這個值最終是 `Nil`，這是一個非遞迴的變體，表示列表的結束。
 
-如果我們嘗試編譯範例 15-3 中的程式碼，我們將得到範例 15-4 中顯示的錯誤。
+如果我們嘗試編譯列表 15-3 中的程式碼，我們會得到列表 15-4 中顯示的錯誤。
 
 ```
 $ cargo run
@@ -145,13 +145,13 @@ For more information about an error, try `rustc --explain E0072`.
 error: could not compile `cons-list` (bin "cons-list") due to 2 previous errors
 ```
 
-範例 15-4：嘗試定義遞迴 enum 時遇到的錯誤
+列表 15-4：嘗試定義遞迴 enum 時得到的錯誤
 
-錯誤顯示此類型「具有無限大小」。原因在於我們使用遞迴方式定義 `List` 的其中一個 variant：它直接持有另一個相同類型的值。因此，Rust 無法確定儲存 `List` 值所需的空間大小。讓我們分解一下為什麼會出現這個錯誤。首先，我們將看看 Rust 如何決定儲存非遞迴類型值所需的空間大小。
+錯誤顯示這個型別「具有無限的大小」。原因在於我們定義的 `List` 有一個遞迴的變體：它直接持有另一個自身的值。因此，Rust 無法計算出儲存一個 `List` 值需要多少空間。讓我們來分析一下為什麼會出現這個錯誤。首先，我們來看看 Rust 如何決定儲存一個非遞迴型別的值需要多少空間。
 
-#### 計算非遞迴類型的大小
+#### 計算非遞迴型別的大小
 
-回想我們在第六章討論 enum 定義時在範例 6-2 中定義的 `Message` enum：
+回想一下我們在第六章討論 enum 定義時，在列表 6-2 中定義的 `Message` enum：
 
 ```rust
 enum Message {
@@ -162,17 +162,21 @@ enum Message {
 }
 ```
 
-為了確定為 `Message` 值分配多少空間，Rust 會遍歷每個 variant，看看哪個 variant 需要最多空間。Rust 會看到 `Message::Quit` 不需要任何空間，`Message::Move` 需要足夠空間來儲存兩個 `i32` 值，依此類推。因為只會使用一個 variant，所以 `Message` 值所需的最大空間是其最大 variant 所需的空間。
+為了決定要為一個 `Message` 值配置多少空間，Rust 會遍歷每個變體，看哪個變體需要最多的空間。Rust 看到 `Message::Quit` 不需要任何空間，`Message::Move` 需要足夠的空間來儲存兩個 `i32` 值，依此類推。因為只會使用其中一個變體，所以一個 `Message` 值需要的最大空間就是儲存其最大變體所需的空間。
 
-將此與 Rust 嘗試確定遞迴類型（如範例 15-2 中的 `List` enum）需要多少空間時發生的情況進行對比。編譯器首先查看 `Cons` variant，它持有 `i32` 類型的值和 `List` 類型的值。因此，`Cons` 需要的空間量等於 `i32` 的大小加上 `List` 的大小。為了弄清楚 `List` 類型需要多少記憶體，編譯器會查看 variant，從 `Cons` variant 開始。`Cons` variant 持有 `i32` 類型的值和 `List` 類型的值，這個過程會無限地持續下去，如圖 15-1 所示。
+與此對比的是，當 Rust 試圖確定像列表 15-2 中的 `List` enum 這樣的遞迴型別需要多少空間時會發生什麼。編譯器首先查看 `Cons` 變體，它持有一個 `i32` 型別的值和一個 `List` 型別的值。因此，`Cons` 需要的空間等於一個 `i32` 的大小加上一個 `List` 的大小。為了計算出 `List` 型別需要多少記憶體，編譯器會查看其變體，從 `Cons` 變體開始。`Cons` 變體持有一個 `i32` 型別的值和一個 `List` 型別的值，這個過程無限地繼續下去，如圖 15-1 所示。
 
-![An infinite Cons list: a rectangle labeled 'Cons' split into two smaller rectangles. The first smaller rectangle holds the label 'i32', and the second smaller rectangle holds the label 'Cons' and a smaller version of the outer 'Cons' rectangle. The 'Cons' rectangles continue to hold smaller and smaller versions of themselves until the smallest comfortably-sized rectangle holds an infinity symbol, indicating that this repetition goes on forever](https://doc.rust-lang.org/book/img/trpl15-01.svg)
+<img alt="一個無限的 Cons 列表：一個標示為 'Cons' 的矩形被分成兩個較小的矩形。第一個較小的矩形標示為 'i32'，第二個較小的矩形標示為 'Cons' 並包含一個較小版本的外部 'Cons' 矩形。'Cons' 矩形繼續包含越來越小的自身版本，直到最小的舒適尺寸矩形中出現一個無窮大符號，表示這種重複將永遠持續下去" src="https://doc.rust-lang.org/book/img/trpl15-01.svg" class="center" style="width: 50%;" />
 
-圖 15-1：由無限 `Cons` variant 組成的無限 `List`
+圖 15-1：一個由無限 `Cons` 變體組成的無限 `List`
 
-#### 使用 Box<T> 取得已知大小的遞迴類型
+#### 使用 Box<T> 來獲得一個具有已知大小的遞迴型別
 
-因為 Rust 無法確定為遞迴定義類型分配多少空間，編譯器會提供一個錯誤，並附帶這個有用的建議：
+因為 Rust 無法計算出為遞迴定義的型別需要配置多少空間，編譯器給出了一個帶有這個有用建議的錯誤：
+
+<!-- manual-regeneration
+after doing automatic regeneration, look at listings/ch15-smart-pointers/listing-15-03/output.txt and copy the relevant line
+-->
 
 ```
 help: insert some indirection (e.g., a `Box`, `Rc`, or `&`) to break the cycle
@@ -181,11 +185,11 @@ help: insert some indirection (e.g., a `Box`, `Rc`, or `&`) to break the cycle
   |               ++++    +
 ```
 
-在這個建議中，_間接_（indirection）意味著我們不應該直接儲存一個值，而是應該改變資料結構以透過儲存一個指向該值的指標來間接儲存該值。
+在這個建議中，_indirection_ (間接層) 意味著我們不應該直接儲存一個值，而應該改變資料結構來間接地儲存值，也就是儲存一個指向該值的指標。
 
-因為 `Box<T>` 是一個指標，Rust 總是知道 `Box<T>` 需要多少空間：指標的大小不會因其指向的資料量而改變。這表示我們可以將 `Box<T>` 放入 `Cons` variant 中，而不是直接放入另一個 `List` 值。`Box<T>` 將指向 heap 上的下一個 `List` 值，而不是 `Cons` variant 內部。概念上，我們仍然有一個列表，由包含其他列表的列表創建，但此實作現在更像是將項目並排放置，而不是相互包含。
+因為 `Box<T>` 是一個指標，Rust 總是知道一個 `Box<T>` 需要多少空間：指標的大小不會根據它指向的資料量而改變。這意味著我們可以在 `Cons` 變體中放入一個 `Box<T>`，而不是直接放入另一個 `List` 值。`Box<T>` 將指向下一個在 heap 上的 `List` 值，而不是在 `Cons` 變體內部。從概念上講，我們仍然有一個列表，由包含其他列表的列表組成，但現在的實作更像是將項目並排放置，而不是一個套一個。
 
-我們可以將範例 15-2 中的 `List` enum 定義和範例 15-3 中 `List` 的使用變更為範例 15-5 中的程式碼，這將會編譯。
+我們可以將列表 15-2 中的 `List` enum 定義和列表 15-3 中的 `List` 用法，改成列表 15-5 中的程式碼，這樣就可以編譯了。
 
 src/main.rs
 
@@ -202,27 +206,36 @@ fn main() {
 }
 ```
 
-範例 15-5：使用 `Box<T>` 的 `List` 定義以具有已知大小
+列表 15-5：為了有已知大小而使用 `Box<T>` 的 `List` 定義
 
-`Cons` variant 需要一個 `i32` 的大小加上儲存 box 指標資料的空間。`Nil` variant 不儲存任何值，因此它在 stack 上需要的空間比 `Cons` variant 少。我們現在知道任何 `List` 值將佔用一個 `i32` 的大小加上一個 box 指標資料的大小。透過使用 box，我們打破了無限的遞迴鏈，因此編譯器可以計算出儲存 `List` 值所需的空間大小。圖 15-2 顯示了 `Cons` variant 現在的樣子。
+`Cons` 變體需要一個 `i32` 的大小，再加上儲存 box 指標資料的空間。`Nil` 變體不儲存任何值，所以它在 stack 上需要的空間比 `Cons` 變體少。我們現在知道任何 `List` 值將佔用一個 `i32` 的大小加上一個 box 指標資料的大小。透過使用 box，我們打破了無限的遞迴鏈，所以編譯器可以計算出它需要儲存一個 `List` 值的大小。圖 15-2 展示了 `Cons` 變體現在的樣子。
 
-![A rectangle labeled 'Cons' split into two smaller rectangles. The first smaller rectangle holds the label 'i32', and the second smaller rectangle holds the label 'Box' with one inner rectangle that contains the label 'usize', representing the finite size of the box's pointer](https://doc.rust-lang.org/book/img/trpl15-02.svg)
+<img alt="一個標示為 'Cons' 的矩形被分成兩個較小的矩形。第一個較小的矩形標示為 'i32'，第二個較小的矩形標示為 'Box'，內有一個包含 'usize' 標籤的矩形，代表 box 指標的有限大小" src="https://doc.rust-lang.org/book/img/trpl15-02.svg" class="center" />
 
-圖 15-2：一個沒有無限大小的 `List`，因為 `Cons` 持有 `Box`
+圖 15-2：一個不是無限大小的 `List`，因為 `Cons` 持有一個 `Box`
 
-Box 只提供間接和 heap 分配；它們沒有任何其他特殊功能，就像我們將在其他智慧型指標類型中看到的那樣。它們也沒有這些特殊功能所帶來的效能開銷，因此它們在串列等情況下很有用，在這些情況下，間接性是我們需要的唯一功能。我們將在第十八章中查看更多 box 的使用案例。
+Box 只提供間接層和 heap 配置；它們沒有任何其他特殊功能，像是我們將在其他智慧型指標類型中看到的那樣。它們也沒有這些特殊功能所帶來的性能開銷，所以在像 cons list 這樣只需要間接層這個功能的案例中，它們可能很有用。我們將在第十八章看到更多 box 的用例。
 
-`Box<T>` 類型是一個智慧型指標，因為它實作了 `Deref` trait，這使得 `Box<T>` 值可以像參考一樣被對待。當 `Box<T>` 值超出作用域時，box 指向的 heap 資料也會因為 `Drop` trait 的實作而被清理。這兩個 trait 對於本章其餘部分我們將討論的其他智慧型指標類型所提供的功能將更為重要。讓我們更詳細地探討這兩個 trait。
+`Box<T>` 型別是一種智慧型指標，因為它實作了 `Deref` trait，這使得 `Box<T>` 的值可以被當作 reference 來對待。當一個 `Box<T>` 值離開作用域時，box 指向的 heap 資料也會因為 `Drop` trait 的實作而被清理。這兩個 trait 對於本章接下來將要討論的其他智慧型指標所提供的功能將更為重要。讓我們來更詳細地探討這兩個 trait。
 
-## 使用 Deref 將智慧型指標視為一般參考
+## 使用 Deref 將智慧型指標視為一般 Reference
 
-實作 `Deref` trait 允許你客製化_解參考運算子_ `*` 的行為（不要與乘法或 glob 運算子混淆）。透過以智慧型指標可以像一般參考一樣被對待的方式實作 `Deref`，你可以編寫作用於參考的程式碼，並將該程式碼與智慧型指標一起使用。
+<!-- Old link, do not remove -->
 
-讓我們先看看解參考運算子如何與一般參考一起運作。然後我們將嘗試定義一個行為類似 `Box<T>` 的自訂類型，並看看為什麼解參考運算子在我們新定義的類型上不像參考一樣運作。我們將探索實作 `Deref` trait 如何使智慧型指標能夠以類似參考的方式運作。然後我們將看看 Rust 的 _deref 強制轉型_（deref coercion）功能以及它如何讓我們使用參考或智慧型指標。
+<a id="treating-smart-pointers-like-regular-references-with-the-deref-trait"></a>
 
-### 追蹤參考到值
+實作 `Deref` trait 讓你能夠自訂_解參考運算子_ (dereference operator) `*` 的行為（不要與乘法或 glob 運算子混淆）。透過實作 `Deref`，讓智慧型指標可以被當作一般的 reference，你就可以編寫能操作 reference 的程式碼，並將這些程式碼也用在智慧型指標上。
 
-一般參考是一種指標類型，指標的一種思考方式是將其視為指向儲存在其他地方的值的箭頭。在範例 15-6 中，我們建立了一個指向 `i32` 值 的參考，然後使用解參考運算子來追蹤參考到該值。
+讓我們先來看看解參考運算子如何與一般的 reference 一起運作。然後我們會嘗試定義一個行為類似 `Box<T>` 的自訂型別，並看看為什麼解參考運算子在我們新定義的型別上不像 reference 那樣運作。我們將探討實作 `Deref` trait 如何讓智慧型指標能夠以類似 reference 的方式運作。然後我們會看看 Rust 的_deref coercion_ 特性，以及它如何讓我們可以同時處理 reference 或智慧型指標。
+
+<!-- Old links, do not remove -->
+
+<a id="following-the-pointer-to-the-value-with-the-dereference-operator"></a>
+<a id="following-the-pointer-to-the-value"></a>
+
+### 使用解參考運算子追蹤 Reference 指向的值
+
+一個普通的 reference 是一種 pointer，而一種理解 pointer 的方式是將它看作指向儲存在別處的值的箭頭。在列表 15-6 中，我們創建了一個指向 `i32` 值的 reference，然後使用解參考運算子來追蹤 reference 指向的值。
 
 src/main.rs
 
@@ -236,11 +249,11 @@ fn main() {
 }
 ```
 
-範例 15-6：使用解參考運算子追蹤指向 `i32` 值 的參考
+列表 15-6：使用解參考運算子追蹤一個指向 `i32` 值的 reference
 
-變數 `x` 持有一個 `i32` 值 `5`。我們將 `y` 設定為 `x` 的參考。我們可以斷言 `x` 等於 `5`。然而，如果我們想斷言 `y` 中的值，我們必須使用 `*y` 來追蹤參考到它所指向的值（因此是_解參考_），這樣編譯器才能比較實際值。一旦我們解參考 `y`，我們就可以存取 `y` 所指向的整數值，我們可以將其與 `5` 進行比較。
+變數 `x` 持有一個 `i32` 值 `5`。我們將 `y` 設為 `x` 的一個 reference。我們可以斷言 `x` 等於 `5`。然而，如果我們想對 `y` 中的值做斷言，我們必須使用 `*y` 來追蹤 reference 指向的值（因此稱為_dereference_），這樣編譯器才能比較實際的值。一旦我們對 `y` 進行解參考，我們就可以存取 `y` 指向的整數值，並將它與 `5` 比較。
 
-如果我們嘗試改寫 `assert_eq!(5, y);`，我們會得到以下編譯錯誤：
+如果我們試圖寫 `assert_eq!(5, y);`，我們會得到這個編譯錯誤：
 
 ```
 $ cargo run
@@ -258,11 +271,11 @@ For more information about this error, try `rustc --explain E0277`.
 error: could not compile `deref-example` (bin "deref-example") due to 1 previous error
 ```
 
-比較數字與數字的參考是不允許的，因為它們是不同的類型。我們必須使用解參考運算子來追蹤參考到它所指向的值。
+比較一個數字和一個數字的 reference 是不被允許的，因為它們是不同的型別。我們必須使用解參考運算子來追蹤 reference 指向的值。
 
-### 將 Box<T> 視為參考使用
+### 像 Reference 一樣使用 Box<T>
 
-我們可以重寫範例 15-6 中的程式碼，改用 `Box<T>` 而不是參考；範例 15-7 中用於 `Box<T>` 的解參考運算子與範例 15-6 中用於參考的解參考運算子以相同的方式運作。
+我們可以重寫列表 15-6 的程式碼，改用 `Box<T>` 而不是 reference；在列表 15-7 中對 `Box<T>` 使用的解參考運算子，其功能與列表 15-6 中對 reference 使用的解參考運算子相同。
 
 src/main.rs
 
@@ -276,17 +289,17 @@ fn main() {
 }
 ```
 
-範例 15-7：在 `Box<i32>` 上使用解參考運算子
+列表 15-7：在 `Box<i32>` 上使用解參考運算子
 
-範例 15-7 和範例 15-6 的主要區別在於，這裡我們將 `y` 設定為一個指向 `x` 的複製值的 box 實例，而不是一個指向 `x` 值的參考。在最後一個斷言中，我們可以使用解參考運算子來追蹤 box 的指標，就像 `y` 是一個參考時一樣。接下來，我們將透過定義我們自己的 box 類型來探索 `Box<T>` 的特殊之處，這使我們能夠使用解參考運算子。
+列表 15-7 和列表 15-6 的主要區別是，在這裡我們將 `y` 設為一個指向 `x` 複製值的 box 實例，而不是一個指向 `x` 值的 reference。在最後的斷言中，我們可以使用解參考運算子來追蹤 box 的指標，就像 `y` 是一個 reference 時一樣。接下來，我們將透過定義我們自己的 box 型別，來探討 `Box<T>` 有什麼特別之處，使得我們可以使用解參考運算子。
 
 ### 定義我們自己的智慧型指標
 
-讓我們建立一個類似標準函式庫提供的 `Box<T>` 類型的包裝器類型，以體驗智慧型指標類型預設情況下與參考的不同之處。然後我們將看看如何新增使用解參考運算子的能力。
+讓我們來建立一個類似標準函式庫提供的 `Box<T>` 型別的包裝型別，來體驗智慧型指標型別預設情況下與 reference 的行為有何不同。然後我們將看看如何增加使用解參考運算子的能力。
 
-> 注意：我們即將建構的 `MyBox<T>` 類型與真正的 `Box<T>` 有一個很大的不同：我們的版本不會將其資料儲存在 heap 上。我們將此範例的重點放在 `Deref` 上，因此資料實際儲存在何處不如指標般的行為重要。
+> 注意：我們即將建立的 `MyBox<T>` 型別與真正的 `Box<T>` 有一個很大的不同：我們的版本不會將其資料儲存在 heap 上。這個範例的重點是 `Deref`，所以資料實際儲存在哪裡，不如其類似指標的行為來得重要。
 
-`Box<T>` 類型最終被定義為一個帶有一個元素的 tuple struct，因此範例 15-8 以相同的方式定義了 `MyBox<T>` 類型。我們還將定義一個 `new` 函數以符合 `Box<T>` 上定義的 `new` 函數。
+`Box<T>` 型別最終被定義為一個只有一個元素的 tuple struct，所以列表 15-8 以同樣的方式定義了一個 `MyBox<T>` 型別。我們也會定義一個 `new` 函式來對應 `Box<T>` 上定義的 `new` 函式。
 
 src/main.rs
 
@@ -300,11 +313,11 @@ impl<T> MyBox<T> {
 }
 ```
 
-範例 15-8：定義 `MyBox<T>` 類型
+列表 15-8：定義 `MyBox<T>` 型別
 
-我們定義了一個名為 `MyBox` 的 struct，並宣告了一個泛型參數 `T`，因為我們希望我們的類型可以持有任何類型的值。`MyBox` 類型是一個帶有一個 `T` 類型元素的 tuple struct。`MyBox::new` 函數接受一個 `T` 類型參數，並回傳一個持有傳入值的 `MyBox` 實例。
+我們定義一個名為 `MyBox` 的 struct，並宣告一個泛型參數 `T`，因為我們希望我們的型別能持有任何型別的值。`MyBox` 型別是一個 tuple struct，裡面有一個 `T` 型別的元素。`MyBox::new` 函式接受一個 `T` 型別的參數，並回傳一個持有傳入值的 `MyBox` 實例。
 
-讓我們先嘗試將範例 15-7 中的 `main` 函數加入到範例 15-8 中，並將其改為使用我們定義的 `MyBox<T>` 類型而不是 `Box<T>`。範例 15-9 中的程式碼將無法編譯，因為 Rust 不知道如何解參考 `MyBox`。
+讓我們試著將列表 15-7 中的 `main` 函式加入列表 15-8，並將它改成使用我們定義的 `MyBox<T>` 型別，而不是 `Box<T>`。列表 15-9 中的程式碼無法編譯，因為 Rust 不知道如何對 `MyBox` 進行解參考。
 
 src/main.rs
 
@@ -318,9 +331,9 @@ fn main() {
 }
 ```
 
-範例 15-9：嘗試以我們使用參考和 `Box<T>` 的相同方式使用 `MyBox<T>`
+列表 15-9：嘗試以與使用 reference 和 `Box<T>` 相同的方式使用 `MyBox<T>`
 
-這是結果編譯錯誤：
+這是編譯錯誤的結果：
 
 ```
 $ cargo run
@@ -335,11 +348,15 @@ For more information about this error, try `rustc --explain E0614`.
 error: could not compile `deref-example` (bin "deref-example") due to 1 previous error
 ```
 
-我們的 `MyBox<T>` 類型無法解參考，因為我們尚未在我們的類型上實作該功能。為了啟用 `*` 運算子的解參考功能，我們實作了 `Deref` trait。
+我們的 `MyBox<T>` 型別無法被解參考，因為我們沒有在我們的型別上實作這個能力。要啟用使用 `*` 運算子進行解參考，我們需要實作 `Deref` trait。
+
+<!-- Old link, do not remove -->
+
+<a id="treating-a-type-like-a-reference-by-implementing-the-deref-trait"></a>
 
 ### 實作 Deref Trait
 
-如第十章「在類型上實作 Trait」中討論的，要實作 trait，我們需要為 trait 的所需方法提供實作。標準函式庫提供的 `Deref` trait 要求我們實作一個名為 `deref` 的方法，該方法借用 `self` 並回傳內部資料的參考。範例 15-10 包含 `Deref` 的實作，以新增到 `MyBox<T>` 的定義中。
+如第十章「在型別上實作 Trait」中所討論，要實作一個 trait，我們需要為該 trait 的必要方法提供實作。`Deref` trait 由標準函式庫提供，要求我們實作一個名為 `deref` 的方法，它 borrow `self` 並回傳一個指向內部資料的 reference。列表 15-10 包含一個 `Deref` 的實作，可以加到 `MyBox<T>` 的定義中。
 
 src/main.rs
 
@@ -355,33 +372,33 @@ impl<T> Deref for MyBox<T> {
 }
 ```
 
-範例 15-10：在 `MyBox<T>` 上實作 `Deref`
+列表 15-10：在 `MyBox<T>` 上實作 `Deref`
 
-`type Target = T;` 語法定義了 `Deref` trait 要使用的關聯類型。關聯類型是一種稍微不同的宣告泛型參數的方式，但你現在不需要擔心它們；我們將在第二十章中更詳細地介紹它們。
+`type Target = T;` 語法為 `Deref` trait 定義了一個關聯型別 (associated type)。關聯型別是宣告泛型參數的另一種稍微不同的方式，但你現在不需要擔心它們；我們將在第二十章更詳細地介紹它們。
 
-我們使用 `&self.0` 填入 `deref` 方法的主體，這樣 `deref` 會回傳一個參考，指向我們想用 `*` 運算子存取的值；回想一下第五章的「在沒有命名欄位的情況下使用 tuple struct 建立不同型別」，其中 `.0` 存取 tuple struct 中的第一個值。範例 15-9 中對 `MyBox<T>` 值呼叫 `*` 的 `main` 函數現在會編譯，並且斷言會通過！
+我們用 `&self.0` 來填寫 `deref` 方法的本體，這樣 `deref` 就會回傳一個我們想用 `*` 運算子存取的值的 reference；回想第五章「使用沒有命名字段的 Tuple Struct 來創建不同型別」中提到的，`.0` 可以存取 tuple struct 中的第一個值。列表 15-9 中在 `MyBox<T>` 值上呼叫 `*` 的 `main` 函式現在可以編譯了，並且斷言也會通過！
 
-沒有 `Deref` trait，編譯器只能解參考 `&` 參考。`deref` 方法讓編譯器能夠取任何實作 `Deref` 的類型的值，並呼叫 `deref` 方法來取得它知道如何解參考的 `&` 參考。
+如果沒有 `Deref` trait，編譯器只能解參考 `&` reference。`deref` 方法給予編譯器能力，可以接受任何實作 `Deref` 的型別的值，並呼叫 `deref` 方法來取得一個它知道如何解參考的 `&` reference。
 
-當我們在範例 15-9 中輸入 `*y` 時，在幕後 Rust 實際上執行了這段程式碼：
+當我們在列表 15-9 中輸入 `*y` 時，Rust 在幕後實際上執行了這段程式碼：
 
 ```rust
 *(y.deref())
 ```
 
-Rust 會將 `*` 運算子替換為對 `deref` 方法的呼叫，然後再進行一次普通解參考，這樣我們就不必考慮是否需要呼叫 `deref` 方法了。這個 Rust 功能讓我們可以編寫無論是普通參考還是實作 `Deref` 的類型都能相同運作的程式碼。
+Rust 將 `*` 運算子替換為對 `deref` 方法的呼叫，然後再進行一次普通的解參考，這樣我們就不需要考慮是否需要呼叫 `deref` 方法。Rust 的這個特性讓我們可以編寫功能完全相同的程式碼，無論我們用的是普通的 reference 還是實作了 `Deref` 的型別。
 
-`deref` 方法回傳一個值的參考，以及 `*(y.deref())` 中括號外面的普通解參考仍然是必要的原因，與 ownership 系統有關。如果 `deref` 方法直接回傳值而不是值的參考，那麼該值將會從 `self` 中移動出去。在這種情況下，或者在大多數我們使用解參考運算子的地方，我們不希望取得 `MyBox<T>` 內部值的 ownership。
+`deref` 方法回傳一個值的 reference，以及 `*(y.deref())` 中括號外的普通解參考仍然是必要的，這與 ownership 系統有關。如果 `deref` 方法直接回傳值而不是值的 reference，那麼這個值將會從 `self` 中被移出。在這種情況下，以及在大多數我們使用解參考運算子的情況下，我們不希望取得 `MyBox<T>` 內部值的 ownership。
 
-請注意，`*` 運算子會被替換為對 `deref` 方法的呼叫，然後再對 `*` 運算子呼叫一次，每次我們在程式碼中使用 `*` 時都是如此。由於 `*` 運算子的替換不會無限遞迴，因此我們最終得到 `i32` 類型的資料，這與範例 15-9 中 `assert_eq!` 中的 `5` 相符。
+請注意，每次我們在程式碼中使用 `*` 時，`*` 運算子只會被替換為一次對 `deref` 方法的呼叫，然後再呼叫一次 `*` 運算子。因為 `*` 運算子的替換不會無限遞迴，我們最終會得到 `i32` 型別的資料，這與列表 15-9 中 `assert_eq!` 裡的 `5` 相符。
 
-### 函數和方法中的隱式 Deref 強制轉型
+### 函式與方法的隱性 Deref Coercions
 
-_Deref 強制轉型_（Deref coercion）會將實作 `Deref` trait 的類型參考轉換為另一種類型參考。例如，deref 強制轉型可以將 `&String` 轉換為 `&str`，因為 `String` 實作了 `Deref` trait，使其回傳 `&str`。Deref 強制轉型是 Rust 在函數和方法引數上執行的便利功能，並且只作用於實作 `Deref` trait 的類型。當我們將特定類型值的參考作為引數傳遞給函數或方法，而該引數的類型與函數或方法定義中的參數類型不符時，它會自動發生。一系列對 `deref` 方法的呼叫會將我們提供的類型轉換為參數所需的類型。
+_Deref coercion_ 會將一個實作了 `Deref` trait 的型別的 reference，轉換成另一個型別的 reference。例如，deref coercion 可以將 `&String` 轉換成 `&str`，因為 `String` 實作了 `Deref` trait，使其回傳 `&str`。Deref coercion 是 Rust 對函式和方法的參數所做的一種便利性處理，且只適用於實作了 `Deref` trait 的型別。當我們將某個特定型別的值的 reference 作為參數傳遞給一個函式或方法，而該參數的型別與函式或方法定義中的參數型別不匹配時，這個轉換會自動發生。一系列對 `deref` 方法的呼叫會將我們提供的型別轉換成參數所需的型別。
 
-Deref 強制轉型被新增到 Rust 中，這樣編寫函數和方法呼叫的程式設計師就不需要使用 `&` 和 `*` 添加那麼多顯式的參考和解參考了。Deref 強制轉型功能還讓我們可以編寫更多可以同時適用於參考或智慧型指標的程式碼。
+Deref coercion 被加入 Rust，是為了讓編寫函式和方法呼叫的程式設計師不需要加上那麼多顯性的 `&` 和 `*` reference 和 dereference。deref coercion 的特性也讓我們可以編寫更多能同時適用於 reference 或智慧型指標的程式碼。
 
-為了了解 deref 強制轉型的運作方式，讓我們使用範例 15-8 中定義的 `MyBox<T>` 類型，以及我們在範例 15-10 中新增的 `Deref` 實作。範例 15-11 顯示了一個帶有字串 slice 參數的函數定義。
+為了看到 deref coercion 的實際作用，讓我們使用我們在列表 15-8 中定義的 `MyBox<T>` 型別，以及我們在列表 15-10 中加入的 `Deref` 實作。列表 15-11 展示了一個函式的定義，該函式有一個字串 slice 參數。
 
 src/main.rs
 
@@ -391,9 +408,9 @@ fn hello(name: &str) {
 }
 ```
 
-範例 15-11：一個 `hello` 函數，其參數 `name` 的類型為 `&str`
+列表 15-11：一個 `hello` 函式，其參數 `name` 的型別為 `&str`
 
-我們可以呼叫 `hello` 函數，並以字串 slice 作為引數，例如 `hello("Rust");`。Deref 強制轉型使得我們可以呼叫 `hello`，並以 `MyBox<String>` 類型的值的參考作為引數，如範例 15-12 所示。
+我們可以像 `hello("Rust");` 這樣用一個字串 slice 作為參數來呼叫 `hello` 函式。Deref coercion 使得我們可以用一個 `MyBox<String>` 型別的值的 reference 來呼叫 `hello`，如列表 15-12 所示。
 
 src/main.rs
 
@@ -404,11 +421,11 @@ fn main() {
 }
 ```
 
-範例 15-12：呼叫 `hello` 帶有 `MyBox<String>` 值的參考，因為 deref 強制轉型所以能夠運作
+列表 15-12：使用 `MyBox<String>` 值的 reference 呼叫 `hello`，這之所以能成功是因為 deref coercion
 
-在這裡，我們使用引數 `&m` 呼叫 `hello` 函數，`&m` 是 `MyBox<String>` 值的參考。因為我們在範例 15-10 中在 `MyBox<T>` 上實作了 `Deref` trait，Rust 可以透過呼叫 `deref` 將 `&MyBox<String>` 轉換為 `&String`。標準函式庫在 `String` 上提供了一個 `Deref` 的實作，它回傳一個字串 slice，這在 `Deref` 的 API 文件中。Rust 會再次呼叫 `deref`，將 `&String` 轉換為 `&str`，這與 `hello` 函數的定義相符。
+這裡我們用參數 `&m` 呼叫 `hello` 函式，`&m` 是 `MyBox<String>` 值的 reference。因為我們在列表 15-10 中為 `MyBox<T>` 實作了 `Deref` trait，Rust 可以透過呼叫 `deref` 將 `&MyBox<String>` 轉換成 `&String`。標準函式庫為 `String` 提供了 `Deref` 的實作，它會回傳一個字串 slice，這可以在 `Deref` 的 API 文件中找到。Rust 再次呼叫 `deref` 將 `&String` 轉換成 `&str`，這就符合 `hello` 函式的定義了。
 
-如果 Rust 沒有實作 deref 強制轉型，我們必須像範例 15-13 中那樣編寫程式碼，而不是範例 15-12 中的程式碼，才能用 `&MyBox<String>` 類型的值呼叫 `hello`。
+如果 Rust 沒有實作 deref coercion，我們就必須寫出列表 15-13 中的程式碼，而不是列表 15-12 中的程式碼，來用一個 `&MyBox<String>` 型別的值呼叫 `hello`。
 
 src/main.rs
 
@@ -419,37 +436,37 @@ fn main() {
 }
 ```
 
-範例 15-13：如果 Rust 沒有 deref 強制轉型，我們必須編寫的程式碼
+列表 15-13：如果 Rust 沒有 deref coercion，我們必須寫的程式碼
 
-`(*m)` 解參考 `MyBox<String>` 為 `String`。然後 `&` 和 `[..]` 取 `String` 的字串 slice，該 slice 等於整個字串，以符合 `hello` 的簽章。這種沒有 deref 強制轉型的程式碼，由於涉及所有這些符號，因此更難讀、寫和理解。Deref 強制轉型允許 Rust 自動為我們處理這些轉換。
+`(*m)` 將 `MyBox<String>` 解參考成 `String`。然後 `&` 和 `[..]` 從 `String` 中取得一個等於整個字串的字串 slice，以符合 `hello` 的簽名。這段沒有 deref coercion 的程式碼，因為牽涉到這麼多符號，更難閱讀、編寫和理解。Deref coercion 讓 Rust 能自動為我們處理這些轉換。
 
-當 `Deref` trait 為所涉及的類型定義時，Rust 將會分析類型並根據需要多次使用 `Deref::deref` 來獲取與參數類型匹配的參考。`Deref::deref` 需要插入的次數在 compile time 解析，因此利用 deref 強制轉型沒有 runtime 開銷！
+當相關型別定義了 `Deref` trait 時，Rust 會分析這些型別，並根據需要多次使用 `Deref::deref` 來得到一個符合參數型別的 reference。需要插入 `Deref::deref` 的次數是在編譯時期解析的，所以利用 deref coercion 不會產生任何 runtime 的效能損失！
 
-### Deref 強制轉型如何與可變性互動
+### Deref Coercion 如何與可變性互動
 
-與你使用 `Deref` trait 覆寫不可變參考上的 `*` 運算子類似，你可以使用 `DerefMut` trait 覆寫可變參考上的 `*` 運算子。
+就像你使用 `Deref` trait 來覆寫不可變 reference 上的 `*` 運算子一樣，你也可以使用 `DerefMut` trait 來覆寫可變 reference 上的 `*` 運算子。
 
-Rust 在三種情況下，當它發現類型和 trait 實作時，會執行 deref 強制轉型：
+Rust 在三種情況下，當找到型別和 trait 實作時，會進行 deref coercion：
 
-1. 從 `&T` 到 `&U`，當 `T: Deref<Target=U>` 時
-1. 從 `&mut T` 到 `&mut U`，當 `T: DerefMut<Target=U>` 時
-1. 從 `&mut T` 到 `&U`，當 `T: Deref<Target=U>` 時
+1. 從 `&T` 到 `&U`，當 `T: Deref<Target=U>`
+2. 從 `&mut T` 到 `&mut U`，當 `T: DerefMut<Target=U>`
+3. 從 `&mut T` 到 `&U`，當 `T: Deref<Target=U>`
 
-前兩種情況是相同的，只是第二種情況實作了可變性。第一種情況指出，如果你有一個 `&T`，並且 `T` 實作了 `Deref` 到某種類型 `U`，你可以透明地得到一個 `&U`。第二種情況指出，相同的 deref 強制轉型會發生在可變參考上。
+前兩種情況是相同的，只是第二種實作了可變性。第一種情況說明，如果你有一個 `&T`，且 `T` 實作了 `Deref` 到某個型別 `U`，你可以無縫地得到一個 `&U`。第二種情況說明，對於可變 reference，也會發生相同的 deref coercion。
 
-第三種情況比較棘手：Rust 也會將可變參考強制轉型為不可變參考。但反過來*不*可能：不可變參考永遠不會強制轉型為可變參考。由於 borrowing 規則，如果你有一個可變參考，那個可變參考必須是該資料的唯一參考（否則，程式將無法編譯）。將一個可變參考轉換為一個不可變參考永遠不會破壞 borrowing 規則。將一個不可變參考轉換為可變參考將要求最初的不可變參考是該資料的唯一不可變參考，但 borrowing 規則不保證這一點。因此，Rust 無法假設將不可變參考轉換為可變參考是可能的。
+第三種情況比較棘手：Rust 也會將一個可變 reference 強制轉換成一個不可變的。但反過來是*不可能*的：不可變 reference 永遠不會被強制轉換成可變 reference。根據 borrowing 規則，如果你有一個可變 reference，那個可變 reference 必須是該資料的唯一 reference（否則，程式將無法編譯）。將一個可變 reference 轉換成一個不可變 reference 永遠不會違反 borrowing 規則。將一個不可變 reference 轉換成一個可變 reference 會要求初始的不可變 reference 是該資料的唯一不可變 reference，但 borrowing 規則並不保證這一點。因此，Rust 不能假設將一個不可變 reference 轉換成一個可變 reference 是可能的。
 
 ## 使用 Drop Trait 在清理時執行程式碼
 
-對智慧型指標模式而言重要的第二個 trait 是 `Drop`，它允許你客製化值即將超出作用域時發生的事情。你可以在任何類型上提供 `Drop` trait 的實作，該程式碼可以用於釋放檔案或網路連線等資源。
+對智慧型指標模式重要的第二個 trait 是 `Drop`，它讓你能夠自訂當一個值即將離開作用域時會發生什麼事。你可以在任何型別上提供 `Drop` trait 的實作，而那些程式碼可以用來釋放像檔案或網路連線等資源。
 
-我們在智慧型指標的上下文中介紹 `Drop`，因為 `Drop` trait 的功能幾乎總是實作智慧型指標時使用的。例如，當 `Box<T>` 被 drop 時，它將解除分配 box 指向的 heap 上的空間。
+我們在智慧型指標的脈絡中介紹 `Drop`，是因為 `Drop` trait 的功能幾乎總是在實作智慧型指標時被使用。例如，當 `Box<T>` 被 drop 時，它會釋放 box 所指向的 heap 上的空間。
 
-在某些語言中，對於某些類型，程式設計師每次使用完這些類型的實例時，都必須呼叫程式碼來釋放記憶體或資源。例子包括檔案句柄、socket 和鎖。如果他們忘記了，系統可能會超載並崩潰。在 Rust 中，你可以指定每當值超出作用域時要執行特定程式碼，並且編譯器會自動插入此程式碼。因此，你不需要在程式中任何地方小心放置清理程式碼，而某個特定類型的實例已經完成使用——你仍然不會洩漏資源！
+在某些語言中，對於某些型別，程式設計師每次用完這些型別的實例時，都必須呼叫程式碼來釋放記憶體或資源。例子包括檔案控制代碼、socket 和鎖。如果他們忘了，系統可能會過載並崩潰。在 Rust 中，你可以指定某段程式碼在值離開作用域時執行，而編譯器會自動插入這段程式碼。因此，你不需要小心翼翼地在程式中到處放置清理程式碼，當某個特定型別的實例用完時——你仍然不會洩漏資源！
 
-你可以透過實作 `Drop` trait 來指定值超出作用域時要執行的程式碼。`Drop` trait 要求你實作一個名為 `drop` 的方法，該方法接受一個 `self` 的可變參考。為了了解 Rust 何時呼叫 `drop`，我們現在暫時使用 `println!` 語句來實作 `drop`。
+你可以透過實作 `Drop` trait 來指定當值離開作用域時要執行的程式碼。`Drop` trait 要求你實作一個名為 `drop` 的方法，它接受一個對 `self` 的可變 reference。為了看看 Rust 何時呼叫 `drop`，讓我們暫時用 `println!` 敘述來實作 `drop`。
 
-範例 15-14 顯示了一個 `CustomSmartPointer` struct，其唯一自訂功能是在實例超出作用域時印出 `Dropping CustomSmartPointer!`，以顯示 Rust 何時執行 `drop` 方法。
+列表 15-14 展示了一個 `CustomSmartPointer` struct，它唯一的自訂功能是當實例離開作用域時，它會印出 `Dropping CustomSmartPointer!`，以顯示 Rust 何時執行 `drop` 方法。
 
 src/main.rs
 
@@ -475,13 +492,13 @@ fn main() {
 }
 ```
 
-範例 15-14：一個實作了 `Drop` trait 的 `CustomSmartPointer` struct，我們可以在其中放置清理程式碼
+列表 15-14：一個實作了 `Drop` trait 的 `CustomSmartPointer` struct，我們會在其中放置清理程式碼
 
-`Drop` trait 包含在 prelude 中，所以我們不需要將它帶入作用域。我們在 `CustomSmartPointer` 上實作 `Drop` trait，並為 `drop` 方法提供一個呼叫 `println!` 的實作。`drop` 方法的主體是你想要在類型實例超出作用域時執行的任何邏輯。我們在這裡印出一些文字，以視覺化地演示 Rust 何時會呼叫 `drop`。
+`Drop` trait 包含在 prelude 中，所以我們不需要將它引入作用域。我們在 `CustomSmartPointer` 上實作 `Drop` trait，並為 `drop` 方法提供一個呼叫 `println!` 的實作。`drop` 方法的本體是你放置任何你希望在你的型別實例離開作用域時執行的邏輯的地方。我們在這裡印出一些文字，以視覺化地展示 Rust 何時會呼叫 `drop`。
 
-在 `main` 中，我們建立兩個 `CustomSmartPointer` 實例，然後印出 `CustomSmartPointers created`。在 `main` 的結尾，我們的 `CustomSmartPointer` 實例將超出作用域，Rust 將呼叫我們在 `drop` 方法中放置的程式碼，印出我們的最終訊息。請注意，我們不需要明確呼叫 `drop` 方法。
+在 `main` 中，我們創建了兩個 `CustomSmartPointer` 的實例，然後印出 `CustomSmartPointers created`。在 `main` 的結尾，我們的 `CustomSmartPointer` 實例將離開作用域，Rust 會呼叫我們放在 `drop` 方法中的程式碼，印出我們最後的訊息。請注意，我們不需要明確地呼叫 `drop` 方法。
 
-當我們執行這個程式時，我們會看到以下輸出：
+當我們執行這個程式時，我們會看到以下的輸出：
 
 ```
 $ cargo run
@@ -493,11 +510,15 @@ Dropping CustomSmartPointer with data `other stuff`!
 Dropping CustomSmartPointer with data `my stuff`!
 ```
 
-Rust 在我們的實例超出作用域時自動為我們呼叫了 `drop`，呼叫了我們指定的程式碼。變數會以其創建的相反順序 drop，因此 `d` 在 `c` 之前被 drop。此範例的目的是為你提供 `drop` 方法如何運作的視覺指南；通常你會指定你的類型需要運行的清理程式碼，而不是列印訊息。
+Rust 在我們的實例離開作用域時自動為我們呼叫了 `drop`，執行了我們指定的程式碼。變數是以它們創建的相反順序被 drop 的，所以 `d` 在 `c` 之前被 drop。這個範例的目的是給你一個視覺化的指南，讓你了解 `drop` 方法如何運作；通常你會指定你的型別需要執行的清理程式碼，而不是一個列印訊息。
 
-不幸的是，停用自動 `drop` 功能並不容易。停用 `drop` 通常不需要；`Drop` trait 的重點在於它會自動處理。然而，偶爾你可能希望提早清理一個值。一個例子是使用管理鎖的智慧型指標時：你可能希望強制執行釋放鎖的 `drop` 方法，以便同一作用域中的其他程式碼可以取得該鎖。Rust 不允許你手動呼叫 `Drop` trait 的 `drop` 方法；相反，如果你想在值超出其作用域之前強制 drop 一個值，你必須呼叫標準函式庫提供的 `std::mem::drop` 函數。
+<!-- Old link, do not remove -->
 
-如果我們嘗試透過修改範例 15-14 中的 `main` 函數來手動呼叫 `Drop` trait 的 `drop` 方法，如範例 15-15 所示，我們將會得到一個編譯器錯誤。
+<a id="dropping-a-value-early-with-std-mem-drop"></a>
+
+不幸的是，要禁用自動的 `drop` 功能並不容易。禁用 `drop` 通常是不必要的；`Drop` trait 的重點就是它會被自動處理。然而，有時候你可能會想提早清理一個值。一個例子是使用管理鎖的智慧型指標時：你可能會想強制執行釋放鎖的 `drop` 方法，以便同一個作用域中的其他程式碼可以獲取鎖。Rust 不允許你手動呼叫 `Drop` trait 的 `drop` 方法；相反地，如果你想在一個值的生命週期結束前提早強制 drop 它，你必須呼叫標準函式庫提供的 `std::mem::drop` 函式。
+
+如果我們試圖手動呼叫 `Drop` trait 的 `drop` 方法，修改列表 15-14 的 `main` 函式，如列表 15-15 所示，我們會得到一個編譯器錯誤。
 
 src/main.rs
 
@@ -512,9 +533,9 @@ fn main() {
 }
 ```
 
-範例 15-15：嘗試手動呼叫 `Drop` trait 的 `drop` 方法以提早清理
+列表 15-15：嘗試手動呼叫 `Drop` trait 的 `drop` 方法以提早清理
 
-當我們嘗試編譯這段程式碼時，我們會得到以下錯誤：
+當我們試圖編譯這段程式碼時，我們會得到這個錯誤：
 
 ```
 $ cargo run
@@ -534,13 +555,13 @@ For more information about this error, try `rustc --explain E0040`.
 error: could not compile `drop-example` (bin "drop-example") due to 1 previous error
 ```
 
-此錯誤訊息指出我們不允許明確呼叫 `drop`。錯誤訊息使用了_解構子_（destructor）一詞，這是清理實例的通用程式設計術語。*解構子*類比於_建構子_（constructor），後者建立實例。Rust 中的 `drop` 函數是一個特定的解構子。
+這個錯誤訊息指出我們不被允許明確地呼叫 `drop`。錯誤訊息使用了*destructor*這個術語，這是一般程式設計術語，指的是清理一個實例的函式。_destructor_ 類似於 _constructor_，後者創建一個實例。Rust 中的 `drop` 函式是一個特定的 destructor。
 
-Rust 不允許我們明確呼叫 `drop`，因為 Rust 仍然會在 `main` 結束時自動呼叫該值的 `drop`。這將導致一個_重複釋放_（double free）錯誤，因為 Rust 將會嘗試清理同一個值兩次。
+Rust 不讓我們明確地呼叫 `drop`，因為 Rust 仍然會在 `main` 的結尾自動對該值呼叫 `drop`。這會導致一個_double free_ 錯誤，因為 Rust 會試圖清理同一個值兩次。
 
-我們無法在值超出作用域時停用自動插入 `drop`，也無法明確呼叫 `drop` 方法。因此，如果我們需要強制提早清理一個值，我們可以使用 `std::mem::drop` 函數。
+我們不能禁用當值離開作用域時自動插入的 `drop`，也不能明確地呼叫 `drop` 方法。所以，如果我們需要強制一個值提早被清理，我們使用 `std::mem::drop` 函式。
 
-`std::mem::drop` 函數與 `Drop` trait 中的 `drop` 方法不同。我們透過傳遞我們想要強制 drop 的值作為引數來呼叫它。該函數在 prelude 中，所以我們可以修改範例 15-15 中的 `main` 以呼叫 `drop` 函數，如範例 15-16 所示。
+`std::mem::drop` 函式與 `Drop` trait 中的 `drop` 方法不同。我們透過傳遞我們想要強制 drop 的值作為參數來呼叫它。這個函式在 prelude 中，所以我們可以修改列表 15-15 中的 `main` 來呼叫 `drop` 函式，如列表 15-16 所示。
 
 src/main.rs
 
@@ -555,9 +576,9 @@ fn main() {
 }
 ```
 
-範例 15-16：呼叫 `std::mem::drop` 以在值超出作用域之前明確 drop
+列表 15-16：呼叫 `std::mem::drop` 在值離開作用域前明確地 drop 它
 
-執行此程式碼將會印出以下內容：
+執行這段程式碼將會印出以下內容：
 
 ```
 $ cargo run
@@ -569,37 +590,37 @@ Dropping CustomSmartPointer with data `some data`!
 CustomSmartPointer dropped before the end of main.
 ```
 
-文字 ``Dropping CustomSmartPointer with data `some data`!`` 印在 `CustomSmartPointer created.` 和 `CustomSmartPointer dropped before the end of main.` 文字之間，這表示 `drop` 方法程式碼是在該點呼叫來 drop `c`。
+「Dropping CustomSmartPointer with data `some data`!」的文字被印在「CustomSmartPointer created.」和「CustomSmartPointer dropped before the end of main.」之間，顯示 `drop` 方法的程式碼在那個時間點被呼叫來 drop `c`。
 
-你可以用許多方式使用 `Drop` trait 實作中指定的程式碼，以使清理方便且安全：例如，你可以用它來建立自己的記憶體分配器！有了 `Drop` trait 和 Rust 的 ownership 系統，你無需記住清理，因為 Rust 會自動完成。
+你可以用許多方式來使用在 `Drop` trait 實作中指定的程式碼，來讓清理變得方便且安全：例如，你可以用它來創建你自己的記憶體配置器！有了 `Drop` trait 和 Rust 的 ownership 系統，你不需要記得去清理，因為 Rust 會自動處理。
 
-你也不必擔心因意外清理仍在使用的值而導致的問題：確保參考始終有效的 ownership 系統也確保 `drop` 在值不再使用時只被呼叫一次。
+你也不需要擔心因為不小心清理了還在使用的值而導致的問題：ownership 系統確保 reference 總是有效的，同時也確保 `drop` 只在值不再被使用時被呼叫一次。
 
-現在我們已經研究了 `Box<T>` 和智慧型指標的一些特性，讓我們看看標準函式庫中定義的其他一些智慧型指標。
+現在我們已經檢視了 `Box<T>` 和智慧型指標的一些特性，讓我們來看看標準函式庫中定義的其他一些智慧型指標。
 
-## Rc<T>：參考計數的智慧型指標
+## Rc<T>，引用計數智慧型指標
 
-在大多數情況下，ownership 是明確的：你確切知道哪個變數擁有給定的值。然而，在某些情況下，單一值可能有多個 owner。例如，在圖形資料結構中，多個邊可能指向同一個節點，並且該節點在概念上由所有指向它的邊擁有。節點不應該被清理，除非它沒有任何邊指向它，因此沒有 owner。
+在大多數情況下，ownership 是明確的：你確切地知道哪個變數擁有某個給定的值。然而，有些情況下，單一值可能有多個 owner。例如，在圖形資料結構中，多條邊可能指向同一個節點，而那個節點在概念上被所有指向它的邊所擁有。一個節點不應該被清理，除非它沒有任何邊指向它，也就是沒有任何 owner。
 
-你必須透過使用 Rust 類型 `Rc<T>` 明確啟用多個 ownership，它是 _reference counting_ 的縮寫。`Rc<T>` 類型會追蹤值被參考的次數，以確定該值是否仍在被使用。如果對一個值有零個參考，則該值可以被清理，而不會有任何參考變得無效。
+你必須透過使用 Rust 的 `Rc<T>` 型別來明確地允許多重 ownership，`Rc<T>` 是*reference counting*的縮寫。`Rc<T>` 型別會追蹤一個值的 reference 數量，以判斷該值是否仍在使用中。如果一個值的 reference 數量為零，該值就可以被清理，而不會有任何 reference 變成無效的。
 
-想像 `Rc<T>` 就像一間家庭房裡的電視。當一個人進來觀看電視時，他們會打開電視。其他人可以進入房間觀看電視。當最後一個人離開房間時，他們會關閉電視，因為它不再被使用。如果有人在其他人還在觀看時關閉電視，那麼剩下的電視觀眾就會大吵大鬧！
+想像 `Rc<T>` 就像一個家庭客廳裡的電視。當一個人進來要看電視時，他會打開電視。其他人可以進來房間看電視。當最後一個人離開房間時，他會關掉電視，因為它不再被使用了。如果有人在其他人還在看電視時關掉電視，剩下的電視觀眾會大發雷霆！
 
-當我們想要在 heap 上分配一些資料供程式的多個部分讀取，並且無法在 compile time 確定哪個部分最後會使用這些資料時，我們使用 `Rc<T>` 類型。如果我們知道哪個部分最後會完成，我們可以讓該部分成為資料的 owner，並且在 compile time 強制執行的正常 ownership 規則將會生效。
+當我們想要在 heap 上配置一些資料，供程式的多個部分讀取，而且我們無法在編譯時期確定哪個部分會最後用完資料時，我們會使用 `Rc<T>` 型別。如果我們知道哪個部分會最後用完，我們可以就讓那個部分成為資料的 owner，那麼在編譯時期強制執行的正常 ownership 規則就會生效。
 
-請注意，`Rc<T>` 僅適用於單執行緒場景。當我們在第十六章討論並行時，我們將介紹如何在多執行緒程式中進行參考計數。
+請注意，`Rc<T>` 只適用於單執行緒場景。當我們在第十六章討論並行性時，我們將介紹如何在多執行緒程式中進行引用計數。
 
-### 使用 Rc<T> 共享資料
+### 使用 Rc<T> 來共享資料
 
-讓我們回到範例 15-5 中的串列範例。回想一下，我們使用 `Box<T>` 定義了它。這次，我們將建立兩個列表，它們都共享第三個列表的 ownership。概念上，這看起來類似於圖 15-3。
+讓我們回到列表 15-5 的 cons list 範例。回想一下我們是用 `Box<T>` 來定義它的。這次，我們將創建兩個列表，它們都共享第三個列表的 ownership。從概念上講，這看起來類似圖 15-3。
 
-![A linked list with the label 'a' pointing to three elements: the first element contains the integer 5 and points to the second element. The second element contains the integer 10 and points to the third element. The third element contains the value 'Nil' that signifies the end of the list; it does not point anywhere. A linked list with the label 'b' points to an element that contains the integer 3 and points to the first element of list 'a'. A linked list with the label 'c' points to an element that contains the integer 4 and also points to the first element of list 'a', so that the tail of lists 'b' and 'c' are both list 'a'](https://doc.rust-lang.org/book/img/trpl15-03.svg)
+<img alt="一個標示為 'a' 的鏈結串列指向三個元素：第一個元素包含整數 5 並指向第二個元素。第二個元素包含整數 10 並指向第三個元素。第三個元素包含值 'Nil'，表示串列的結束；它不指向任何地方。一個標示為 'b' 的鏈結串列指向一個包含整數 3 的元素，並指向串列 'a' 的第一個元素。一個標示為 'c' 的鏈結串列指向一個包含整數 4 的元素，也指向串列 'a' 的第一個元素，因此串列 'b' 和 'c' 的尾部都是串列 'a'" src="https://doc.rust-lang.org/book/img/trpl15-03.svg" class="center" />
 
-圖 15-3：兩個列表 `b` 和 `c` 共享第三個列表 `a` 的 ownership
+圖 15-3：兩個列表 `b` 和 `c`，共享第三個列表 `a` 的 ownership
 
-我們將建立一個包含 `5` 和 `10` 的列表 `a`。然後我們將再建立兩個列表：`b` 開頭為 `3`，`c` 開頭為 `4`。`b` 和 `c` 兩個列表隨後都會繼續到包含 `5` 和 `10` 的第一個 `a` 列表。換句話說，兩個列表都將共享包含 `5` 和 `10` 的第一個列表。
+我們將創建列表 `a`，包含 `5` 然後 `10`。然後我們將製作另外兩個列表：`b` 從 `3` 開始，`c` 從 `4` 開始。`b` 和 `c` 列表接著都會繼續到包含 `5` 和 `10` 的第一個 `a` 列表。換句話說，兩個列表將共享包含 `5` 和 `10` 的第一個列表。
 
-嘗試使用我們定義的 `List` 與 `Box<T>` 來實作此場景將無法運作，如範例 15-17 所示。
+嘗試使用我們以 `Box<T>` 定義的 `List` 來實現這個情境是行不通的，如列表 15-17 所示。
 
 src/main.rs
 
@@ -618,9 +639,9 @@ fn main() {
 }
 ```
 
-範例 15-17：演示我們不允許有兩個使用 `Box<T>` 的列表嘗試共享第三個列表的 ownership
+列表 15-17：展示我們不允許有兩個使用 `Box<T>` 的列表試圖共享第三個列表的 ownership
 
-當我們編譯這段程式碼時，我們會得到以下錯誤：
+當我們編譯這段程式碼時，我們會得到這個錯誤：
 
 ```
 $ cargo run
@@ -639,11 +660,11 @@ For more information about this error, try `rustc --explain E0382`.
 error: could not compile `cons-list` (bin "cons-list") due to 1 previous error
 ```
 
-`Cons` variant 擁有它們持有的資料，所以當我們建立 `b` 列表時，`a` 被移動到 `b` 中，`b` 擁有 `a`。然後，當我們在建立 `c` 時再次嘗試使用 `a` 時，我們不被允許，因為 `a` 已經被移動了。
+`Cons` 變體擁有它們所持有的資料，所以當我們創建 `b` 列表時，`a` 被移動到 `b` 中，`b` 擁有 `a`。然後，當我們在創建 `c` 時再次嘗試使用 `a`，我們不被允許，因為 `a` 已經被移動了。
 
-我們可以更改 `Cons` 的定義以改為持有參考，但這樣我們就必須指定 lifetime 參數。透過指定 lifetime 參數，我們將指定列表中的每個元素都將至少與整個列表一樣長。範例 15-17 中的元素和列表就是這種情況，但在所有情況下都不是如此。
+我們可以改變 `Cons` 的定義，讓它持有 reference，但這樣我們就必須指定 lifetime 參數。透過指定 lifetime 參數，我們將指定列表中的每個元素至少會活得和整個列表一樣長。這對於列表 15-17 中的元素和列表是成立的，但並非在所有情境下都如此。
 
-相反，我們將改變 `List` 的定義，以 `Rc<T>` 取代 `Box<T>`，如範例 15-18 所示。現在每個 `Cons` variant 都會持有一個值和一個指向 `List` 的 `Rc<T>`。當我們建立 `b` 時，我們不會取得 `a` 的 ownership，而是會複製 `a` 所持有的 `Rc<List>`，從而將參考數量從一個增加到兩個，並讓 `a` 和 `b` 共享該 `Rc<List>` 中資料的 ownership。我們在建立 `c` 時也會複製 `a`，將參考數量從兩個增加到三個。每次我們呼叫 `Rc::clone` 時，`Rc<List>` 內資料的參考計數都會增加，並且除非對它有零個參考，否則資料不會被清理。
+相反地，我們將改變 `List` 的定義，用 `Rc<T>` 取代 `Box<T>`，如列表 15-18 所示。現在每個 `Cons` 變體將持有一個值和一個指向 `List` 的 `Rc<T>`。當我們創建 `b` 時，我們不會取得 `a` 的 ownership，而是會複製 `a` 持有的 `Rc<List>`，從而將 reference 的數量從一增加到二，讓 `a` 和 `b` 共享該 `Rc<List>` 中資料的 ownership。我們在創建 `c` 時也會複製 `a`，將 reference 的數量從二增加到三。每次我們呼叫 `Rc::clone`，`Rc<List>` 內部資料的 reference 計數都會增加，而且除非 reference 數量為零，否則資料不會被清理。
 
 src/main.rs
 
@@ -663,17 +684,17 @@ fn main() {
 }
 ```
 
-範例 15-18：使用 `Rc<T>` 的 `List` 定義
+列表 15-18：一個使用 `Rc<T>` 的 `List` 定義
 
-我們需要新增一個 `use` 語句來將 `Rc<T>` 引入作用域，因為它不在 prelude 中。在 `main` 中，我們建立包含 `5` 和 `10` 的列表，並將其儲存在 `a` 中的新 `Rc<List>` 中。然後，當我們建立 `b` 和 `c` 時，我們呼叫 `Rc::clone` 函數並將 `a` 中的 `Rc<List>` 的參考作為引數傳遞。
+我們需要加上一個 `use` 敘述來將 `Rc<T>` 引入作用域，因為它不在 prelude 中。在 `main` 中，我們創建了包含 `5` 和 `10` 的列表，並將它儲存在 `a` 中的一個新的 `Rc<List>` 裡。然後，當我們創建 `b` 和 `c` 時，我們呼叫 `Rc::clone` 函式，並傳遞 `a` 中 `Rc<List>` 的 reference 作為參數。
 
-我們可以呼叫 `a.clone()` 而不是 `Rc::clone(&a)`，但在這種情況下，Rust 的慣例是使用 `Rc::clone`。`Rc::clone` 的實作不會像大多數類型的 `clone` 實作那樣深度複製所有資料。呼叫 `Rc::clone` 只會增加參考計數，這不需要花費太多時間。資料的深度複製可能需要很多時間。透過使用 `Rc::clone` 進行參考計數，我們可以在深度複製類型的複製和增加參考計數的複製之間進行視覺區分。在尋找程式碼中的效能問題時，我們只需要考慮深度複製的複製，並且可以忽略對 `Rc::clone` 的呼叫。
+我們本可以呼叫 `a.clone()` 而不是 `Rc::clone(&a)`，但 Rust 的慣例是在這種情況下使用 `Rc::clone`。`Rc::clone` 的實作不像大多數型別的 `clone` 實作那樣，會對所有資料進行深層複製。`Rc::clone` 的呼叫只會增加 reference 計數，這不會花費太多時間。資料的深層複製可能會花費很多時間。透過使用 `Rc::clone` 進行引用計數，我們可以視覺上區分深層複製類型的 clone 和增加 reference 計數的 clone。在程式碼中尋找性能問題時，我們只需要考慮深層複製的 clone，而可以忽略對 `Rc::clone` 的呼叫。
 
-### 複製 Rc<T> 會增加參考計數
+### 複製 Rc<T> 會增加引用計數
 
-讓我們改變範例 15-18 中的工作範例，這樣我們就可以看到當我們建立和 drop 對 `a` 中 `Rc<List>` 的參考時，參考計數的變化。
+讓我們來修改列表 15-18 中的工作範例，以便我們可以看到當我們創建和 drop 對 `a` 中 `Rc<List>` 的 reference 時，引用計數是如何變化的。
 
-在範例 15-19 中，我們將改變 `main`，使其在列表 `c` 周圍有一個內部作用域；然後我們可以看到當 `c` 超出作用域時，參考計數如何變化。
+在列表 15-19 中，我們將修改 `main`，讓它在列表 `c` 周圍有一個內層作用域；這樣我們就可以看到當 `c` 離開作用域時引用計數如何變化。
 
 src/main.rs
 
@@ -693,11 +714,11 @@ fn main() {
 }
 ```
 
-範例 15-19：印出參考計數
+列表 15-19：印出引用計數
 
-在程式中參考計數變化的每個點，我們都會印出參考計數，這透過呼叫 `Rc::strong_count` 函數來取得。這個函數之所以命名為 `strong_count` 而不是 `count`，是因為 `Rc<T>` 類型還有一個 `weak_count`；我們將在「使用 `Weak<T>` 預防參考循環」中看到 `weak_count` 的用途。
+在程式中每個引用計數改變的地方，我們都會印出引用計數，我們是透過呼叫 `Rc::strong_count` 函式來取得的。這個函式被命名為 `strong_count` 而不是 `count`，因為 `Rc<T>` 型別也有一個 `weak_count`；我們將在「使用 `Weak<T>` 防止引用循環」一節中看到 `weak_count` 的用途。
 
-這段程式碼印出以下內容：
+這段程式碼會印出以下內容：
 
 ```
 $ cargo run
@@ -710,48 +731,48 @@ count after creating c = 3
 count after c goes out of scope = 2
 ```
 
-我們可以看到 `a` 中的 `Rc<List>` 的初始參考計數為 1；然後每次我們呼叫 `clone` 時，計數都會增加 1。當 `c` 超出作用域時，計數會減少 1。我們不需要像呼叫 `Rc::clone` 來增加參考計數那樣呼叫一個函數來減少參考計數：`Drop` trait 的實作會在 `Rc<T>` 值超出作用域時自動減少參考計數。
+我們可以看到 `a` 中的 `Rc<List>` 的初始引用計數為 1；然後每次我們呼叫 `clone`，計數就會加 1。當 `c` 離開作用域時，計數會減 1。我們不需要像呼叫 `Rc::clone` 來增加引用計數那樣呼叫一個函式來減少引用計數：`Drop` trait 的實作會在 `Rc<T>` 值離開作用域時自動減少引用計數。
 
-我們在這個範例中看不到的是，當 `b` 和 `a` 在 `main` 結束時超出作用域時，計數變為 0，並且 `Rc<List>` 完全被清理。使用 `Rc<T>` 允許單一值有多個 owner，並且計數確保只要任何 owner 仍然存在，該值就仍然有效。
+我們在這個範例中看不到的是，當 `b` 然後 `a` 在 `main` 的結尾離開作用域時，計數變為 0，`Rc<List>` 就會被完全清理。使用 `Rc<T>` 允許單一值有多個 owner，而計數確保只要任何 owner 還存在，該值就保持有效。
 
-透過不可變參考，`Rc<T>` 允許你只在程式的多個部分之間共享資料以供讀取。如果 `Rc<T>` 也允許你有多個可變參考，你可能會違反第四章討論的其中一個 borrowing 規則：對同一位置的多個可變借用可能導致資料競爭和不一致。但能夠改變資料非常有用！在下一節中，我們將討論內部可變性模式以及你可以與 `Rc<T>` 結合使用的 `RefCell<T>` 類型，以解決這種不可變性限制。
+透過不可變的 reference，`Rc<T>` 允許你在程式的多個部分之間共享資料，僅供讀取。如果 `Rc<T>` 也允許你有多個可變的 reference，你可能會違反第四章討論的 borrowing 規則之一：對同一個地方的多個可變 borrow 可能導致資料競爭和不一致。但能夠改變資料是非常有用的！在下一節中，我們將討論 interior mutability 模式和 `RefCell<T>` 型別，你可以將它與 `Rc<T>` 結合使用，來處理這個不可變性的限制。
 
 ## RefCell<T> 與內部可變性模式
 
-_內部可變性_（interior mutability）是 Rust 中的一種設計模式，它允許你在資料存在不可變參考時仍然修改資料；通常，此操作會被 borrowing 規則禁止。為了修改資料，該模式會在資料結構內部使用 `unsafe` 程式碼，以彎曲 Rust 通常管理修改和借用的規則。Unsafe 程式碼向編譯器表明我們正在手動檢查規則，而不是依賴編譯器為我們檢查；我們將在第二十章中更詳細地討論 unsafe 程式碼。
+_Interior mutability_ (內部可變性) 是 Rust 中的一種設計模式，它允許你在即使有不可變的 reference 指向資料時也能改變資料；通常，這個行為是被 borrowing 規則所禁止的。為了改變資料，這個模式在一個資料結構內部使用 `unsafe` 程式碼來繞過 Rust 平常管理可變性和 borrowing 的規則。Unsafe 程式碼向編譯器表明，我們正在手動檢查規則，而不是依賴編譯器為我們檢查；我們將在第二十章更深入地討論 unsafe 程式碼。
 
-我們只能在我們能夠確保 borrowing 規則將在 runtime 遵循時才使用採用內部可變性模式的類型，即使編譯器無法保證這一點。所涉及的 `unsafe` 程式碼隨後被包裝在一個 safe API 中，並且外部類型仍然是不可變的。
+我們只有在能夠確保 borrowing 規則在 runtime 會被遵守時，才能使用採用 interior mutability 模式的型別，即使編譯器無法保證這一點。所涉及的 `unsafe` 程式碼會被包裝在一個安全的 API 中，而外部的型別仍然是不可變的。
 
-讓我們透過查看遵循內部可變性模式的 `RefCell<T>` 類型來探索這個概念。
+讓我們透過檢視遵循 interior mutability 模式的 `RefCell<T>` 型別來探索這個概念。
 
 ### 使用 RefCell<T> 在 Runtime 強制執行 Borrowing 規則
 
-與 `Rc<T>` 不同，`RefCell<T>` 類型代表其持有的資料的單一 ownership。那麼是什麼讓 `RefCell<T>` 與 `Box<T>` 這樣的類型不同呢？回想你在第四章學到的 borrowing 規則：
+與 `Rc<T>` 不同，`RefCell<T>` 型別代表對其所持有資料的單一 ownership。那麼，是什麼讓 `RefCell<T>` 與像 `Box<T>` 這樣的型別不同呢？回想一下你在第四章學到的 borrowing 規則：
 
-- 在任何給定時間，你只能擁有*一個*可變參考，或者任意數量的不可變參考（但不能同時擁有兩者）。
-- 參考必須始終有效。
+- 在任何給定時間，你只能有*一個*可變的 reference，或者任意數量的不可變的 reference（但不能兩者都有）。
+- Reference 必須總是有效的。
 
-對於參考和 `Box<T>`，borrowing 規則的不變量在 compile time 強制執行。對於 `RefCell<T>`，這些不變量在 _runtime_ 強制執行。對於參考，如果你違反了這些規則，你將會得到一個 compile time 錯誤。對於 `RefCell<T>`，如果你違反了這些規則，你的程式將會 `panic!` 並退出。
+對於 reference 和 `Box<T>`，borrowing 規則的不變性是在編譯時期強制執行的。對於 `RefCell<T>`，這些不變性是在*runtime*強制執行的。對於 reference，如果你違反了這些規則，你會得到一個編譯器錯誤。對於 `RefCell<T>`，如果你違反了這些規則，你的程式將會 panic 並退出。
 
-在 compile time 檢查 borrowing 規則的優點是，錯誤會在開發過程的早期被發現，並且對 runtime 效能沒有影響，因為所有分析都是預先完成的。基於這些原因，在 compile time 檢查 borrowing 規則是大多數情況下的最佳選擇，這也是 Rust 的預設設定。
+在編譯時期檢查 borrowing 規則的優點是，錯誤會在開發過程的早期被捕捉到，而且對 runtime 性能沒有影響，因為所有的分析都已經預先完成。基於這些原因，在編譯時期檢查 borrowing 規則在大多數情況下是最好的選擇，這也是為什麼這是 Rust 的預設行為。
 
-在 runtime 檢查 borrowing 規則的優點是，某些記憶體安全的場景現在被允許，而這些場景原本會被 compile time 檢查所禁止。靜態分析，例如 Rust 編譯器，本質上是保守的。程式碼的某些屬性是無法透過分析程式碼來檢測的：最著名的例子是停機問題（Halting Problem），這超出了本書的範圍，但卻是一個有趣的探索主題。
+相反地，在 runtime 檢查 borrowing 規則的優點是，某些記憶體安全的場景因此被允許，而這些場景會被編譯時期的檢查所禁止。靜態分析，像是 Rust 編譯器，本質上是保守的。程式碼的某些屬性是無法透過分析程式碼來偵測的：最著名的例子是 Halting Problem (停機問題)，這超出了本書的範圍，但卻是一個有趣的研究主題。
 
-因為某些分析是不可能的，如果 Rust 編譯器無法確定程式碼符合 ownership 規則，它可能會拒絕一個正確的程式；以這種方式，它是保守的。如果 Rust 接受了一個不正確的程式，使用者將無法信任 Rust 所做的保證。然而，如果 Rust 拒絕了一個正確的程式，程式設計師會感到不便，但不會發生任何災難性的事情。`RefCell<T>` 類型在你確定你的程式碼遵循 borrowing 規則但編譯器無法理解並保證時非常有用。
+因為某些分析是不可能的，如果 Rust 編譯器不能確定程式碼遵守 ownership 規則，它可能會拒絕一個正確的程式；在這種方式上，它是保守的。如果 Rust 接受了一個不正確的程式，使用者將無法信任 Rust 所做的保證。然而，如果 Rust 拒絕了一個正確的程式，程式設計師會感到不便，但不會發生災難性的事情。當你確定你的程式碼遵循 borrowing 規則，但編譯器無法理解並保證時，`RefCell<T>` 型別就很有用。
 
-與 `Rc<T>` 類似，`RefCell<T>` 僅適用於單執行緒場景，如果你嘗試在多執行緒上下文中使用它，將會收到一個 compile time 錯誤。我們將在第十六章討論如何在多執行緒程式中取得 `RefCell<T>` 的功能。
+與 `Rc<T>` 類似，`RefCell<T>` 只適用於單執行緒場景，如果你試圖在多執行緒環境中使用它，你會得到一個編譯時期錯誤。我們將在第十六章討論如何在多執行緒程式中獲得 `RefCell<T>` 的功能。
 
-以下是選擇 `Box<T>`、`Rc<T>` 或 `RefCell<T>` 的原因概述：
+以下是選擇 `Box<T>`、`Rc<T>` 或 `RefCell<T>` 的理由總結：
 
-- `Rc<T>` 允許同一個資料有多個 owner；`Box<T>` 和 `RefCell<T>` 只有單一 owner。
-- `Box<T>` 允許在 compile time 檢查不可變或可變借用；`Rc<T>` 只允許在 compile time 檢查不可變借用；`RefCell<T>` 允許在 runtime 檢查不可變或可變借用。
-- 因為 `RefCell<T>` 允許在 runtime 檢查可變借用，即使 `RefCell<T>` 是不可變的，你也可以改變 `RefCell<T>` 內的值。
+- `Rc<T>` 允許多個 owner 擁有相同的資料；`Box<T>` 和 `RefCell<T>` 則有單一 owner。
+- `Box<T>` 允許在編譯時期檢查不可變或可變的 borrow；`Rc<T>` 只允許在編譯時期檢查不可變的 borrow；`RefCell<T>` 允許在 runtime 檢查不可變或可變的 borrow。
+- 因為 `RefCell<T>` 允許在 runtime 檢查可變的 borrow，即使 `RefCell<T>` 本身是不可變的，你也可以改變 `RefCell<T>` 內部的值。
 
-在不可變值內部改變值是*內部可變性*模式。讓我們看看一個內部可變性有用的情況，並探討它如何可能實現。
+在不可變的值內部改變值就是*interior mutability*模式。讓我們來看一個 interior mutability 有用的情況，並檢視它是如何可能的。
 
-### 內部可變性：不可變值的一個可變借用
+### 內部可變性：對不可變值的可變 Borrow
 
-borrowing 規則的一個結果是，當你擁有一個不可變值時，你不能可變地借用它。例如，這段程式碼將無法編譯：
+borrowing 規則的一個後果是，當你有一個不可變的值時，你不能對它進行可變的 borrow。例如，這段程式碼無法編譯：
 
 ```rust
 fn main() {
@@ -760,7 +781,7 @@ fn main() {
 }
 ```
 
-如果你嘗試編譯這段程式碼，你會得到以下錯誤：
+如果你試圖編譯這段程式碼，你會得到以下錯誤：
 
 ```
 $ cargo run
@@ -780,19 +801,19 @@ For more information about this error, try `rustc --explain E0596`.
 error: could not compile `borrowing` (bin "borrowing") due to 1 previous error
 ```
 
-然而，在某些情況下，如果一個值在其方法中可以自行改變，但對其他程式碼來說卻是不可變的，這將會很有用。該值的方法之外的程式碼將無法改變該值。使用 `RefCell<T>` 是實現內部可變性的一種方法，但 `RefCell<T>` 並未完全繞過 borrowing 規則：編譯器中的借用檢查器允許這種內部可變性，而 borrowing 規則則在 runtime 進行檢查。如果你違反了規則，你將會得到一個 `panic!` 而不是編譯器錯誤。
+然而，在某些情況下，讓一個值在自己的方法中改變自己，但對其他程式碼來說卻是不可變的，會很有用。值的方法之外的程式碼將無法改變該值。使用 `RefCell<T>` 是獲得 interior mutability 能力的一種方式，但 `RefCell<T>` 並沒有完全繞過 borrowing 規則：編譯器中的 borrow checker 允許這種 interior mutability，而 borrowing 規則則在 runtime 進行檢查。如果你違反了規則，你會得到一個 `panic!` 而不是編譯器錯誤。
 
-讓我們來看看一個實際的範例，我們可以使用 `RefCell<T>` 來改變一個不可變值，並看看為什麼這很有用。
+讓我們來實際操作一個可以使用 `RefCell<T>` 來改變不可變值的範例，並看看為什麼這很有用。
 
-#### 內部可變性的一個使用案例：Mock Objects
+#### 內部可變性的應用場景：Mock 物件
 
-有時候在測試期間，程式設計師會使用一種類型來代替另一種類型，以便觀察特定行為並斷言它被正確實作。這種佔位符類型稱為_測試替身_（test double）。你可以從電影製作中的特技替身這個意義上去思考它，特技替身代替演員執行一個特別棘手的場景。當我們執行測試時，測試替身會代替其他類型。_Mock object_ 是特定類型的測試替身，它們在測試期間記錄發生的事情，這樣你就可以斷言正確的動作已經發生。
+有時候在測試過程中，程式設計師會用一種型別來替代另一種型別，以觀察特定的行為並斷言其被正確實作。這種佔位符型別被稱為_test double_。你可以把它想像成電影製作中的特技替身，由一個人代替演員來完成一個特別棘手的場景。在我們執行測試時，Test double 會代替其他型別。_Mock object_ 是 test double 的一種特定類型，它會記錄測試期間發生的事情，這樣你就可以斷言正確的動作已經發生。
 
-Rust 沒有像其他語言那樣的物件概念，而且 Rust 的標準函式庫中也沒有像其他語言那樣內建 mock object 功能。然而，你絕對可以建立一個 struct，它將與 mock object 達到相同的目的。
+Rust 沒有像其他語言那樣的物件概念，而且 Rust 的標準函式庫中也沒有像其他一些語言那樣內建 mock object 的功能。然而，你絕對可以創建一個 struct 來達成與 mock object 相同的目的。
 
-以下是我們將測試的場景：我們將建立一個函式庫，它會追蹤一個值與最大值的關係，並根據目前值與最大值的接近程度發送訊息。例如，此函式庫可以用於追蹤使用者允許發送 API 呼叫的配額。
+這是我們要測試的場景：我們將創建一個函式庫，它會追蹤一個值與一個最大值的關係，並根據當前值與最大值的接近程度來發送訊息。這個函式庫可以用來追蹤使用者允許進行的 API 呼叫次數的配額，例如。
 
-我們的函式庫只會提供追蹤值與最大值接近程度的功能，以及在何時應該發送哪些訊息。使用我們函式庫的應用程式預計將提供發送訊息的機制：應用程式可以在應用程式中放入訊息，發送電子郵件，發送簡訊，或執行其他操作。函式庫不需要知道這些細節。它只需要實作一個我們將提供的名為 `Messenger` 的 trait。範例 15-20 顯示了函式庫程式碼。
+我們的函式庫只提供追蹤一個值與最大值的接近程度，以及在什麼時候應該發送什麼訊息的功能。使用我們函式庫的應用程式將被期望提供發送訊息的機制：應用程式可以在應用程式中放入一條訊息、發送一封電子郵件、發送一條簡訊，或做其他事情。函式庫不需要知道這些細節。它只需要一個實作了我們將提供的 `Messenger` trait 的東西。列表 15-20 展示了這個函式庫的程式碼。
 
 src/lib.rs
 
@@ -837,11 +858,11 @@ where
 }
 ```
 
-範例 15-20：一個函式庫，用於追蹤值與最大值的接近程度，並在值達到特定水準時發出警告
+列表 15-20：一個追蹤值與最大值接近程度，並在值達到特定水平時發出警告的函式庫
 
-這段程式碼的一個重要部分是 `Messenger` trait 只有一個名為 `send` 的方法，該方法接受一個 `self` 的不可變參考和訊息的文字。這個 trait 是我們的 mock object 需要實作的介面，這樣 mock 就可以像真實物件一樣使用。另一個重要部分是我們想測試 `LimitTracker` 上 `set_value` 方法的行為。我們可以改變傳入 `value` 參數的值，但 `set_value` 不會回傳任何東西供我們斷言。我們希望能夠說，如果我們使用實作 `Messenger` trait 的東西和特定的 `max` 值建立一個 `LimitTracker`，當我們傳入不同的 `value` 數字時，`messenger` 會被告知發送適當的訊息。
+這段程式碼的一個重要部分是 `Messenger` trait 有一個名為 `send` 的方法，它接受一個對 `self` 的不可變 reference 和訊息的文本。這個 trait 是我們的 mock object 需要實作的介面，這樣 mock 才能像真實物件一樣被使用。另一個重要的部分是，我們想要測試 `LimitTracker` 上 `set_value` 方法的行為。我們可以改變我們傳入的 `value` 參數，但 `set_value` 不會回傳任何東西讓我們進行斷言。我們希望能說，如果我們用一個實作了 `Messenger` trait 的東西和一個特定的 `max` 值來創建一個 `LimitTracker`，當我們為 `value` 傳入不同的數字時，messenger 會被告知發送適當的訊息。
 
-我們需要一個 mock object，當我們呼叫 `send` 時，它不會發送電子郵件或簡訊，而只會追蹤它被告知要發送的訊息。我們可以建立一個新的 mock object 實例，建立一個使用該 mock object 的 `LimitTracker`，呼叫 `LimitTracker` 上的 `set_value` 方法，然後檢查該 mock object 是否有我們預期的訊息。範例 15-21 顯示了嘗試實作一個 mock object 來執行此操作，但借用檢查器不允許。
+我們需要一個 mock object，當我們呼叫 `send` 時，它不會發送電子郵件或簡訊，而只會追蹤它被告知要發送的訊息。我們可以創建一個新的 mock object 實例，創建一個使用該 mock object 的 `LimitTracker`，在 `LimitTracker` 上呼叫 `set_value` 方法，然後檢查 mock object 是否有我們期望的訊息。列表 15-21 展示了一個實作 mock object 的嘗試，但 borrow checker 不允許這樣做。
 
 src/lib.rs
 
@@ -880,41 +901,39 @@ mod tests {
 }
 ```
 
-範例 15-21：嘗試實作一個不被借用檢查器允許的 `MockMessenger`
+列表 15-21：一個 borrow checker 不允許的 `MockMessenger` 實作嘗試
 
-這個測試程式碼定義了一個 `MockMessenger` struct，它有一個 `sent_messages` 欄位，其中包含一個 `String` 值 的 `Vec`，用於追蹤它被告知要發送的訊息。我們還定義了一個關聯函數 `new`，以便方便建立以空訊息列表開始的新 `MockMessenger` 值。然後我們為 `MockMessenger` 實作了 `Messenger` trait，這樣我們就可以將 `MockMessenger` 提供給 `LimitTracker`。在 `send` 方法的定義中，我們將作為參數傳入的訊息儲存在 `MockMessenger` 的 `sent_messages` 列表中。
+這個測試程式碼定義了一個 `MockMessenger` struct，它有一個 `sent_messages` 欄位，裡面是一個 `Vec<String>`，用來追蹤它被告知要發送的訊息。我們也定義了一個關聯函式 `new`，方便創建新的 `MockMessenger` 值，它們一開始就有一個空的訊息列表。然後我們為 `MockMessenger` 實作 `Messenger` trait，這樣我們就可以將 `MockMessenger` 交給 `LimitTracker`。在 `send` 方法的定義中，我們將傳入的訊息作為參數，並將它儲存在 `MockMessenger` 的 `sent_messages` 列表中。
 
-在測試中，我們正在測試當 `LimitTracker` 被告知將 `value` 設定為超過 `max` 值 75% 時會發生什麼。首先我們建立一個新的 `MockMessenger`，它將以空訊息列表開始。然後我們建立一個新的 `LimitTracker` 並給它一個指向新 `MockMessenger` 的參考和一個 `max` 值 `100`。我們呼叫 `LimitTracker` 上的 `set_value` 方法，其值為 `80`，這超過 100 的 75%。然後我們斷言 `MockMessenger` 正在追蹤的訊息列表現在應該有一條訊息。
+在測試中，我們正在測試當 `LimitTracker` 被告知將 `value` 設為超過 `max` 值 75% 的情況下會發生什麼。首先，我們創建一個新的 `MockMessenger`，它將從一個空的訊息列表開始。然後我們創建一個新的 `LimitTracker`，並給它一個新的 `MockMessenger` 的 reference 和一個 `max` 值 `100`。我們用值 `80`（超過 100 的 75%）呼叫 `LimitTracker` 上的 `set_value` 方法。然後我們斷言 `MockMessenger` 追蹤的訊息列表現在應該有一條訊息。
 
 然而，這個測試有一個問題，如下所示：
 
 ```
 $ cargo test
    Compiling limit-tracker v0.1.0 (file:///projects/limit-tracker)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.91s
-     Running unittests src/lib.rs (target/debug/deps/limit_tracker-e599811fa246dbde)
+error[E0596]: cannot borrow `self.sent_messages` as mutable, as it is behind a `&` reference
+  --> src/lib.rs:58:13
+   |
+58 |             self.sent_messages.push(String::from(message));
+   |             ^^^^^^^^^^^^^^^^^^ `self` is a `&` reference, so the data it refers to cannot be borrowed as mutable
+   |
+help: consider changing this to be a mutable reference in the `impl` method and the `trait` definition
+   |
+2  ~     fn send(&mut self, msg: &str);
+3  | }
+...
+56 |     impl Messenger for MockMessenger {
+57 ~         fn send(&mut self, message: &str) {
+   |
 
-running 1 test
-test tests::it_sends_an_over_75_percent_warning_message ... FAILED
-
-failures:
-
----- tests::it_sends_an_over_75_percent_warning_message stdout ----
-
-thread 'tests::it_sends_an_over_75_percent_warning_message' panicked at src/lib.rs:58:13:
-cannot borrow `self.sent_messages` as mutable, as it is behind a `&` reference
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-
-failures:
-    tests::it_sends_an_over_75_percent_warning_message
-
-test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+For more information about this error, try `rustc --explain E0596`.
+error: could not compile `limit-tracker` (lib test) due to 1 previous error
 ```
 
-我們無法修改 `MockMessenger` 來追蹤訊息，因為 `send` 方法接受 `self` 的不可變參考。我們也無法採納錯誤訊息的建議，在 `impl` 方法和 trait 定義中都使用 `&mut self`。我們不希望僅為了測試而更改 `Messenger` trait。相反，我們需要找到一種方法，讓我們的測試程式碼與現有設計正確運作。
+我們無法修改 `MockMessenger` 來追蹤訊息，因為 `send` 方法接受一個對 `self` 的不可變 reference。我們也無法採納錯誤訊息的建議，在 `impl` 方法和 trait 定義中都使用 `&mut self`。我們不希望僅僅為了測試而改變 `Messenger` trait。相反，我們需要找到一種方法，讓我們現有的設計能夠正確地執行我們的測試程式碼。
 
-這種情況下內部可變性可以提供幫助！我們將把 `sent_messages` 儲存在 `RefCell<T>` 中，然後 `send` 方法將能夠修改 `sent_messages` 來儲存我們所見的訊息。範例 15-22 顯示了它的樣子。
+這就是 interior mutability 可以幫上忙的情況！我們將 `sent_messages` 儲存在一個 `RefCell<T>` 中，這樣 `send` 方法就能夠修改 `sent_messages` 來儲存我們看到的訊息。列表 15-22 展示了這樣做的樣子。
 
 src/lib.rs
 
@@ -951,23 +970,23 @@ mod tests {
 }
 ```
 
-範例 15-22：使用 `RefCell<T>` 在外部值被視為不可變時修改內部值
+列表 15-22：使用 `RefCell<T>` 在外部值被視為不可變時改變內部值
 
-`sent_messages` 欄位現在是 `RefCell<Vec<String>>` 類型，而不是 `Vec<String>`。在 `new` 函數中，我們圍繞著空向量建立了一個新的 `RefCell<Vec<String>>` 實例。
+`sent_messages` 欄位的型別現在是 `RefCell<Vec<String>>` 而不是 `Vec<String>`。在 `new` 函式中，我們圍繞著一個空的 vector 創建一個新的 `RefCell<Vec<String>>` 實例。
 
-對於 `send` 方法的實作，第一個參數仍然是 `self` 的不可變借用，這與 trait 定義相符。我們在 `self.sent_messages` 中的 `RefCell<Vec<String>>` 上呼叫 `borrow_mut` 以取得 `RefCell<Vec<String>>` 內部值（即向量）的可變參考。然後我們可以在向量的可變參考上呼叫 `push`，以追蹤測試期間發送的訊息。
+對於 `send` 方法的實作，第一個參數仍然是對 `self` 的不可變 borrow，這符合 trait 的定義。我們在 `self.sent_messages` 中的 `RefCell<Vec<String>>` 上呼叫 `borrow_mut`，以取得對 `RefCell<Vec<String>>` 內部值（也就是 vector）的可變 reference。然後我們就可以在 vector 的可變 reference 上呼叫 `push`，來追蹤測試期間發送的訊息。
 
-我們必須做的最後一個更改是在斷言中：為了查看內部向量中有多少個項目，我們在 `RefCell<Vec<String>>` 上呼叫 `borrow` 以取得向量的不可變參考。
+我們必須做的最後一個改變是在斷言中：為了查看內部 vector 中有多少項目，我們在 `RefCell<Vec<String>>` 上呼叫 `borrow` 來取得對 vector 的不可變 reference。
 
-現在你已經看到如何使用 `RefCell<T>`，讓我們深入了解它的運作方式！
+現在你已經看過如何使用 `RefCell<T>`，讓我們來深入了解它的運作原理！
 
-#### 使用 RefCell<T> 在 Runtime 追蹤借用
+#### 使用 RefCell<T> 在 Runtime 追蹤 Borrow
 
-當建立不可變和可變參考時，我們分別使用 `&` 和 `&mut` 語法。對於 `RefCell<T>`，我們使用 `borrow` 和 `borrow_mut` 方法，這些方法是 `RefCell<T>` 的 safe API 的一部分。`borrow` 方法回傳智慧型指標類型 `Ref<T>`，而 `borrow_mut` 回傳智慧型指標類型 `RefMut<T>`。這兩種類型都實作了 `Deref`，所以我們可以將它們視為一般參考。
+當創建不可變和可變的 reference 時，我們分別使用 `&` 和 `&mut` 語法。對於 `RefCell<T>`，我們使用 `borrow` 和 `borrow_mut` 方法，它們是屬於 `RefCell<T>` 的安全 API 的一部分。`borrow` 方法回傳智慧型指標型別 `Ref<T>`，而 `borrow_mut` 回傳智慧型指標型別 `RefMut<T>`。這兩種型別都實作了 `Deref`，所以我們可以將它們當作普通的 reference 來對待。
 
-`RefCell<T>` 會追蹤目前有多少 `Ref<T>` 和 `RefMut<T>` 智慧型指標處於活躍狀態。每次我們呼叫 `borrow` 時，`RefCell<T>` 會增加活躍的不可變借用計數。當 `Ref<T>` 值超出作用域時，不可變借用計數會減少 1。就像 compile time 的 borrowing 規則一樣，`RefCell<T>` 允許我們在任何時間點擁有許多不可變借用或一個可變借用。
+`RefCell<T>` 會追蹤目前有多少 `Ref<T>` 和 `RefMut<T>` 智慧型指標是活躍的。每次我們呼叫 `borrow`，`RefCell<T>` 會增加其活躍的不可變 borrow 的計數。當一個 `Ref<T>` 值離開作用域時，不可變 borrow 的計數會減 1。就像編譯時期的 borrowing 規則一樣，`RefCell<T>` 允許我們在任何時間點擁有多個不可變 borrow 或一個可變 borrow。
 
-如果我們嘗試違反這些規則，`RefCell<T>` 的實作將會在 runtime `panic!`，而不是像使用參考那樣得到 compile time 錯誤。範例 15-23 顯示了範例 15-22 中 `send` 實作的修改。我們故意嘗試在同一個作用域中建立兩個活躍的可變借用，以說明 `RefCell<T>` 如何在 runtime 阻止我們這樣做。
+如果我們試圖違反這些規則，`RefCell<T>` 的實作將在 runtime panic，而不是像使用 reference 那樣得到一個編譯器錯誤。列表 15-23 展示了對列表 15-22 中 `send` 實作的修改。我們刻意嘗試在同一個作用域中創建兩個活躍的可變 borrow，以說明 `RefCell<T>` 會在 runtime 阻止我們這樣做。
 
 src/lib.rs
 
@@ -983,9 +1002,9 @@ src/lib.rs
     }
 ```
 
-範例 15-23：在同一個作用域中建立兩個可變參考，以查看 `RefCell<T>` 會 `panic!`
+列表 15-23：在同一個作用域中創建兩個可變 reference，以觀察 `RefCell<T>` 會 panic
 
-我們為從 `borrow_mut` 回傳的 `RefMut<T>` 智慧型指標建立一個變數 `one_borrow`。然後我們以相同的方式在變數 `two_borrow` 中建立另一個可變借用。這會導致在同一個作用域中有兩個可變參考，這是不允許的。當我們執行函式庫的測試時，範例 15-23 中的程式碼將會編譯，沒有任何錯誤，但測試將會失敗：
+我們為從 `borrow_mut` 回傳的 `RefMut<T>` 智慧型指標創建一個變數 `one_borrow`。然後我們以同樣的方式在變數 `two_borrow` 中創建另一個可變 borrow。這使得在同一個作用域中有兩個可變 reference，這是不被允許的。當我們為我們的函式庫執行測試時，列表 15-23 中的程式碼將會無誤地編譯，但測試會失敗：
 
 ```
 $ cargo test
@@ -1009,17 +1028,23 @@ failures:
     tests::it_sends_an_over_75_percent_warning_message
 
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`
 ```
 
-請注意，程式碼在 `already borrowed: BorrowMutError` 訊息下 `panic!`。這就是 `RefCell<T>` 在 runtime 處理違反 borrowing 規則的方式。
+請注意，程式碼 panic 並顯示訊息 `already borrowed: BorrowMutError`。這就是 `RefCell<T>` 在 runtime 處理違反 borrowing 規則的方式。
 
-選擇在 runtime 而非 compile time 捕捉 borrowing 錯誤，正如我們在這裡所做的，這意味著你可能會在開發過程的後期才發現程式碼中的錯誤：可能直到你的程式碼部署到生產環境時。此外，由於在 runtime 而非 compile time 追蹤借用，你的程式碼會產生少量的 runtime 效能開銷。然而，使用 `RefCell<T>` 使得編寫一個 mock object 成為可能，該 mock object 可以在你將其用於只允許不可變值的上下文中時修改自身以追蹤它所見的訊息。儘管有其取捨，你仍然可以使用 `RefCell<T>` 來獲得比一般參考更多的功能。
+選擇在 runtime 而不是編譯時期捕捉 borrowing 錯誤，就像我們在這裡做的那樣，意味著你可能會在開發過程的後期才發現程式碼中的錯誤：可能要等到你的程式碼部署到生產環境後。此外，你的程式碼會因為在 runtime 而不是編譯時期追蹤 borrow 而產生一點 runtime 性能開銷。然而，使用 `RefCell<T>` 使得編寫一個可以修改自身以追蹤它所見過的訊息的 mock object 成為可能，而你可以在只允許不可變值的上下文中使用它。儘管 `RefCell<T>` 有其權衡之處，你仍然可以使用它來獲得比普通 reference 提供的更多功能。
 
-### 使用 Rc<T> 和 RefCell<T> 允許可變資料的多個 Owner
+<!-- Old link, do not remove -->
 
-使用 `RefCell<T>` 的常見方式是與 `Rc<T>` 結合使用。回想一下，`Rc<T>` 允許你擁有同一資料的多個 owner，但它只提供對該資料的不可變存取。如果你有一個持有 `RefCell<T>` 的 `Rc<T>`，你可以獲得一個可以有多個 owner *並且*可以修改的值！
+<a id="having-multiple-owners-of-mutable-data-by-combining-rc-t-and-ref-cell-t"></a>
 
-例如，回想範例 15-18 中的串列範例，我們使用 `Rc<T>` 來允許多個列表共享另一個列表的 ownership。由於 `Rc<T>` 只持有不可變值，一旦我們建立它們，我們就無法更改列表中的任何值。讓我們新增 `RefCell<T>`，以利用其改變列表中值的能力。範例 15-24 顯示，透過在 `Cons` 定義中使用 `RefCell<T>`，我們可以修改儲存在所有列表中的值。
+### 結合 Rc<T> 與 RefCell<T> 讓可變資料擁有多個 Owner
+
+一種常見的 `RefCell<T>` 用法是與 `Rc<T>` 結合。回想一下，`Rc<T>` 讓你能夠讓多個 owner 擁有某些資料，但它只提供對該資料的不可變存取。如果你有一個持有 `RefCell<T>` 的 `Rc<T>`，你就可以得到一個可以有多個 owner *並且*可以被改變的值！
+
+例如，回想一下列表 15-18 中的 cons list 範例，我們使用 `Rc<T>` 來允許多個列表共享另一個列表的 ownership。因為 `Rc<T>` 只持有不可變的值，我們一旦創建了列表中的值，就無法改變它們。讓我們加入 `RefCell<T>`，利用它改變列表中值的能力。列表 15-24 展示了透過在 `Cons` 定義中使用 `RefCell<T>`，我們可以修改儲存在所有列表中的值。
 
 src/main.rs
 
@@ -1050,15 +1075,15 @@ fn main() {
 }
 ```
 
-範例 15-24：使用 `Rc<RefCell<i32>>` 建立一個我們可以修改的 `List`
+列表 15-24：使用 `Rc<RefCell<i32>>` 來創建一個我們可以改變的 `List`
 
-我們建立一個 `Rc<RefCell<i32>>` 的實例，並將其儲存在名為 `value` 的變數中，以便稍後直接存取它。然後我們在 `a` 中建立一個 `List`，其中有一個 `Cons` variant 持有 `value`。我們需要複製 `value`，這樣 `a` 和 `value` 都擁有內部 `5` 值的 ownership，而不是將 ownership 從 `value` 轉移到 `a` 或讓 `a` 從 `value` 借用。
+我們創建一個 `Rc<RefCell<i32>>` 實例的值，並將它儲存在一個名為 `value` 的變數中，這樣我們稍後就可以直接存取它。然後我們在 `a` 中創建一個 `List`，它的 `Cons` 變體持有 `value`。我們需要複製 `value`，這樣 `a` 和 `value` 都能擁有內部的 `5` 值，而不是將 ownership 從 `value` 轉移到 `a`，或是讓 `a` borrow `value`。
 
-我們將列表 `a` 包裝在 `Rc<T>` 中，這樣當我們建立列表 `b` 和 `c` 時，它們都可以參考 `a`，這就是我們在範例 15-18 中所做的。
+我們將列表 `a` 包裝在一個 `Rc<T>` 中，這樣當我們創建列表 `b` 和 `c` 時，它們都可以參考 `a`，這就是我們在列表 15-18 中所做的。
 
-在我們建立 `a`、`b` 和 `c` 中的列表之後，我們想要將 `value` 中的值增加 10。我們透過在 `value` 上呼叫 `borrow_mut` 來實現這一點，它使用我們在第五章「`->` 運算子在哪裡？」中討論的自動解參考功能，將 `Rc<T>` 解參考到內部 `RefCell<T>` 值。`borrow_mut` 方法回傳一個 `RefMut<T>` 智慧型指標，我們在其上使用解參考運算子並更改內部值。
+在我們創建了 `a`、`b` 和 `c` 中的列表之後，我們想要將 `value` 中的值加上 10。我們透過在 `value` 上呼叫 `borrow_mut` 來做到這一點，這利用了我們在第五章「`->` 運算子在哪裡？」中討論過的自動解參考特性，將 `Rc<T>` 解參考到內部的 `RefCell<T>` 值。`borrow_mut` 方法回傳一個 `RefMut<T>` 智慧型指標，我們對它使用解參考運算子並改變內部的值。
 
-當我們印出 `a`、`b` 和 `c` 時，我們可以看到它們都具有修改過的值 `15` 而不是 `5`：
+當我們印出 `a`、`b` 和 `c` 時，我們可以看到它們都擁有被修改後的值 `15`，而不是 `5`：
 
 ```
 $ cargo run
@@ -1070,15 +1095,15 @@ b after = Cons(RefCell { value: 3 }, Cons(RefCell { value: 15 }, Nil))
 c after = Cons(RefCell { value: 4 }, Cons(RefCell { value: 15 }, Nil))
 ```
 
-這個技巧非常棒！透過使用 `RefCell<T>`，我們擁有一個 outwardly 不可變的 `List` 值。但是我們可以利用 `RefCell<T>` 上的方法來存取其內部可變性，這樣我們就可以在需要時修改我們的資料。borrowing 規則的 runtime 檢查保護我們免受資料競爭的影響，並且有時為了資料結構的這種靈活性而犧牲一點速度是值得的。請注意，`RefCell<T>` 不適用於多執行緒程式碼！`Mutex<T>` 是 `RefCell<T>` 的執行緒安全版本，我們將在第十六章討論 `Mutex<T>`。
+這個技巧相當巧妙！透過使用 `RefCell<T>`，我們有一個表面上不可變的 `List` 值。但我們可以使用 `RefCell<T>` 上提供存取其內部可變性的方法，以便在需要時修改我們的資料。borrowing 規則的 runtime 檢查保護我們免受資料競爭的影響，有時為了我們資料結構的這種靈活性，犧牲一點速度是值得的。請注意，`RefCell<T>` 不適用於多執行緒程式碼！`Mutex<T>` 是 `RefCell<T>` 的執行緒安全版本，我們將在第十六章討論 `Mutex<T>`。
 
-## 參考循環可能會造成記憶體洩漏
+## 引用循環可能導致記憶體洩漏
 
-Rust 的記憶體安全保證使得意外建立永不被清理的記憶體（稱為_記憶體洩漏_）變得困難，但並非不可能。完全防止記憶體洩漏並非 Rust 的保證之一，這表示記憶體洩漏在 Rust 中是記憶體安全的。我們可以使用 `Rc<T>` 和 `RefCell<T>` 來證明 Rust 允許記憶體洩漏：有可能建立項目相互參考的循環。這會造成記憶體洩漏，因為循環中每個項目的參考計數永遠不會達到 0，並且這些值永遠不會被 drop。
+Rust 的記憶體安全保證使得意外創建永遠不會被清理的記憶體（稱為_memory leak_）變得困難，但並非不可能。完全防止 memory leak 並不是 Rust 的保證之一，這意味著 memory leak 在 Rust 中是記憶體安全的。我們可以看到 Rust 允許 memory leak，透過使用 `Rc<T>` 和 `RefCell<T>`：有可能創建出項目互相引用的循環。這會造成 memory leak，因為循環中每個項目的引用計數永遠不會達到 0，這些值也永遠不會被 drop。
 
-### 建立參考循環
+### 創建一個引用循環
 
-讓我們看看參考循環如何發生以及如何防止它，從範例 15-25 中的 `List` enum 定義和 `tail` 方法開始。
+讓我們來看看引用循環是如何發生的，以及如何防止它，從列表 15-25 中的 `List` enum 定義和 `tail` 方法開始。
 
 src/main.rs
 
@@ -1105,11 +1130,11 @@ impl List {
 fn main() {}
 ```
 
-範例 15-25：一個持有 `RefCell<T>` 的串列定義，以便我們能夠修改 `Cons` variant 所參考的內容
+列表 15-25：一個持有 `RefCell<T>` 的 cons list 定義，以便我們可以修改 `Cons` 變體所引用的對象
 
-我們正在使用範例 15-5 中 `List` 定義的另一個變體。`Cons` variant 中的第二個元素現在是 `RefCell<Rc<List>>`，這表示我們不是像範例 15-24 那樣能夠修改 `i32` 值，而是希望修改 `Cons` variant 指向的 `List` 值。我們還新增了一個 `tail` 方法，以便我們方便地存取第二個項目，如果我們有一個 `Cons` variant。
+我們正在使用列表 15-5 中 `List` 定義的另一個變體。`Cons` 變體中的第二個元素現在是 `RefCell<Rc<List>>`，這意味著我們想要修改 `Cons` 變體指向的 `List` 值，而不是像我們在列表 15-24 中那樣修改 `i32` 值。我們還添加了一個 `tail` 方法，方便我們在有 `Cons` 變體時存取第二個項目。
 
-在範例 15-26 中，我們將新增一個 `main` 函數，它使用範例 15-25 中的定義。此程式碼在 `a` 中建立一個列表，並在 `b` 中建立一個指向 `a` 中列表的列表。然後它修改 `a` 中的列表以指向 `b`，從而建立一個參考循環。沿途有一些 `println!` 語句，用於顯示在此過程中各個點的參考計數。
+在列表 15-26 中，我們添加了一個 `main` 函式，它使用了列表 15-25 中的定義。這段程式碼在 `a` 中創建一個列表，在 `b` 中創建一個指向 `a` 中列表的列表。然後它修改 `a` 中的列表以指向 `b`，從而創建一個引用循環。在此過程中，有一些 `println!` 敘述來顯示在不同時間點的引用計數。
 
 src/main.rs
 
@@ -1139,13 +1164,13 @@ fn main() {
 }
 ```
 
-範例 15-26：建立兩個 `List` 值相互指向的參考循環
+列表 15-26：創建一個兩個 `List` 值互相指向的引用循環
 
-我們建立一個 `Rc<List>` 實例，其中包含變數 `a` 中的 `List` 值，初始列表為 `5, Nil`。然後我們建立一個 `Rc<List>` 實例，其中包含變數 `b` 中的另一個 `List` 值，該值包含 `10` 並指向 `a` 中的列表。
+我們創建了一個 `Rc<List>` 實例，它在變數 `a` 中持有一個 `List` 值，初始列表為 `5, Nil`。然後我們創建了另一個 `Rc<List>` 實例，它在變數 `b` 中持有另一個 `List` 值，包含值 `10` 並指向 `a` 中的列表。
 
-我們修改 `a`，使其指向 `b` 而不是 `Nil`，從而建立一個循環。我們透過使用 `tail` 方法取得 `a` 中 `RefCell<Rc<List>>` 的參考來實現，我們將其放入變數 `link` 中。然後我們在 `RefCell<Rc<List>>` 上使用 `borrow_mut` 方法，將內部的值從一個持有 `Nil` 值的 `Rc<List>` 更改為 `b` 中的 `Rc<List>`。
+我們修改 `a`，讓它指向 `b` 而不是 `Nil`，從而創建一個循環。我們透過使用 `tail` 方法來取得 `a` 中 `RefCell<Rc<List>>` 的 reference，並將其放入變數 `link` 中。然後我們在 `RefCell<Rc<List>>` 上使用 `borrow_mut` 方法，將內部的值從一個持有 `Nil` 值的 `Rc<List>` 改為 `b` 中的 `Rc<List>`。
 
-當我們運行這段程式碼時（暫時將最後一個 `println!` 註解掉），我們將得到以下輸出：
+當我們執行這段程式碼時，暫時將最後的 `println!` 註解掉，我們會得到這個輸出：
 
 ```
 $ cargo run
@@ -1161,35 +1186,39 @@ b rc count after changing a = 2
 a rc count after changing a = 2
 ```
 
-在我們將 `a` 中的列表更改為指向 `b` 後，`a` 和 `b` 中 `Rc<List>` 實例的參考計數都是 2。在 `main` 的結尾，Rust 會 drop 變數 `b`，這會將 `b` `Rc<List>` 實例的參考計數從 2 減少到 1。此時 `Rc<List>` 在 heap 上的記憶體不會被 drop，因為它的參考計數是 1，而不是 0。然後 Rust 會 drop `a`，這也會將 `a` `Rc<List>` 實例的參考計數從 2 減少到 1。此實例的記憶體也無法被 drop，因為另一個 `Rc<List>` 實例仍然參考它。分配給列表的記憶體將永遠無法被回收。為了視覺化這個參考循環，我們建立了圖 15-4。
+在我們將 `a` 中的列表指向 `b` 之後，`a` 和 `b` 中的 `Rc<List>` 實例的引用計數都是 2。在 `main` 的結尾，Rust drop 了變數 `b`，這使得 `b` `Rc<List>` 實例的引用計數從 2 減少到 1。`Rc<List>` 在 heap 上的記憶體此時不會被 drop，因為它的引用計數是 1，而不是 0。然後 Rust drop 了 `a`，這也使得 `a` `Rc<List>` 實例的引用計數從 2 減少到 1。這個實例的記憶體也無法被 drop，因為另一個 `Rc<List>` 實例仍然引用著它。配置給列表的記憶體將永遠不會被回收。為了視覺化這個引用循環，我們創建了圖 15-4 中的圖表。
 
-![A rectangle labeled 'a' that points to a rectangle containing the integer 5. A rectangle labeled 'b' that points to a rectangle containing the integer 10. The rectangle containing 5 points to the rectangle containing 10, and the rectangle containing 10 points back to the rectangle containing 5, creating a cycle](https://doc.rust-lang.org/book/img/trpl15-04.svg)
+<img alt="一個標示為 'a' 的矩形指向一個包含整數 5 的矩形。一個標示為 'b' 的矩形指向一個包含整數 10 的矩形。包含 5 的矩形指向包含 10 的矩形，而包含 10 的矩形又指回包含 5 的矩形，形成一個循環" src="https://doc.rust-lang.org/book/img/trpl15-04.svg" class="center" />
 
-圖 15-4：列表 `a` 和 `b` 相互指向的參考循環
+圖 15-4：`a` 和 `b` 列表互相指向的引用循環
 
-如果你取消註解最後一個 `println!` 並執行程式，Rust 將會嘗試印出這個循環，`a` 指向 `b`，`b` 指向 `a`，依此類推，直到 stack overflow。
+如果你取消最後一行 `println!` 的註解並執行程式，Rust 會嘗試印出這個循環，`a` 指向 `b`，`b` 指向 `a`，如此往復，直到 stack 溢出。
 
-與真實世界的程式相比，此範例中建立參考循環的後果並不嚴重：在我們建立參考循環後，程式立即結束。然而，如果一個更複雜的程式在循環中分配了大量記憶體並長時間持有它，那麼程式將使用比所需更多的記憶體，並可能使系統不堪重負，導致記憶體不足。
+與真實世界的程式相比，在這個範例中創建引用循環的後果不是很嚴重：在我們創建引用循環後，程式就結束了。然而，如果一個更複雜的程式在一個循環中配置了大量記憶體並長時間持有它，該程式將使用比所需更多的記憶體，並可能使系統不堪重負，導致可用記憶體耗盡。
 
-建立參考循環並不容易，但也並非不可能。如果你有包含 `Rc<T>` 值或其他類似的內部可變性和參考計數類型巢狀組合的 `RefCell<T>` 值，你必須確保不會建立循環；你不能依賴 Rust 來捕捉它們。建立參考循環將會是你程式中的一個邏輯錯誤，你應該使用自動測試、程式碼審查和其他軟體開發實踐來將其最小化。
+創建引用循環不是很容易做到的，但也不是不可能。如果你有包含 `Rc<T>` 值的 `RefCell<T>` 值，或類似的具有內部可變性和引用計數的型別的巢狀組合，你必須確保你不會創建循環；你不能依賴 Rust 來捕捉它們。創建引用循環會是你的程式中的一個邏輯錯誤，你應該使用自動化測試、程式碼審查和其他軟體開發實踐來將其最小化。
 
-避免參考循環的另一個解決方案是重組你的資料結構，讓某些參考表達 ownership，而某些參考不表達 ownership。因此，你可以建立由某些 ownership 關係和某些非 ownership 關係組成的循環，並且只有 ownership 關係會影響值是否可以被 drop。在範例 15-25 中，我們總是希望 `Cons` variant 擁有它們的列表，因此無法重組資料結構。讓我們看一個使用由父節點和子節點組成的圖形的範例，看看非 ownership 關係何時是防止參考循環的適當方式。
+另一個避免引用循環的解決方案是重新組織你的資料結構，讓一些 reference 表達 ownership，而一些 reference 則不。因此，你可以有由一些 ownership 關係和一些非 ownership 關係組成的循環，並且只有 ownership 關係會影響一個值是否可以被 drop。在列表 15-25 中，我們總是希望 `Cons` 變體擁有它們的列表，所以重新組織資料結構是不可行的。讓我們來看一個使用由父節點和子節點組成的圖形的範例，看看什麼時候非 ownership 關係是防止引用循環的適當方式。
 
-### 使用 Weak<T> 預防參考循環
+<!-- Old link, do not remove -->
 
-到目前為止，我們已經證明呼叫 `Rc::clone` 會增加 `Rc<T>` 實例的 `strong_count`，並且 `Rc<T>` 實例只在其 `strong_count` 為 0 時才會被清理。你也可以透過呼叫 `Rc::downgrade` 並傳遞 `Rc<T>` 的參考，來建立對 `Rc<T>` 實例內部值的弱參考。*強參考*是你共享 `Rc<T>` 實例 ownership 的方式。*弱參考*不表達 ownership 關係，並且它們的計數不會影響 `Rc<T>` 實例何時被清理。它們不會造成參考循環，因為任何涉及某些弱參考的循環，一旦相關值的強參考計數為 0，就會被中斷。
+<a id="preventing-reference-cycles-turning-an-rct-into-a-weakt"></a>
 
-當你呼叫 `Rc::downgrade` 時，你會得到一個 `Weak<T>` 類型的智慧型指標。呼叫 `Rc::downgrade` 不會將 `Rc<T>` 實例中的 `strong_count` 增加 1，而是會將 `weak_count` 增加 1。`Rc<T>` 類型使用 `weak_count` 來追蹤存在多少 `Weak<T>` 參考，類似於 `strong_count`。不同之處在於，`weak_count` 不需要為 0 才能清理 `Rc<T>` 實例。
+### 使用 Weak<T> 防止引用循環
 
-因為 `Weak<T>` 所參考的值可能已經被 drop，所以要對 `Weak<T>` 指向的值進行任何操作，你必須確保該值仍然存在。這可以透過在 `Weak<T>` 實例上呼叫 `upgrade` 方法來實現，它將回傳一個 `Option<Rc<T>>`。如果 `Rc<T>` 值尚未被 drop，你將得到 `Some` 結果；如果 `Rc<T>` 值已被 drop，你將得到 `None` 結果。因為 `upgrade` 回傳 `Option<Rc<T>>`，Rust 將確保 `Some` 和 `None` 的情況都得到處理，並且不會有無效指標。
+到目前為止，我們已經展示了呼叫 `Rc::clone` 會增加 `Rc<T>` 實例的 `strong_count`，而一個 `Rc<T>` 實例只有在其 `strong_count` 為 0 時才會被清理。你也可以透過呼叫 `Rc::downgrade` 並傳遞 `Rc<T>` 的 reference 來創建對 `Rc<T>` 實例內部值的弱引用。_強引用_ (Strong references) 是你共享 `Rc<T>` 實例 ownership 的方式。_弱引用_ (Weak references) 不表達 ownership 關係，它們的計數不會影響 `Rc<T>` 實例何時被清理。它們不會造成引用循環，因為任何涉及一些弱引用的循環，一旦相關值的強引用計數為 0，就會被打破。
 
-舉例來說，我們不會使用只知道下一個項目的列表，而是建立一個節點知道其子節點*以及*其父節點的樹。
+當你呼叫 `Rc::downgrade` 時，你會得到一個 `Weak<T>` 型別的智慧型指標。呼叫 `Rc::downgrade` 不會將 `Rc<T>` 實例中的 `strong_count` 增加 1，而是會將 `weak_count` 增加 1。`Rc<T>` 型別使用 `weak_count` 來追蹤存在多少個 `Weak<T>` reference，類似於 `strong_count`。不同之處在於，`weak_count` 不需要為 0，`Rc<T>` 實例才能被清理。
 
-#### 建立樹狀資料結構：帶有子節點的節點
+因為 `Weak<T>` 引用的值可能已經被 drop，所以要對 `Weak<T>` 指向的值做任何事情，你必須確保該值仍然存在。你可以透過在 `Weak<T>` 實例上呼叫 `upgrade` 方法來做到這一點，它會回傳一個 `Option<Rc<T>>`。如果 `Rc<T>` 值還沒有被 drop，你會得到 `Some` 的結果；如果 `Rc<T>` 值已經被 drop，你會得到 `None` 的結果。因為 `upgrade` 回傳一個 `Option<Rc<T>>`，Rust 會確保 `Some` 和 `None` 的情況都被處理，並且不會有無效的指標。
 
-首先，我們將建立一棵樹，其中的節點知道其子節點。我們將建立一個名為 `Node` 的 struct，它包含其自己的 `i32` 值以及其子 `Node` 值的參考：
+作為一個範例，我們將創建一個樹，其項目不僅知道它們的子項目，也知道它們的父項目，而不是使用一個項目只知道下一個項目的列表。
 
-Filename: src/main.rs
+#### 創建一個樹狀資料結構：一個帶有子節點的節點
+
+首先，我們將建立一個節點知道其子節點的樹。我們將創建一個名為 `Node` 的 struct，它持有自己的 `i32` 值以及對其子 `Node` 值的 reference：
+
+檔案名稱：src/main.rs
 
 ```rust
 use std::cell::RefCell;
@@ -1202,9 +1231,9 @@ struct Node {
 }
 ```
 
-我們希望一個 `Node` 擁有其子節點，並且我們希望與變數共享該 ownership，以便我們可以直接存取樹中的每個 `Node`。為此，我們將 `Vec<T>` 項目定義為 `Rc<Node>` 類型的值。我們也希望修改哪些節點是另一個節點的子節點，因此我們在 `children` 中有一個 `RefCell<T>`，圍繞著 `Vec<Rc<Node>>`。
+我們希望一個 `Node` 擁有它的子節點，並且我們希望與變數共享該 ownership，以便我們可以直接存取樹中的每個 `Node`。為此，我們將 `Vec<T>` 的項目定義為 `Rc<Node>` 型別的值。我們也希望能夠修改哪些節點是另一個節點的子節點，所以我們在 `children` 中有一個圍繞 `Vec<Rc<Node>>` 的 `RefCell<T>`。
 
-接下來，我們將使用我們的 struct 定義，並建立一個名為 `leaf` 的 `Node` 實例，其值為 `3` 且沒有子節點，以及另一個名為 `branch` 的實例，其值為 `5`，並以 `leaf` 作為其子節點之一，如範例 15-27 所示。
+接下來，我們將使用我們的 struct 定義，創建一個名為 `leaf` 的 `Node` 實例，其值為 `3` 且沒有子節點，以及另一個名為 `branch` 的實例，其值為 `5` 且 `leaf` 是其子節點之一，如列表 15-27 所示。
 
 src/main.rs
 
@@ -1222,19 +1251,19 @@ fn main() {
 }
 ```
 
-範例 15-27：建立一個沒有子節點的 `leaf` 節點和一個以 `leaf` 作為其子節點之一的 `branch` 節點
+列表 15-27：創建一個沒有子節點的 `leaf` 節點和一個以 `leaf` 為其子節點之一的 `branch` 節點
 
-我們複製 `leaf` 中的 `Rc<Node>` 並將其儲存在 `branch` 中，這表示 `leaf` 中的 `Node` 現在有兩個 owner：`leaf` 和 `branch`。我們可以透過 `branch.children` 從 `branch` 轉到 `leaf`，但無法從 `leaf` 轉到 `branch`。原因是 `leaf` 沒有參考 `branch`，也不知道它們之間有關係。我們希望 `leaf` 知道 `branch` 是它的父節點。我們將在接下來進行。
+我們複製了 `leaf` 中的 `Rc<Node>` 並將其儲存在 `branch` 中，這意味著 `leaf` 中的 `Node` 現在有兩個 owner：`leaf` 和 `branch`。我們可以透過 `branch.children` 從 `branch` 到達 `leaf`，但沒有辦法從 `leaf` 到達 `branch`。原因在於 `leaf` 沒有對 `branch` 的 reference，也不知道它們有關係。我們希望 `leaf` 知道 `branch` 是它的父節點。接下來我們將實現這一點。
 
-#### 從子節點新增參考到其父節點
+#### 從子節點添加對其父節點的 Reference
 
-為了讓子節點知道它的父節點，我們需要在 `Node` struct 定義中新增一個 `parent` 欄位。問題在於決定 `parent` 的類型應該是什麼。我們知道它不能包含 `Rc<T>`，因為那樣會建立一個參考循環，其中 `leaf.parent` 指向 `branch`，而 `branch.children` 指向 `leaf`，這會導致它們的 `strong_count` 值永遠不會為 0。
+為了讓子節點知道它的父節點，我們需要為我們的 `Node` struct 定義添加一個 `parent` 欄位。問題在於決定 `parent` 的型別應該是什麼。我們知道它不能包含 `Rc<T>`，因為那樣會創建一個引用循環，`leaf.parent` 指向 `branch`，而 `branch.children` 指向 `leaf`，這將導致它們的 `strong_count` 值永遠不會是 0。
 
-從另一個角度思考這些關係，父節點應該擁有其子節點：如果父節點被 drop，其子節點也應該被 drop。然而，子節點不應該擁有其父節點：如果我們 drop 一個子節點，父節點應該仍然存在。這就是弱參考的情況！
+從另一個角度思考這些關係，一個父節點應該擁有它的子節點：如果一個父節點被 drop，它的子節點也應該被 drop。然而，一個子節點不應該擁有它的父節點：如果我們 drop 一個子節點，父節點應該仍然存在。這是一個適合使用弱引用的情況！
 
-因此，我們將使用 `Weak<T>` 作為 `parent` 的類型，而不是 `Rc<T>`，特別是 `RefCell<Weak<Node>>`。現在我們的 `Node` struct 定義如下：
+所以，我們將把 `parent` 的型別設為使用 `Weak<T>`，具體來說是 `RefCell<Weak<Node>>`，而不是 `Rc<T>`。現在我們的 `Node` struct 定義看起來像這樣：
 
-Filename: src/main.rs
+檔案名稱：src/main.rs
 
 ```rust
 use std::cell::RefCell;
@@ -1248,7 +1277,7 @@ struct Node {
 }
 ```
 
-一個節點將能夠參考其父節點，但不會擁有其父節點。在範例 15-28 中，我們更新 `main` 以使用此新定義，這樣 `leaf` 節點將能夠參考其父節點 `branch`。
+一個節點將能夠參考其父節點，但不會擁有其父節點。在列表 15-28 中，我們更新 `main` 以使用這個新的定義，這樣 `leaf` 節點將能夠參考其父節點 `branch`。
 
 src/main.rs
 
@@ -1274,19 +1303,19 @@ fn main() {
 }
 ```
 
-範例 15-28：一個 `leaf` 節點，帶有指向其父節點 `branch` 的弱參考
+列表 15-28：一個對其父節點 `branch` 具有弱引用的 `leaf` 節點
 
-建立 `leaf` 節點看起來與範例 15-27 類似，除了 `parent` 欄位：`leaf` 一開始沒有父節點，所以我們建立一個新的空 `Weak<Node>` 參考實例。
+創建 `leaf` 節點的過程與列表 15-27 類似，除了 `parent` 欄位：`leaf` 一開始沒有父節點，所以我們創建一個新的、空的 `Weak<Node>` reference 實例。
 
-此時，當我們嘗試使用 `upgrade` 方法取得 `leaf` 父節點的參考時，我們得到一個 `None` 值。我們從第一個 `println!` 語句的輸出中看到這一點：
+此時，當我們嘗試使用 `upgrade` 方法來取得 `leaf` 的父節點的 reference 時，我們會得到一個 `None` 值。我們在第一個 `println!` 敘述的輸出中看到了這一點：
 
 ```
 leaf parent = None
 ```
 
-當我們建立 `branch` 節點時，它的 `parent` 欄位也會有一個新的 `Weak<Node>` 參考，因為 `branch` 沒有父節點。我們仍然將 `leaf` 作為 `branch` 的子節點之一。一旦我們在 `branch` 中擁有 `Node` 實例，我們就可以修改 `leaf`，給它一個指向其父節點的 `Weak<Node>` 參考。我們在 `leaf` 的 `parent` 欄位中的 `RefCell<Weak<Node>>` 上使用 `borrow_mut` 方法，然後我們使用 `Rc::downgrade` 函數從 `branch` 中的 `Rc<Node>` 建立一個指向 `branch` 的 `Weak<Node>` 參考。
+當我們創建 `branch` 節點時，它在 `parent` 欄位中也會有一個新的 `Weak<Node>` reference，因為 `branch` 沒有父節點。我們仍然將 `leaf` 作為 `branch` 的子節點之一。一旦我們有了 `branch` 中的 `Node` 實例，我們就可以修改 `leaf`，給它一個對其父節點的 `Weak<Node>` reference。我們在 `leaf` 的 `parent` 欄位中的 `RefCell<Weak<Node>>` 上使用 `borrow_mut` 方法，然後我們使用 `Rc::downgrade` 函式，從 `branch` 中的 `Rc<Node>` 創建一個對 `branch` 的 `Weak<Node>` reference。
 
-當我們再次印出 `leaf` 的父節點時，這次我們會得到一個持有 `branch` 的 `Some` variant：現在 `leaf` 可以存取其父節點了！當我們印出 `leaf` 時，我們也避免了最終導致 stack overflow 的循環，就像範例 15-26 中那樣；`Weak<Node>` 參考會被印出為 `(Weak)`：
+當我們再次印出 `leaf` 的父節點時，這次我們會得到一個持有 `branch` 的 `Some` 變體：現在 `leaf` 可以存取它的父節點了！當我們印出 `leaf` 時，我們也避免了像列表 15-26 中那樣最終導致 stack 溢出的循環；`Weak<Node>` reference 被印成 `(Weak)`：
 
 ```
 leaf parent = Some(Node { value: 5, parent: RefCell { value: (Weak) },
@@ -1294,11 +1323,11 @@ children: RefCell { value: [Node { value: 3, parent: RefCell { value: (Weak) },
 children: RefCell { value: [] } }] } })
 ```
 
-沒有無限輸出表明此程式碼未建立參考循環。我們也可以透過查看呼叫 `Rc::strong_count` 和 `Rc::weak_count` 得到的值來判斷這一點。
+沒有無限的輸出表明這段程式碼沒有創建引用循環。我們也可以透過查看從 `Rc::strong_count` 和 `Rc::weak_count` 呼叫得到的值來判斷這一點。
 
 #### 視覺化 strong_count 和 weak_count 的變化
 
-讓我們看看 `Rc<Node>` 實例的 `strong_count` 和 `weak_count` 值如何變化，透過建立一個新的內部作用域並將 `branch` 的建立移到該作用域中。這樣做，我們可以了解當 `branch` 被建立，然後當它超出作用域時被 drop 會發生什麼。這些修改如範例 15-29 所示。
+讓我們來看看 `Rc<Node>` 實例的 `strong_count` 和 `weak_count` 值是如何變化的，方法是創建一個新的內層作用域，並將 `branch` 的創建移到該作用域中。這樣做，我們可以看到當 `branch` 被創建，然後在它離開作用域時被 drop 時會發生什麼。修改如列表 15-29 所示。
 
 src/main.rs
 
@@ -1347,22 +1376,22 @@ fn main() {
 }
 ```
 
-範例 15-29：在內部作用域中建立 `branch` 並檢查強弱參考計數
+列表 15-29：在內層作用域中創建 `branch` 並檢查強引用和弱引用計數
 
-`leaf` 建立後，其 `Rc<Node>` 的強計數為 1，弱計數為 0。在內部作用域中，我們建立 `branch` 並將其與 `leaf` 關聯，此時當我們印出計數時，`branch` 中的 `Rc<Node>` 將具有強計數 1 和弱計數 1（因為 `leaf.parent` 使用 `Weak<Node>` 指向 `branch`）。當我們印出 `leaf` 中的計數時，我們將看到其強計數為 2，因為 `branch` 現在儲存了 `leaf` 的 `Rc<Node>` 的複製在 `branch.children` 中，但弱計數仍為 0。
+在 `leaf` 被創建後，它的 `Rc<Node>` 的強引用計數為 1，弱引用計數為 0。在內層作用域中，我們創建 `branch` 並將它與 `leaf` 關聯起來，此時當我們印出計數時，`branch` 中的 `Rc<Node>` 將會有一個強引用計數為 1 和一個弱引用計數為 1（因為 `leaf.parent` 用 `Weak<Node>` 指向 `branch`）。當我們印出 `leaf` 的計數時，我們會看到它的強引用計數為 2，因為 `branch` 現在在 `branch.children` 中儲存了 `leaf` 的 `Rc<Node>` 的一個複製，但弱引用計數仍然為 0。
 
-當內部作用域結束時，`branch` 超出作用域，`Rc<Node>` 的強計數減為 0，因此其 `Node` 被 drop。`leaf.parent` 的弱計數 1 對於 `Node` 是否被 drop 沒有影響，所以我們沒有任何記憶體洩漏！
+當內層作用域結束時，`branch` 離開作用域，`Rc<Node>` 的強引用計數減少到 0，所以它的 `Node` 被 drop。來自 `leaf.parent` 的弱引用計數 1 對於 `Node` 是否被 drop 沒有影響，所以我們不會有任何 memory leak！
 
-如果我們在作用域結束後嘗試存取 `leaf` 的父節點，我們會再次得到 `None`。在程式結束時，`leaf` 中的 `Rc<Node>` 的強計數為 1，弱計數為 0，因為變數 `leaf` 現在是 `Rc<Node>` 的唯一參考。
+如果在作用域結束後，我們試圖存取 `leaf` 的父節點，我們會再次得到 `None`。在程式結束時，`leaf` 中的 `Rc<Node>` 的強引用計數為 1，弱引用計數為 0，因為變數 `leaf` 現在是 `Rc<Node>` 的唯一 reference。
 
-所有管理計數和值 drop 的邏輯都內建於 `Rc<T>` 和 `Weak<T>` 及其 `Drop` trait 的實作中。透過在 `Node` 的定義中指定從子節點到其父節點的關係應該是 `Weak<T>` 參考，你就能夠讓父節點指向子節點，反之亦然，而不會建立參考循環和記憶體洩漏。
+所有管理計數和值 drop 的邏輯都內建在 `Rc<T>` 和 `Weak<T>` 以及它們對 `Drop` trait 的實作中。透過在 `Node` 的定義中指定從子節點到其父節點的關係應該是一個 `Weak<T>` reference，你就能夠讓父節點指向子節點，反之亦然，而不會創建引用循環和 memory leak。
 
 ## 總結
 
-本章涵蓋了如何使用智慧型指標來提供與 Rust 預設使用一般參考所提供的不同的保證和權衡。`Box<T>` 類型具有已知大小並指向在 heap 上分配的資料。`Rc<T>` 類型追蹤 heap 上資料的參考數量，以便該資料可以有多個 owner。`RefCell<T>` 類型及其內部可變性為我們提供了一種類型，當我們需要一個不可變類型但需要更改該類型的內部值時，我們可以使用它；它還在 runtime 而非 compile time 強制執行 borrowing 規則。
+本章介紹了如何使用智慧型指標來提供與 Rust 預設使用普通 reference 所做的不同的保證和權衡。`Box<T>` 型別有已知的大小，並指向配置在 heap 上的資料。`Rc<T>` 型別會追蹤 heap 上資料的 reference 數量，以便資料可以有多個 owner。`RefCell<T>` 型別及其內部可變性給了我們一種型別，當我們需要一個不可變的型別但需要改變該型別的內部值時可以使用；它也在 runtime 而非編譯時期強制執行 borrowing 規則。
 
-本章也討論了 `Deref` 和 `Drop` trait，它們實現了智慧型指標的許多功能。我們探索了可能導致記憶體洩漏的參考循環，以及如何使用 `Weak<T>` 預防它們。
+我們還討論了 `Deref` 和 `Drop` trait，它們啟用了智慧型指標的許多功能。我們探討了可能導致 memory leak 的引用循環，以及如何使用 `Weak<T>` 來防止它們。
 
-如果本章引起了你的興趣，並且你想要實作你自己的智慧型指標，請查看《The Rustonomicon》位於 _https://doc.rust-lang.org/book/nomicon/index.html_ 以獲取更多有用的資訊。
+如果本章激起了你的興趣，並且你想實作自己的智慧型指標，請查看《The Rustonomicon》以獲取更多有用的資訊，網址在 _https://doc.rust-lang.org/nomicon/index.html_。
 
 接下來，我們將討論 Rust 中的並行性。你甚至會學到一些新的智慧型指標。

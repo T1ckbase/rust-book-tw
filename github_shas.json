@@ -1,1 +1,23 @@
-{}
+{
+  "acknowledgments.md": "c29cb712ab06ebdba8df3e34d9d3dea118b5b3b4",
+  "appendix.md": "7a2a964f3a6813051d0211b5c3b4a794c2a2212f",
+  "appendix_a.md": "26791b66ec2fdfb5c868041422c68d97e0f8ad90",
+  "appendix_b.md": "dceca86623896e9203845ea2871015a7c034831a",
+  "appendix_c.md": "53131eb5fa7e499f6590cc9497fe6ad084e9bace",
+  "appendix_d.md": "18e6094cb89a2fcf267d25099ea7fd21f2bfaf9e",
+  "appendix_e.md": "ddb12b782bcce37ccfe139e172f235e5d46d821a",
+  "bio.md": "38b0508bcdc2af2cb64df4adfd6a88e59888e64b",
+  "chapter00.md": "1e80ef0dcc9aaaf56c92e014eb003454f29c343e",
+  "chapter01.md": "c4b0d17f54a0bcd286795c625402c32aa98daf38",
+  "chapter15.md": "4403925cb237142ba5d239816ac203c6a8fc9a8a",
+  "chapter16.md": "c34a258c9c6c96673eef0bd662ba36444a621a97",
+  "chapter17.md": "488036ac762fa273345d1889b9cebac773648615",
+  "chapter18.md": "f485461a14aeabc63c6ee12296efceea08e6f399",
+  "chapter19.md": "12947f08bf199d253b4e2cc14ae6dfe30c0d72ea",
+  "chapter20.md": "3e0778bf3b5f7e0b538cf03ce8cf71e2f637f9f6",
+  "chapter21.md": "80f2aea182100e0811c9fc2c7e1c7fb84fa15620",
+  "foreword.md": "2265e271421dc74621b91716c1f8fe756103208e",
+  "frontmatter.md": "001f964833b00d81f39c139d417987586f30379d",
+  "introduction.md": "bcaed24c5607e5af47266894c92655fbd9a2b09f",
+  "preface.md": "33b1a0fd867b9ed9c7516b89a19671d0509acf28"
+}

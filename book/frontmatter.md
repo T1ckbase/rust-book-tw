@@ -6,126 +6,126 @@ directory, so all fixes need to be made in `/src/`.
 
 ## 關於作者
 
-Carol Nichols 是 Rust Crates.io Team 成員，也是 Rust Core Team 的前成員。她是 Integer 32, LLC 的共同創辦人，這是世界上第一家專注於 Rust 的軟體諮詢公司。Nichols 也曾組織 Rust Belt Rust Conference。
+Carol Nichols 是 Rust Crates.io 團隊的成員，也曾是 Rust 核心團隊的成員。她是 Integer 32, LLC 的共同創辦人，這是世界上第一家專注於 Rust 的軟體顧問公司。Nichols 也曾組織過 Rust Belt Rust Conference。
 
-Steve Klabnik 曾是 Rust documentation team 的負責人，也是 Rust 的核心開發者之一。他是位演講常客，也是多產的 open source 貢獻者，他曾參與 Ruby 和 Ruby on Rails 等專案。
+Steve Klabnik 曾是 Rust 文件團隊的負責人，也是 Rust 的核心開發者之一。他是一位活躍的演講者和多產的開源貢獻者，先前曾參與過 Ruby 和 Ruby on Rails 等專案。
 
 ## 關於技術審閱者
 
-JT 是 Rust core team 成員，也是 Rust error message format、Rust Language Server (RLS) 和 Nushell 的共同創作者。他們於 2011 年首次開始使用 Rust，並於 2016 年加入 Mozilla 全職投入 Rust 的工作，協助塑造其廣泛使用的方向。近來，他們是位自由 Rust 培訓師，並提倡安全的 systems programming。
+JT 是 Rust 核心團隊的成員，也是 Rust 錯誤訊息格式、Rust Language Server (RLS) 和 Nushell 的共同創造者。他們自 2011 年開始使用 Rust，並於 2016 年加入 Mozilla 全職從事 Rust 的工作，協助塑造其廣泛應用的方向。如今，他們是一位自由的 Rust 培訓師和安全系統程式設計的倡導者。
 
-## 簡要目錄
+## 目錄簡介
 
 ## 詳細目錄
 
 ## 前言
 
-雖然過去並不明顯，但 Rust programming language 本質上是關於 _賦能_：無論你現在撰寫哪種程式碼，Rust 都能讓你觸及更遠，在比以往更廣泛的 domains 中自信地編程。
+這件事並非總是如此清晰，但 Rust 程式語言的根本在於_賦能_ (empowerment)：無論你現在正在寫哪種類型的程式碼，Rust 都能賦予你力量，讓你比以前更有信心地在更廣泛的領域中進行程式設計。
 
-舉例來說，處理 memory management、data representation 和 concurrency 等低階細節的「systems-level」工作。傳統上，這個 programming 領域被視為深奧難懂，只有少數投入多年學習以避免其惡名昭彰 pitfalls 的人才能接觸。即使是那些從事這項工作的人，也小心翼翼，唯恐他們的程式碼容易遭受 exploits、crashes 或 corruption。
+舉例來說，處理記憶體管理、資料表示和 concurrency 等底層細節的「系統層級」工作。傳統上，這個程式設計領域被視為神秘的，只有少數投入多年學習以避免其臭名昭彰陷阱的人才能進入。即使是那些從業者也小心翼翼，以免他們的程式碼遭受攻擊、崩潰或損壞。
 
-Rust 打破了這些 barriers，它消除了舊有的 pitfalls，並提供一套友善、精良的 tools 來協助你。需要「深入」進行 low-level control 的程式設計師可以使用 Rust，而無需承擔通常伴隨的 crashes 或 security holes 風險，也無需學習善變的 toolchain 的精微之處。更好的是，該 language 旨在自然地引導你編寫出在 speed 和 memory usage 方面都高效且可靠的程式碼。
+Rust 透過消除舊有的陷阱，並提供一套友善、精良的工具來協助你，從而打破了這些障礙。需要「深入」底層控制的程式設計師可以使用 Rust 來做到這一點，而無需承擔慣有的崩潰或安全漏洞風險，也無需學習善變工具鏈的細節。更棒的是，這門語言的設計旨在自然地引導你寫出在速度和記憶體使用方面都有效率的可靠程式碼。
 
-已經從事 low-level 程式碼的程式設計師可以使用 Rust 來提升他們的 ambitions。例如，在 Rust 中引入 parallelism 是一種相對低風險的操作：compiler 會為你捕捉 classical mistakes。你也可以更有自信地處理程式碼中更 aggressive 的 optimizations，而不用擔心會 accidentally 引入 crashes 或 vulnerabilities。
+已經在從事底層程式設計的程式設計師可以使用 Rust 來提升他們的抱負。例如，在 Rust 中引入 parallelism 是一個相對低風險的操作：compiler 會為你捕捉典型的錯誤。你可以更有信心地在你的程式碼中進行更積極的優化，而不必擔心會意外引入崩潰或漏洞。
 
-但 Rust 不僅限於 low-level systems programming。它足夠 expressive 且 ergonomic，可以讓 CLI apps、web servers 和許多其他 kinds of code 撰寫起來非常 pleasant——你會在本書後面找到 simple examples。使用 Rust 工作可以讓你培養出從一個 domain 轉移到另一個 domain 的 skills；你可以透過撰寫 web app 來學習 Rust，然後將相同的 skills 應用到你的 Raspberry Pi。
+但 Rust 並不局限於底層系統程式設計。它足夠表達力強且符合人體工學，使得編寫 CLI 應用程式、網頁伺服器和許多其他類型的程式碼都相當愉快——你將在本書後面找到簡單的範例。使用 Rust 可以讓你建立能夠從一個領域轉移到另一個領域的技能；你可以透過編寫一個網頁應用程式來學習 Rust，然後將這些相同的技能應用於你的 Raspberry Pi。
 
-本書充分 embraces Rust 賦予其使用者能力的 potential。這是一本 friendly 且 approachable 的 text，旨在幫助你 level up 不僅僅是 Rust 的 knowledge，還有你作為程式設計師的整體 reach 和 confidence。那麼，dive in，準備學習吧——歡迎來到 Rust community！
+本書完全擁抱 Rust 賦予其使用者力量的潛力。這是一本友善且易於理解的讀物，旨在幫助你不僅提升對 Rust 的知識，也提升你作為一個程式設計師的影響力和信心。所以，投入進來，準備學習——並歡迎來到 Rust 社群！
 
-Nicholas Matsakis 和 Aaron Turon
+Nicholas Matsakis and Aaron Turon
 
 ## 致謝
 
-我們要感謝所有為 Rust language 工作的人，創造了一個 amazing language 值得寫書的。我們感謝 Rust community 中的每個人，他們的 welcoming 創造了一個值得 welcoming 更多人加入的 environment。
+我們要感謝所有參與 Rust 語言開發的人，創造了一門值得為之寫書的絕佳語言。我們感謝 Rust 社群中的每一個人，他們如此熱情好客，並創造了一個值得歡迎更多人加入的環境。
 
-我們特別感謝所有在 online 閱讀本書 early versions 並 provided feedback、bug reports 和 pull requests 的人。Special thanks to Eduard-Mihai Burtescu、Alex Crichton 和 JT for providing technical review，以及 Karen Rustad Tölva for the cover art。Thank you to our team at No Starch，including Bill Pollock、Liz Chadwick 和 Janelle Ludowise，for improving this book and bringing it to print。
+我們特別感謝所有在網路上閱讀本書早期版本並提供回饋、錯誤報告和 pull request 的人。特別感謝 Eduard-Mihai Burtescu、Alex Crichton 和 JT 提供的技術審閱，以及 Karen Rustad Tölva 繪製的封面藝術。感謝我們在 No Starch 的團隊，包括 Bill Pollock、Liz Chadwick 和 Janelle Ludowise，他們改進了這本書並將其付梓。
 
-Carol is grateful for the opportunity to work on this book。She thanks her family for their constant love and support，especially her husband，Jake Goulding，and her daughter，Vivian。
+Carol 很感激有機會參與本書的寫作。她感謝家人的持續愛護與支持，特別是她的丈夫 Jake Goulding 和她的女兒 Vivian。
 
-## 前言
+## 序
 
-本文版本假定你正在使用 Rust 1.62.0（發布於 2022-06-30）或更新版本，並且所有專案的 _Cargo.toml_ 檔案中都包含 `edition="2021"`，以將其配置為使用 Rust 2021 edition idioms。有關安裝或更新 Rust 的說明，請參閱 XX 頁的「安裝」章節，有關 editions 的資訊，請參閱 Appendix E。
+本版文字假設你使用的是 Rust 1.62.0 (2022-06-30 發布) 或更新版本，並在所有專案的 _Cargo.toml_ 檔案中設定 `edition="2021"`，以將其配置為使用 Rust 2021 edition 的慣例。關於安裝或更新 Rust 的說明，請參見第 XX 頁的「安裝」；關於 edition 的資訊，請參見附錄 E。
 
-Rust language 的 2021 edition 包含多項 improvements，這些 improvements 讓 Rust 更符合 ergonomic，並修正了一些 inconsistencies。除了反映這些 improvements 的 general update 外，本書的此 rendition 有多項 improvements，以 address specific feedback：
+Rust 語言的 2021 edition 包含許多改進，使 Rust 更符合人體工學並修正了一些不一致之處。除了反映這些改進的一般性更新外，本書的這一版本還有許多改進，以回應特定的回饋：
 
-- Chapter 7 包含一個關於如何使用 modules 將程式碼組織成 multiple files 的 new quick reference section。
-- Chapter 13 有 new and improved closure examples，更 clearly illustrate captures、`move` keyword 和 `Fn` traits。
-- 我們修正了本書中 number of small errors 和 imprecise wording。Thank you to the readers who reported them！
+- 第 7 章包含了一個新的快速參考部分，介紹如何使用 module 將你的程式碼組織到多個檔案中。
+- 第 13 章有新的和改進的 closure 範例，更清楚地說明了 capture、`move` 關鍵字和 `Fn` traits。
+- 我們修正了書中一些小錯誤和不精確的措辭。感謝回報這些問題的讀者！
 
-Note that any code from earlier renditions of this book that compiled will continue to compile with the relevant edition in the project’s _Cargo.toml_，even as you update the Rust compiler version you’re using。That’s Rust’s backward-compatibility guarantees at work！
+請注意，即使你更新了所使用的 Rust compiler 版本，任何來自本書早期版本且能夠編譯的程式碼，只要在其專案的 _Cargo.toml_ 中設定了相應的 edition，就仍然可以編譯。這就是 Rust 的向後相容性保證在發揮作用！
 
-## 導論
+## 介紹
 
-歡迎閱讀《The Rust Programming Language》，這是一本關於 Rust 的 introductory book。Rust programming language 幫助你撰寫 faster、more reliable software。High-level ergonomics 和 low-level control 在 programming language design 中 often at odds；Rust challenges that conflict。透過 balancing powerful technical capacity 和 a great developer experience，Rust gives you the option to control low-level details (such as memory usage) without all the hassle traditionally associated with such control。
+歡迎閱讀*《The Rust Programming Language》*，這是一本關於 Rust 的入門書籍。Rust 程式語言幫助你編寫更快、更可靠的軟體。在程式語言設計中，高階的人體工學和底層的控制往往是互相矛盾的；Rust 挑戰了這種衝突。透過平衡強大的技術能力和出色的開發者體驗，Rust 讓你可以選擇控制底層細節（例如記憶體使用），而無需承擔傳統上與此類控制相關的所有麻煩。
 
-## Rust 的適用對象
+## Rust 適合誰
 
-Rust 因為 variety of reasons 而 ideal for many people。Let’s look at a few of the most important groups。
+出於各種原因，Rust 對許多人來說都是理想的選擇。讓我們來看看幾個最重要的群體。
 
-### 開發團隊
+### 開發者團隊
 
-Rust is proving to be a productive tool for collaborating among large teams of developers with varying levels of systems programming knowledge。Low-level code is prone to various subtle bugs，which in most other languages can only be caught through extensive testing and careful code review by experienced developers。In Rust，the compiler plays a gatekeeper role by refusing to compile code with these elusive bugs，including concurrency bugs。By working alongside the compiler，the team can spend their time focusing on the program’s logic rather than chasing down bugs。
+Rust 正被證明是一個富有成效的工具，適用於由不同系統程式設計知識水平的開發者組成的大型團隊協作。底層程式碼容易出現各種細微的 bug，在大多數其他語言中，這些 bug 只能透過經驗豐富的開發者進行大量的測試和仔細的程式碼審查才能發現。在 Rust 中，compiler 扮演著守門員的角色，它會拒絕編譯帶有這些難以捉摸的 bug 的程式碼，包括 concurrency bug。透過與 compiler 的合作，團隊可以將時間專注於程式的邏輯，而不是追查 bug。
 
-Rust also brings contemporary developer tools to the systems programming world：
+Rust 也為系統程式設計領域帶來了現代的開發者工具：
 
-- Cargo，the included dependency manager and build tool，makes adding、compiling，and managing dependencies painless and consistent across the Rust ecosystem。
-- The `rustfmt` formatting tool ensures a consistent coding style across developers。
-- The Rust Language Server powers integrated development environment (IDE) integration for code completion and inline error messages。
+- Cargo，內建的依賴管理器和建置工具，使得在整個 Rust 生態系中新增、編譯和管理依賴變得輕鬆且一致。
+- `rustfmt` 格式化工具確保開發者之間有著一致的程式碼風格。
+- Rust Language Server 為整合開發環境 (IDE) 提供支援，實現程式碼自動完成和行內錯誤訊息。
 
-By using these and other tools in the Rust ecosystem，developers can be productive while writing systems-level code。
+透過使用 Rust 生態系中的這些及其他工具，開發者在編寫系統層級的程式碼時可以保持高生產力。
 
 ### 學生
 
-Rust is for students and those who are interested in learning about systems concepts。Using Rust，many people have learned about topics like operating systems development。The community is very welcoming and happy to answer students’ questions。Through efforts such as this book，the Rust teams want to make systems concepts more accessible to more people，especially those new to programming。
+Rust 適合學生和那些對學習系統概念感興趣的人。透過使用 Rust，許多人已經學會了作業系統開發等主題。社群非常熱情，樂於回答學生的問題。透過本書等努力，Rust 團隊希望讓更多人更容易接觸到系統概念，特別是那些程式設計新手。
 
 ### 公司
 
-Hundreds of companies，large and small，use Rust in production for a variety of tasks，including command line tools、web services、DevOps tooling、embedded devices、audio and video analysis and transcoding、cryptocurrencies、bioinformatics、search engines、Internet of Things applications、machine learning，and even major parts of the Firefox web browser。
+數百家公司，無論大小，都在生產環境中使用 Rust 來完成各種任務，包括命令列工具、網路服務、DevOps 工具、嵌入式裝置、音訊和視訊分析與轉碼、加密貨幣、生物資訊學、搜尋引擎、物聯網應用、機器學習，甚至是 Firefox 網頁瀏覽器的主要部分。
 
 ### 開源開發者
 
-Rust is for people who want to build the Rust programming language、community、developer tools，and libraries。We’d love to have you contribute to the Rust language。
+Rust 適合那些想要建構 Rust 程式語言、社群、開發者工具和函式庫的人。我們很樂意你能為 Rust 語言做出貢獻。
 
 ### 重視速度和穩定性的人
 
-Rust is for people who crave speed and stability in a language。By speed，we mean both how quickly Rust code can run and the speed at which Rust lets you write programs。The Rust compiler’s checks ensure stability through feature additions and refactoring。This is in contrast to the brittle legacy code in languages without these checks，which developers are often afraid to modify。By striving for zero-cost abstractions，higher-level features that compile to lower-level code as fast as code written manually，Rust endeavors to make safe code be fast code as well。
+Rust 適合那些渴望語言兼具速度和穩定性的人。所謂速度，我們指的是 Rust 程式碼的執行速度，以及 Rust 讓你編寫程式的速度。Rust compiler 的檢查透過功能增加和重構來確保穩定性。這與那些沒有這些檢查的語言中脆弱的舊程式碼形成對比，開發者通常不敢修改這些程式碼。透過追求 zero-cost abstractions，即將高階功能編譯成與手寫程式碼一樣快的底層程式碼，Rust 努力使安全的程式碼也成為快速的程式碼。
 
-The Rust language hopes to support many other users as well；those mentioned here are merely some of the biggest stakeholders。Overall，Rust’s greatest ambition is to eliminate the trade-offs that programmers have accepted for decades by providing safety _and_ productivity、speed _and_ ergonomics。Give Rust a try and see if its choices work for you。
+Rust 語言也希望能支援許多其他使用者；這裡提到的只是其中一些最大的利害關係人。總體而言，Rust 最大的抱負是透過提供安全性*和*生產力、速度*和*人體工學，來消除程式設計師數十年來一直接受的權衡。試試 Rust，看看它的選擇是否適合你。
 
-## 本書適用對象
+## 本書適合的讀者
 
-本書 assumes that you’ve written code in another programming language，but doesn’t make any assumptions about which one。We’ve tried to make the material broadly accessible to those from a wide variety of programming backgrounds。We don’t spend a lot of time talking about what programming _is_ or how to think about it。If you’re entirely new to programming，you would be better served by reading a book that specifically provides an introduction to programming。
+本書假設你已經用過其他程式語言寫過程式碼，但並不假設是哪一種。我們試圖讓內容對來自各種程式設計背景的人都易於理解。我們不會花太多時間討論什麼是程式設計或如何思考它。如果你是程式設計的全新手，閱讀一本專門介紹程式設計的書會更適合你。
 
 ## 如何使用本書
 
-In general，this book assumes that you’re reading it in sequence from front to back。Later chapters build on concepts in earlier chapters，and earlier chapters might not delve into details on a particular topic but will revisit the topic in a later chapter。
+一般來說，本書假設你會從頭到尾按順序閱讀。後面的章節會建立在前面章節的概念之上，而前面的章節可能不會深入探討某個特定主題的細節，但在後面的章節會重新討論該主題。
 
-You’ll find two kinds of chapters in this book：concept chapters and project chapters。In concept chapters，you’ll learn about an aspect of Rust。In project chapters，we’ll build small programs together，applying what you’ve learned so far。Chapter 2、Chapter 12，and Chapter 20 are project chapters；the rest are concept chapters。
+在本書中，你會找到兩種章節：概念章節和專案章節。在概念章節中，你將學習 Rust 的某個方面。在專案章節中，我們將一起建構小型程式，應用你目前所學的知識。第 2 章、第 12 章和第 20 章是專案章節；其餘的是概念章節。
 
-**Chapter 1** explains how to install Rust，how to write a “Hello，world！” program，and how to use Cargo，Rust’s package manager and build tool。**Chapter 2** is a hands-on introduction to writing a program in Rust，having you build up a number-guessing game。Here，we cover concepts at a high level，and later chapters will provide additional detail。If you want to get your hands dirty right away，Chapter 2 is the place for that。**Chapter 3** covers Rust features that are similar to those of other programming languages，and in **Chapter 4** you’ll learn about Rust’s ownership system。If you’re a particularly meticulous learner who prefers to learn every detail before moving on to the next，you might want to skip Chapter 2 and go straight to Chapter 3，returning to Chapter 2 when you’d like to work on a project applying the details you’ve learned。
+**第 1 章** 解釋如何安裝 Rust、如何編寫「Hello, world!」程式，以及如何使用 Rust 的套件管理器和建置工具 Cargo。**第 2 章** 是一個動手實作的 Rust 程式編寫入門，帶你建構一個猜數字遊戲。在這裡，我們將高層次地介紹概念，後面的章節將提供更多細節。如果你想立刻動手，第 2 章就是你的好去處。**第 3 章** 涵蓋了與其他程式語言相似的 Rust 功能，在**第 4 章**你將學習 Rust 的 ownership 系統。如果你是一個特別細心的學習者，喜歡在進入下一個主題前學習所有細節，你可能會想跳過第 2 章直接到第 3 章，然後在想做專案應用所學細節時再回到第 2 章。
 
-**Chapter 5** discusses structs and methods，and **Chapter 6** covers enums、`match` expressions，and the `if let` control flow construct。You’ll use structs and enums to make custom types in Rust。
+**第 5 章** 討論 structs 和 methods，**第 6 章** 涵蓋 enums、`match` 表達式和 `if let` 控制流程結構。你將使用 structs 和 enums 在 Rust 中製作自訂型別。
 
-In **Chapter 7**，you’ll learn about Rust’s module system and about privacy rules for organizing your code and its public application programming interface (API)。**Chapter 8** discusses some common collection data structures that the standard library provides，such as vectors、strings，and hash maps。**Chapter 9** explores Rust’s error-handling philosophy and techniques。
+在**第 7 章**，你將學習 Rust 的 module 系統以及組織程式碼和其公開應用程式介面 (API) 的隱私規則。**第 8 章** 討論標準函式庫提供的一些常見集合資料結構，例如 vectors、strings 和 hash maps。**第 9 章** 探討 Rust 的錯誤處理哲學和技巧。
 
-**Chapter 10** digs into generics、traits，and lifetimes，which give you the power to define code that applies to multiple types。**Chapter 11** is all about testing，which even with Rust’s safety guarantees is necessary to ensure your program’s logic is correct。In **Chapter 12**，we’ll build our own implementation of a subset of functionality from the `grep` command line tool that searches for text within files。For this，we’ll use many of the concepts we discussed in the previous chapters。
+**第 10 章** 深入探討 generics、traits 和 lifetimes，這些功能讓你能夠定義適用於多種類型的程式碼。**第 11 章** 講的是測試，即使有 Rust 的安全保證，測試對於確保你的程式邏輯正確仍然是必要的。在**第 12 章**，我們將自己實作 `grep` 命令列工具的一部分功能，該工具用於在檔案中搜尋文字。為此，我們將使用前面章節中討論的許多概念。
 
-**Chapter 13** explores closures and iterators：features of Rust that come from functional programming languages。In **Chapter 14**，we’ll examine Cargo in more depth and talk about best practices for sharing your libraries with others。**Chapter 15** discusses smart pointers that the standard library provides and the traits that enable their functionality。
+**第 13 章** 探討 closures 和 iterators：這些來自函數式程式語言的 Rust 功能。在**第 14 章**，我們將更深入地研究 Cargo，並討論與他人分享你的函式庫的最佳實踐。**第 15 章** 討論標準函式庫提供的 smart pointers 以及啟用其功能的 traits。
 
-In **Chapter 16**，we’ll walk through different models of concurrent programming and talk about how Rust helps you program in multiple threads fearlessly。**Chapter 17** looks at how Rust idioms compare to object-oriented programming principles you might be familiar with。
+在**第 16 章**，我們將介紹不同的 concurrent 程式設計模型，並討論 Rust 如何幫助你無所畏懼地進行多執行緒程式設計。**第 17 章** 將探討 Rust 的慣例與你可能熟悉的物件導向程式設計原則有何異同。
 
-**Chapter 18** is a reference on patterns and pattern matching，which are powerful ways of expressing ideas throughout Rust programs。**Chapter 19** contains a smorgasbord of advanced topics of interest，including unsafe Rust、macros，and more about lifetimes、traits、types、functions，and closures。
+**第 18 章** 是一份關於 pattern 和 pattern matching 的參考資料，它們是在 Rust 程式中表達想法的強大方式。**第 19 章** 包含了一系列感興趣的進階主題，包括 unsafe Rust、macros，以及更多關於 lifetimes、traits、型別、函數和 closures 的內容。
 
-In **Chapter 20**，we’ll complete a project in which we’ll implement a low-level multithreaded web server！
+在**第 20 章**，我們將完成一個專案，在其中我們將實作一個底層的多執行緒網頁伺服器！
 
-Finally，some appendices contain useful information about the language in a more reference-like format**。Appendix A** covers Rust’s keywords，**Appendix B** covers Rust’s operators and symbols，**Appendix C** covers derivable traits provided by the standard library，**Appendix D** covers some useful development tools，and **Appendix E** explains Rust editions。
+最後，一些附錄以更像參考資料的格式包含了關於該語言的有用資訊。**附錄 A** 涵蓋 Rust 的關鍵字，**附錄 B** 涵蓋 Rust 的運算子和符號，**附錄 C** 涵蓋標準函式庫提供的可派生 traits，**附錄 D** 涵蓋一些有用的開發工具，**附錄 E** 解釋 Rust editions。
 
-There is no wrong way to read this book：if you want to skip ahead，go for it！You might have to jump back to earlier chapters if you experience any confusion。But do whatever works for you。
+閱讀本書沒有錯誤的方式：如果你想跳著讀，那就去做吧！如果遇到任何困惑，你可能需要跳回前面的章節。但做任何對你有用的事。
 
-An important part of the process of learning Rust is learning how to read the error messages the compiler displays：these will guide you toward working code。As such，we’ll provide many examples that don’t compile along with the error message the compiler will show you in each situation。Know that if you enter and run a random example，it may not compile！Make sure you read the surrounding text to see whether the example you’re trying to run is meant to error。In most situations，we’ll lead you to the correct version of any code that doesn’t compile。
+學習 Rust 的一個重要過程是學習如何閱讀 compiler 顯示的錯誤訊息：這些訊息將引導你寫出可運作的程式碼。因此，我們將提供許多無法編譯的範例，以及 compiler 在每種情況下會顯示的錯誤訊息。要知道，如果你輸入並執行一個隨機的範例，它可能無法編譯！請務必閱讀周圍的文字，看看你試圖運行的範例是否本來就預期會出錯。在大多數情況下，我們會引導你找到任何無法編譯程式碼的正確版本。
 
-## 資源以及如何為本書做出貢獻
+## 資源與如何貢獻本書
 
-本書為 open source。如果你發現 error，please don’t hesitate to file an issue or send a pull request on GitHub at _https://github.com/rust-lang/book_。Please see _https://doc.rust-lang.org/book/CONTRIBUTING.md_ at _https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md_ for more details。
+本書是開源的。如果你發現錯誤，請毫不猶豫地在 GitHub 上提出 issue 或發送 pull request，網址為 _https://github.com/rust-lang/book_。更多詳情請參閱 _https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md_ 上的 _CONTRIBUTING.md_。
 
-The source code for the examples in this book、errata，and other information are available at _https://www.nostarch.com/Rust2021_。
+本書範例的原始碼、勘誤表和其他資訊可在 _https://www.nostarch.com/Rust2021_ 取得。

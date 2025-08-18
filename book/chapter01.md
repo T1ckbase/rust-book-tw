@@ -6,71 +6,71 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-# 開始使用
+# 入門
 
-讓我們開始你的 Rust 旅程！要學習的東西很多，但每個旅程都從某個地方開始。在本章中，我們將討論：
+讓我們開始你的 Rust 旅程吧！有很多東西要學，但每個旅程都有個起點。在本章中，我們將討論：
 
 - 在 Linux、macOS 和 Windows 上安裝 Rust
-- 編寫一個印出 `Hello, world!` 的程式
-- 使用 `cargo`，Rust 的套件管理器和建構系統
+- 撰寫一個會印出 `Hello, world!` 的程式
+- 使用 `cargo`，也就是 Rust 的套件管理器與建構系統
 
 ## 安裝
 
-第一步是安裝 Rust。我們將透過 `rustup` 下載 Rust，這是一個用於管理 Rust 版本和相關工具的命令列工具。你需要網路連線才能下載。
+第一步是安裝 Rust。我們將透過 `rustup` 下載 Rust，這是一個用來管理 Rust 版本及相關工具的命令列工具。下載過程需要網路連線。
 
-> 注意：如果由於某些原因你不想使用 `rustup`，請參閱位於 [https://forge.rust-lang.org/infra/other-installation-methods.html](https://forge.rust-lang.org/infra/other-installation-methods.html) 的其他 Rust 安裝方法頁面，以獲取更多選項。
+> 注意：如果你出於某些原因不想使用 `rustup`，請參閱 _https://forge.rust-lang.org/infra/other-installation-methods.html_ 上的「其他 Rust 安裝方法」頁面以了解更多選項。
 
-以下步驟安裝 Rust 編譯器的最新穩定版。Rust 的穩定性保證了書中所有能編譯的範例，在新版 Rust 中也能持續編譯。輸出可能因版本而略有不同，因為 Rust 經常改進錯誤訊息和警告。換句話說，你使用這些步驟安裝的任何更新、穩定的 Rust 版本，都應該能與本書內容正常運作。
+以下步驟會安裝最新穩定版的 Rust 編譯器。Rust 的穩定性保證確保了書中所有能編譯的範例，在較新的 Rust 版本中也將繼續能夠編譯。不同版本之間的輸出可能會有些微差異，因為 Rust 經常改進錯誤訊息和警告。換句話說，你使用這些步驟安裝的任何更新、穩定的 Rust 版本，都應該能如預期地與本書內容一同運作。
 
 > ### 命令列標記
 >
-> 在本章和本書中，我們將展示一些在終端機中使用的命令。所有你應該在終端機中輸入的行都以 `$` 開頭。你不必輸入 `$` 字元；它只是命令列提示符號，表示每個命令的開始。不以 `$` 開頭的行通常顯示前一個命令的輸出。此外，PowerShell 特定的範例將使用 `>` 而非 `$`。
+> 在本章以及整本書中，我們將展示一些在終端機中使用的指令。你應該在終端機中輸入的每一行都以 `$` 開頭。你不需要輸入 `$` 這個字元；它只是命令列提示字元，用來表示每個指令的開始。不以 `$` 開頭的行通常顯示前一個指令的輸出。此外，PowerShell 特有的範例將會使用 `>` 而不是 `$`。
 
 ### 在 Linux 或 macOS 上安裝 rustup
 
-如果你正在使用 Linux 或 macOS，開啟一個終端機並輸入以下命令：
+如果你是 Linux 或 macOS 使用者，請開啟一個終端機並輸入以下指令：
 
 ```
 $ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 ```
 
-此命令會下載一個腳本並開始安裝 `rustup` 工具，該工具會安裝最新穩定版的 Rust。你可能會被要求輸入密碼。如果安裝成功，將會出現以下行：
+此指令會下載一個腳本並開始安裝 `rustup` 工具，該工具會安裝最新穩定版的 Rust。你可能會被提示輸入密碼。如果安裝成功，將會出現以下這行：
 
 ```
 Rust is installed now. Great!
 ```
 
-你還需要一個 `linker`，這是 Rust 用於將其編譯輸出連接成一個檔案的程式。你很可能已經有了一個。如果你收到 linker 錯誤，你應該安裝一個 C compiler，這通常會包含一個 linker。C compiler 也很有用，因為一些常見的 Rust packages 依賴於 C 程式碼，並且需要一個 C compiler。
+你還需要一個 _linker_，這是一個 Rust 用來將其編譯輸出合併成單一檔案的程式。你很可能已經有了。如果你遇到 linker 錯誤，你應該安裝一個 C 編譯器，這通常會包含一個 linker。C 編譯器也很有用，因為一些常見的 Rust 套件依賴 C 程式碼，因此會需要一個 C 編譯器。
 
-在 macOS 上，你可以透過執行以下命令來取得一個 C compiler：
+在 macOS 上，你可以透過執行以下指令來取得 C 編譯器：
 
 ```
 $ xcode-select --install
 ```
 
-Linux 使用者通常應根據其發行版的說明文件安裝 GCC 或 Clang。例如，如果你使用 Ubuntu，你可以安裝 `build-essential` package。
+Linux 使用者通常應該根據其發行版的文件來安裝 GCC 或 Clang。例如，如果你使用 Ubuntu，你可以安裝 `build-essential` 套件。
 
 ### 在 Windows 上安裝 rustup
 
-在 Windows 上，請前往 [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install) 並按照指示安裝 Rust。在安裝的某些階段，你將被要求安裝 Visual Studio。這會提供一個 linker 和編譯程式所需的 native libraries。如果你在此步驟需要更多協助，請參閱 [https://rust-lang.github.io/rustup/installation/windows-msvc.html](https://rust-lang.github.io/rustup/installation/windows-msvc.html)。
+在 Windows 上，請前往 https://www.rust-lang.org/tools/install 也就是 _https://www.rust-lang.org/tools/install_ 並遵循安裝 Rust 的說明。在安裝過程的某個階段，你將被提示安裝 Visual Studio。這會提供一個 linker 以及編譯程式所需的原生函式庫。如果你在這一步需要更多幫助，請參閱 https://rust-lang.github.io/rustup/installation/windows-msvc.html 也就是 _https://rust-lang.github.io/rustup/installation/windows-msvc.html_
 
-本書的其餘部分使用在 `cmd.exe` 和 PowerShell 中都可運作的命令。如果存在特定差異，我們將解釋應使用哪個。
+本書的其餘部分將使用在 _cmd.exe_ 和 PowerShell 中都能運作的指令。如果有特定差異，我們會解釋該使用哪個。
 
-### 故障排除
+### 疑難排解
 
-為了檢查你是否正確安裝了 Rust，開啟一個 shell 並輸入以下行：
+要檢查你是否已正確安裝 Rust，請開啟一個 shell 並輸入這行指令：
 
 ```
 $ rustc --version
 ```
 
-你應該會看到最新穩定版的版本號、commit hash 和 commit date，格式如下：
+你應該會看到已發布的最新穩定版本的版本號、commit hash 和 commit 日期，格式如下：
 
 ```
 rustc x.y.z (abcabcabc yyyy-mm-dd)
 ```
 
-如果你看到這些資訊，你已成功安裝 Rust！如果你沒有看到這些資訊，請檢查 Rust 是否在你的 `%PATH%` 系統變數中，如下所示。
+如果你看到這些資訊，就表示你已成功安裝 Rust！如果你沒看到這些資訊，請檢查 Rust 是否在你的 `%PATH%` 系統變數中，方法如下。
 
 在 Windows CMD 中，使用：
 
@@ -90,17 +90,17 @@ rustc x.y.z (abcabcabc yyyy-mm-dd)
 $ echo $PATH
 ```
 
-如果這些都正確但 Rust 仍然無法運作，你可以從多個地方獲得幫助。請在 [https://www.rust-lang.org/community](https://www.rust-lang.org/community) 的社群頁面了解如何與其他 Rustaceans (我們對自己的滑稽暱稱) 取得聯繫。
+如果一切都正確但 Rust 仍然無法運作，有許多地方可以尋求幫助。你可以在 _https://www.rust-lang.org/community_ 的社群頁面上找到如何與其他 Rustaceans（我們稱呼自己的傻氣綽號）聯繫的方法。
 
 ### 更新與解除安裝
 
-一旦透過 `rustup` 安裝了 Rust，更新到新發布的版本就很容易了。從你的 shell 執行以下更新腳本：
+一旦透過 `rustup` 安裝了 Rust，更新到新發布的版本就很容易。從你的 shell 中，執行以下更新腳本：
 
 ```
 $ rustup update
 ```
 
-要解除安裝 Rust 和 `rustup`，從你的 shell 執行以下解除安裝腳本：
+要解除安裝 Rust 和 `rustup`，請從你的 shell 中執行以下解除安裝腳本：
 
 ```
 $ rustup self uninstall
@@ -108,27 +108,27 @@ $ rustup self uninstall
 
 ### 本機文件
 
-Rust 的安裝還包括一份本機的文件副本，這樣你就可以離線閱讀它。執行 `rustup doc` 以在你的瀏覽器中開啟本機文件。
+Rust 的安裝也包含了文件的本機副本，所以你可以離線閱讀。執行 `rustup doc` 可以在你的瀏覽器中開啟本機文件。
 
-每當標準函式庫提供某種類型或函式，而你不確定它的作用或如何使用時，請使用應用程式介面 (API) documentation 來查找！
+任何時候，當標準函式庫提供了一個型別或函式，而你不確定它的作用或如何使用時，就去查閱應用程式設計介面（API）文件吧！
 
 ### 文字編輯器與整合開發環境
 
-本書不對你用來編寫 Rust 程式碼的工具做任何假設。幾乎任何文字編輯器都能完成任務！然而，許多文字編輯器和整合開發環境 (IDEs) 都內建支援 Rust。你總能在 Rust 網站上 [https://www.rust-lang.org/tools](https://www.rust-lang.org/tools) 的工具頁面上找到一個相當新的編輯器和 IDE 列表。
+本書對於你使用什麼工具來撰寫 Rust 程式碼沒有任何假設。幾乎任何文字編輯器都能勝任！然而，許多文字編輯器和整合開發環境（IDE）都內建了對 Rust 的支援。你總能在 Rust 網站的工具頁面 _https://www.rust-lang.org/tools_ 上找到一份相當新的編輯器和 IDE 清單。
 
-## Hello, World!
+## Hello, world!
 
-現在你已經安裝了 Rust，是時候編寫你的第一個 Rust 程式了。學習新語言時，傳統上會編寫一個印出 `Hello, world!` 文字到螢幕上的小程序，所以我們在這裡也這樣做！
+現在你已經安裝好 Rust，是時候寫下你的第一個 Rust 程式了。學習新語言時，寫一個小程序將 `Hello, world!` 文字印到螢幕上是個傳統，所以我們也要這麼做！
 
-> 注意：本書假設你對命令列有基本的熟悉。Rust 對於你的編輯或工具或程式碼的位置沒有任何特定要求，所以如果你喜歡使用整合開發環境 (IDE) 而不是命令列，請隨意使用你最喜歡的 IDE。許多 IDE 現在都對 Rust 有一定程度的支援；請查看 IDE 的文件以獲取詳細資訊。Rust 團隊一直致力於透過 `rust-analyzer` 實現出色的 IDE 支援。有關更多詳細資訊，請參閱 [https://doc.rust-lang.org/book/appendix-04-development-tools.html](https://doc.rust-lang.org/book/appendix-04-development-tools.html)。
+> 注意：本書假設你對命令列有基本了解。Rust 對於你的編輯、工具或程式碼存放位置沒有任何特定要求，所以如果你偏好使用整合開發環境（IDE）而不是命令列，請隨意使用你喜愛的 IDE。許多 IDE 現在都對 Rust 有一定程度的支援；請查閱 IDE 的文件以獲取詳細資訊。Rust 團隊一直致力於透過 `rust-analyzer` 來提供良好的 IDE 支援。詳情請參閱附錄 D。
 
-### 建立專案目錄
+### 建立一個專案目錄
 
-你將首先建立一個目錄來儲存你的 Rust 程式碼。Rust 對於你的程式碼位於何處並不在意，但對於本書中的練習和專案，我們建議在你的 home directory 中建立一個 `projects` 目錄，並將所有專案都放在那裡。
+你將從建立一個目錄來存放你的 Rust 程式碼開始。對 Rust 來說，你的程式碼放在哪裡都無所謂，但為了本書中的練習和專案，我們建議在你的家目錄中建立一個 _projects_ 目錄，並將所有專案都放在那裡。
 
-開啟一個終端機並輸入以下命令來建立一個 `projects` 目錄，以及一個位於 `projects` 目錄內的「Hello, world!」專案目錄。
+開啟一個終端機並輸入以下指令，以建立一個 _projects_ 目錄，並在 _projects_ 目錄中為「Hello, world!」專案建立一個目錄。
 
-對於 Linux、macOS 和 Windows 上的 PowerShell，輸入以下內容：
+對於 Linux、macOS 和 Windows 上的 PowerShell，請輸入：
 
 ```
 $ mkdir ~/projects
@@ -137,7 +137,7 @@ $ mkdir hello_world
 $ cd hello_world
 ```
 
-對於 Windows CMD，輸入以下內容：
+對於 Windows CMD，請輸入：
 
 ```
 > mkdir "%USERPROFILE%\projects"
@@ -146,11 +146,11 @@ $ cd hello_world
 > cd hello_world
 ```
 
-### 編寫與執行 Rust 程式
+### 撰寫並執行一個 Rust 程式
 
-接下來，建立一個新的 source file 並將其命名為 `main.rs`。Rust 檔案總是以後綴 `.rs` 結尾。如果你在檔案名稱中使用多個單字，慣例是使用 underscore 將它們分開。例如，使用 `hello_world.rs` 而不是 `helloworld.rs`。
+接下來，建立一個新的原始檔，並將其命名為 _main.rs_。Rust 檔案總是以後綴 _.rs_ 結尾。如果你的檔名中使用多個單字，慣例是使用底線來分隔它們。例如，使用 _hello_world.rs_ 而不是 _helloworld.rs_。
 
-現在打開你剛建立的 `main.rs` 檔案，並輸入 Listing 1-1 中的程式碼。
+現在打開你剛建立的 _main.rs_ 檔案，並輸入列表 1-1 中的程式碼。
 
 main.rs
 
@@ -160,9 +160,9 @@ fn main() {
 }
 ```
 
-Listing 1-1：一個印出 `Hello, world!` 的程式
+列表 1-1：一個會印出 `Hello, world!` 的程式
 
-儲存檔案並回到你位於 `~/projects/hello_world` 目錄中的終端機視窗。在 Linux 或 macOS 上，輸入以下命令來編譯和執行檔案：
+儲存檔案並回到你的終端機視窗，切換到 _~/projects/hello_world_ 目錄。在 Linux 或 macOS 上，輸入以下指令來編譯並執行檔案：
 
 ```
 $ rustc main.rs
@@ -170,7 +170,7 @@ $ ./main
 Hello, world!
 ```
 
-在 Windows 上，輸入命令 `.\main` 而不是 `./main`：
+在 Windows 上，輸入指令 `.\main` 而不是 `./main`：
 
 ```
 > rustc main.rs
@@ -178,13 +178,13 @@ Hello, world!
 Hello, world!
 ```
 
-無論你的作業系統是什麼，字串 `Hello, world!` 都應該會印到終端機上。如果你沒有看到此輸出，請參閱「安裝」章節的「[故障排除](https://doc.rust-lang.org/book/ch01-01-installation.html#troubleshooting)」部分以獲取幫助。
+不論你的作業系統為何，字串 `Hello, world!` 都應該會印在終端機上。如果你沒有看到這個輸出，請回頭參考「安裝」一節的「疑難排解」部分，以尋求幫助。
 
-如果 `Hello, world!` 確實印出來了，恭喜你！你已經正式編寫了一個 Rust 程式。這讓你成為了一名 Rust 程式設計師——歡迎！
+如果 `Hello, world!` 成功印出了，恭喜你！你已經正式寫了一個 Rust 程式。這讓你成為了一名 Rust 程式設計師——歡迎！
 
-### Rust 程式的解析
+### 解析 Rust 程式
 
-讓我們詳細檢閱這個「Hello, world!」程式。這是謎題的第一部分：
+讓我們來詳細回顧一下這個「Hello, world!」程式。這是謎題的第一塊：
 
 ```rust
 fn main() {
@@ -192,46 +192,47 @@ fn main() {
 }
 ```
 
-這些行定義了一個名為 `main` 的 function。`main` function 很特別：它總是每個可執行 Rust 程式中第一個執行的程式碼。在這裡，第一行宣告了一個名為 `main` 的 function，它沒有 parameters 並且不回傳任何東西。如果有 parameters，它們會放在 parentheses `()` 裡面。
+這幾行定義了一個名為 `main` 的函式。`main` 函式很特別：它總是在每個可執行的 Rust 程式中最先執行的程式碼。在這裡，第一行宣告了一個名為 `main` 的函式，它沒有參數，也不回傳任何東西。如果有的話，參數會放在括號 `()` 內。
 
-function body 被 `{}` 包裹。Rust 要求所有 function body 都必須用大括號。將開頭的大括號放在 function 宣告的同一行，並在中間添加一個空格，這是一種好的風格。
+函式主體被包在 `{}` 中。Rust 要求所有函式主體都必須使用大括號。將開頭的大括號放在與函式宣告同一行，並在中間加上一個空格，是良好的風格。
 
-> 注意：如果你想在 Rust 專案中遵循標準風格，你可以使用一個名為 `rustfmt` 的自動格式化工具以特定風格格式化你的程式碼 (更多關於 `rustfmt` 的資訊請參閱 [https://doc.rust-lang.org/book/appendix-04-development-tools.html](https://doc.rust-lang.org/book/appendix-04-development-tools.html))。Rust 團隊已將此工具與標準 Rust 發行版一同提供，就像 `rustc` 一樣，所以它應該已經安裝在你的電腦上了！
+> 注意：如果你想在所有 Rust 專案中遵循一個標準風格，你可以使用一個名為 `rustfmt` 的自動格式化工具，將你的程式碼格式化為特定風格（更多關於 `rustfmt` 的資訊在
+> 附錄 D）。Rust 團隊已將此工具包含在標準的 Rust 發行版中，就像 `rustc` 一樣，所以它應該已經安裝在你的電腦上了！
 
-`main` function 的 body 包含以下程式碼：
+`main` 函式的主體包含以下程式碼：
 
 ```rust
 println!("Hello, world!");
 ```
 
-這行程式碼完成了這個小程序中的所有工作：它將文字印到螢幕上。這裡有三個重要的細節需要注意。
+這一行完成了這個小程序的所有工作：它將文字印到螢幕上。這裡有三個重要的細節需要注意。
 
-首先，`println!` 呼叫了一個 Rust macro。如果它呼叫的是 function，它會被寫成 `println` (沒有 `!`)。Rust macros 是一種編寫程式碼以生成程式碼來擴展 Rust 語法的方式，我們將在 Chapter 20 中更詳細地討論它們。目前，你只需要知道使用 `!` 意味著你正在呼叫 macro 而不是 normal function，並且 macros 不總是遵循與 function 相同的規則。
+首先，`println!` 呼叫了一個 Rust macro。如果它呼叫的是一個函式，則會寫成 `println`（沒有 `!`）。Rust 的 macro 是一種編寫能生成程式碼的程式碼，以擴展 Rust 語法的方式，我們將在第 20 章更詳細地討論它們。目前，你只需要知道使用 `!` 意味著你正在呼叫一個 macro 而不是一個普通的函式，而且 macro 不一定遵循與函式相同的規則。
 
-其次，你看到 `"Hello, world!"` 字串。我們將此 string 作為 argument 傳遞給 `println!`，然後該 string 會被印到螢幕上。
+其次，你看到了 `"Hello, world!"` 這個字串。我們將這個字串作為引數傳遞給 `println!`，而這個字串會被印到螢幕上。
 
-第三，我們以 semicolon (`;`) 結尾該行，這表示此 expression 已結束，下一個 expression 準備開始。大多數 Rust 程式碼行都以 semicolon 結尾。
+第三，我們用分號（`;`）結束這一行，這表示這個運算式已經結束，下一個運算式準備開始。大多數 Rust 程式碼行都以分號結尾。
 
 ### 編譯與執行是獨立的步驟
 
-你剛剛執行了一個新建立的程式，所以讓我們檢查一下這個過程中的每個步驟。
+你剛才執行了一個新建立的程式，現在讓我們來檢視過程中的每一步。
 
-在執行 Rust 程式之前，你必須使用 Rust compiler 編譯它，透過輸入 `rustc` 命令並傳遞你的 source file 名稱，如下所示：
+在執行一個 Rust 程式之前，你必須使用 Rust 編譯器來編譯它，方法是輸入 `rustc` 指令並傳入你的原始檔名稱，像這樣：
 
 ```
 $ rustc main.rs
 ```
 
-如果你有 C 或 C++ 背景，你會注意到這與 `gcc` 或 `clang` 類似。成功編譯後，Rust 會輸出一個 binary executable。
+如果你有 C 或 C++ 背景，你會注意到這與 `gcc` 或 `clang` 相似。成功編譯後，Rust 會輸出一個二進位可執行檔。
 
-在 Linux、macOS 和 Windows 上的 PowerShell 中，你可以透過在你的 shell 中輸入 `ls` 命令來查看 executable：
+在 Linux、macOS 和 Windows 上的 PowerShell，你可以透過在 shell 中輸入 `ls` 指令來看到這個可執行檔：
 
 ```
 $ ls
 main  main.rs
 ```
 
-在 Linux 和 macOS 上，你會看到兩個檔案。在 Windows 上的 PowerShell 中，你會看到與使用 CMD 時相同的三個檔案。在 Windows 上的 CMD 中，你會輸入以下內容：
+在 Linux 和 macOS 上，你會看到兩個檔案。在 Windows 上的 PowerShell，你會看到與使用 CMD 時相同的三個檔案。在 Windows 的 CMD 中，你會輸入以下指令：
 
 ```
 > dir /B %= the /B option says to only show the file names =%
@@ -240,54 +241,54 @@ main.pdb
 main.rs
 ```
 
-這顯示了帶有 `.rs` 擴展名的 source code file、executable file (在 Windows 上是 `main.exe`，但在所有其他平台上是 `main`)，以及在使用 Windows 時，一個包含 debugging information 的 `.pdb` 擴展名檔案。從這裡開始，你執行 `main` 或 `main.exe` 檔案，如下所示：
+這顯示了帶有 _.rs_ 副檔名的原始碼檔案、可執行檔（在 Windows 上是 _main.exe_，在所有其他平台上是 _main_），以及在使用 Windows 時，一個包含除錯資訊且副檔名為 _.pdb_ 的檔案。接著，你執行 _main_ 或 _main.exe_ 檔案，像這樣：
 
 ```
 $ ./main # or .\main on Windows
 ```
 
-如果你的 `main.rs` 是你的「Hello, world!」程式，這行程式碼會將 `Hello, world!` 印到你的 terminal。
+如果你的 _main.rs_ 是「Hello, world!」程式，這一行會將 `Hello, world!` 印到你的終端機上。
 
-如果你對動態語言更熟悉，例如 Ruby、Python 或 JavaScript，你可能不習慣將程式的編譯和執行分開進行。Rust 是一種 _ahead-of-time compiled_ 語言，這表示你可以編譯程式並將 executable 提供給其他人，即使他們沒有安裝 Rust 也能執行它。如果你給某人一個 `.rb`、`.py` 或 `.js` 檔案，他們需要安裝 Ruby、Python 或 JavaScript 的 implementation (分別)。但在這些語言中，你只需要一個命令來編譯和執行你的程式。在 language design 中，一切都是取捨。
+如果你更熟悉像 Ruby、Python 或 JavaScript 這樣的動態語言，你可能不習慣將編譯和執行程式作為獨立的步驟。Rust 是一種 _預先編譯 (ahead-of-time compiled)_ 語言，這意味著你可以編譯一個程式，並將可執行檔交給別人，即使他們沒有安裝 Rust 也能執行。如果你給某人一個 _.rb_、_.py_ 或 _.js_ 檔案，他們需要安裝對應的 Ruby、Python 或 JavaScript 實作。但在那些語言中，你只需要一個指令就能編譯並執行你的程式。語言設計中的一切都是一種權衡。
 
-對於簡單的程式來說，單獨使用 `rustc` 編譯是可行的，但隨著你的專案成長，你會希望管理所有選項並輕鬆共享你的程式碼。接下來，我們將向你介紹 Cargo 工具，它將幫助你編寫真實世界的 Rust 程式。
+對於簡單的程式來說，只用 `rustc` 編譯就足夠了，但隨著你的專案成長，你會想要管理所有選項，並讓分享你的程式碼變得容易。接下來，我們將向你介紹 Cargo 工具，它將幫助你編寫真實世界的 Rust 程式。
 
 ## Hello, Cargo!
 
-Cargo 是 Rust 的 build system 和 package manager。大多數 Rustaceans 使用這個工具來管理他們的 Rust 專案，因為 Cargo 為你處理了許多任務，例如建構你的程式碼、下載你的程式碼所依賴的 `libraries`，以及建構這些 `libraries`。(我們稱你的程式碼所需的 `libraries` 為 `dependencies`。)
+Cargo 是 Rust 的建構系統和套件管理器。大多數 Rustaceans 使用這個工具來管理他們的 Rust 專案，因為 Cargo 為你處理了許多任務，例如建構你的程式碼、下載你的程式碼所依賴的函式庫，以及建構那些函式庫。（我們稱你的程式碼需要的函式庫為 _dependencies_。）
 
-最簡單的 Rust 程式，就像我們目前所寫的程式一樣，沒有任何 `dependencies`。如果我們使用 Cargo 建構「Hello, world!」專案，它將只使用 Cargo 中處理程式碼建構的部分。當你編寫更複雜的 Rust 程式時，你會添加 `dependencies`，如果你使用 Cargo 啟動專案，添加 `dependencies` 將會容易得多。
+最簡單的 Rust 程式，像是我們目前所寫的，沒有任何 dependencies。如果我們用 Cargo 來建構「Hello, world!」專案，它只會用到 Cargo 中負責建構程式碼的部分。當你寫更複雜的 Rust 程式時，你會加入 dependencies，而如果你用 Cargo 開始一個專案，加入 dependencies 將會容易得多。
 
-因為絕大多數 Rust 專案都使用 Cargo，本書的其餘部分都假設你也在使用 Cargo。如果你使用「[安裝](https://doc.rust-lang.org/book/ch01-01-installation.html)」部分討論的官方安裝程式，Cargo 會隨 Rust 一同安裝。如果你透過其他方式安裝 Rust，請在終端機中輸入以下內容來檢查 Cargo 是否已安裝：
+由於絕大多數的 Rust 專案都使用 Cargo，本書的其餘部分將假設你也在使用 Cargo。如果你使用了「安裝」一節中討論的官方安裝程式，Cargo 會隨著 Rust 一起安裝。如果你是透過其他方式安裝 Rust，請在你的終端機中輸入以下指令來檢查 Cargo 是否已安裝：
 
 ```
 $ cargo --version
 ```
 
-如果你看到版本號，就表示你已經安裝了！如果你看到錯誤，例如 `command not found`，請查看你安裝方法的說明文件以確定如何單獨安裝 Cargo。
+如果你看到一個版本號，就表示你已經安裝了！如果你看到一個錯誤，例如 `command not found`，請查看你安裝方法的說明文件，以確定如何單獨安裝 Cargo。
 
 ### 使用 Cargo 建立專案
 
-讓我們使用 Cargo 建立一個新專案，並看看它與我們原始的「Hello, world!」專案有何不同。導航回你的 `projects` 目錄 (或你決定儲存程式碼的任何位置)。然後，在任何作業系統上，執行以下命令：
+讓我們用 Cargo 建立一個新專案，看看它與我們最初的「Hello, world!」專案有何不同。回到你的 _projects_ 目錄（或你決定存放程式碼的任何地方）。然後，在任何作業系統上，執行以下指令：
 
 ```
 $ cargo new hello_cargo
 $ cd hello_cargo
 ```
 
-第一個命令會建立一個名為 `hello_cargo` 的新目錄和專案。我們將專案命名為 `hello_cargo`，而 Cargo 會在其同名目錄中建立其檔案。
+第一個指令會建立一個名為 _hello_cargo_ 的新目錄和專案。我們將專案命名為 _hello_cargo_，而 Cargo 會在同名目錄中建立它的檔案。
 
-進入 `hello_cargo` 目錄並列出檔案。你會看到 Cargo 為我們生成了兩個檔案和一個目錄：一個 `Cargo.toml` 檔案和一個包含 `main.rs` 檔案的 `src` 目錄。
+進入 _hello_cargo_ 目錄並列出檔案。你會看到 Cargo 為我們生成了兩個檔案和一個目錄：一個 _Cargo.toml_ 檔案和一個 _src_ 目錄，裡面有一個 _main.rs_ 檔案。
 
-它還初始化了一個新的 Git repository，並附帶一個 `.gitignore` 檔案。如果你在現有的 Git repository 內執行 `cargo new`，Git 檔案將不會生成；你可以使用 `cargo new --vcs=git` 來覆寫此行為。
+它也初始化了一個新的 Git repository，並附帶一個 _.gitignore_ 檔案。如果你在一個現有的 Git repository 中執行 `cargo new`，Git 檔案將不會被生成；你可以使用 `cargo new --vcs=git` 來覆蓋這個行為。
 
-> 注意：Git 是一種常見的 version control system。你可以使用 `--vcs` 旗標將 `cargo new` 更改為使用不同的 version control system 或不使用任何 version control system。執行 `cargo new --help` 查看可用選項。
+> 注意：Git 是一個常見的版本控制系統。你可以使用 `--vcs` 旗標來更改 `cargo new` 使用不同的版本控制系統或不使用版本控制系統。執行 `cargo new --help` 來查看可用的選項。
 
-在你的文字編輯器中開啟 `Cargo.toml`。它應該與 Listing 1-2 中的程式碼相似。
+在你喜歡的文字編輯器中打開 _Cargo.toml_。它應該看起來與列表 1-2 中的程式碼相似。
 
 Cargo.toml
 
-```toml
+```
 [package]
 name = "hello_cargo"
 version = "0.1.0"
@@ -296,19 +297,19 @@ edition = "2024"
 [dependencies]
 ```
 
-Listing 1-2：由 `cargo new` 生成的 `Cargo.toml` 內容
+列表 1-2：由 `cargo new` 生成的 _Cargo.toml_ 內容
 
-這個檔案是 TOML (Tom’s Obvious, Minimal Language) 格式，這是 Cargo 的 configuration format。
+這個檔案是 _TOML_ (_Tom's Obvious, Minimal Language_) 格式，這是 Cargo 的設定格式。
 
-第一行 `[package]` 是一個 section heading，表示以下語句正在配置一個 package。當我們向此檔案添加更多資訊時，我們將添加其他 sections。
+第一行 `[package]` 是一個區段標題，表示以下的陳述是用來設定一個套件。當我們向這個檔案加入更多資訊時，我們會加入其他區段。
 
-接下來的三行設定了 Cargo 編譯你的程式所需的 configuration information：名稱、版本和要使用的 Rust `edition`。我們將在 [https://doc.rust-lang.org/book/appendix-05-editions.html](https://doc.rust-lang.org/book/appendix-05-editions.html) 中討論 `edition` key。
+接下來的三行設定了 Cargo 編譯你的程式所需的設定資訊：名稱、版本，以及要使用的 Rust edition。我們將在附錄 E 中討論 `edition` 這個 key。
 
-最後一行 `[dependencies]` 是你列出專案任何 `dependencies` 的 section 的開始。在 Rust 中，程式碼 package 被稱為 `crates`。我們在這個專案中不需要任何其他 `crates`，但在 [https://doc.rust-lang.org/book/ch02-00-guessing-game.html](https://doc.rust-lang.org/book/ch02-00-guessing-game.html) 中的第一個專案中會用到，所以我們到時會使用這個 `dependencies` section。
+最後一行 `[dependencies]` 是一個區段的開始，你可以在這裡列出你專案的任何 dependencies。在 Rust 中，程式碼的套件被稱為 _crates_。這個專案我們不需要任何其他的 crates，但在第 2 章的第一個專案中我們會需要，屆時我們將使用這個 dependencies 區段。
 
-現在打開 `src/main.rs` 並查看：
+現在打開 _src/main.rs_ 看一看：
 
-檔案名：src/main.rs
+檔名：src/main.rs
 
 ```rust
 fn main() {
@@ -316,45 +317,45 @@ fn main() {
 }
 ```
 
-Cargo 為你生成了一個「Hello, world!」程式，就像我們在 [Listing 1-1](https://doc.rust-lang.org/book/ch01-01-installation.html#listing-1-1-a-program-that-prints-hello-world) 中編寫的那個一樣！到目前為止，我們的專案與 Cargo 生成的專案之間的區別是，Cargo 將程式碼放在 `src` 目錄中，並且我們在頂層目錄中擁有一個 `Cargo.toml` configuration file。
+Cargo 已經為你生成了一個「Hello, world!」程式，就像我們在列表 1-1 中寫的一樣！到目前為止，我們的專案和 Cargo 生成的專案之間的差異是，Cargo 將程式碼放在 _src_ 目錄中，並且我們在頂層目錄中有一個 _Cargo.toml_ 設定檔。
 
-Cargo 期望你的 source files 位於 `src` 目錄內。頂層專案目錄僅用於 README 檔案、許可證資訊、configuration files 以及任何與程式碼無關的其他內容。使用 Cargo 有助於你組織專案。萬事皆有歸屬，各就各位。
+Cargo 期望你的原始檔存放在 _src_ 目錄中。頂層專案目錄只用於 README 檔案、授權資訊、設定檔，以及任何與你的程式碼無關的東西。使用 Cargo 可以幫助你組織你的專案。萬物皆有其所，井然有序。
 
-如果你啟動了一個不使用 Cargo 的專案，就像我們使用「Hello, world!」專案一樣，你可以將它轉換為使用 Cargo 的專案。將專案程式碼移到 `src` 目錄中，並創建一個適當的 `Cargo.toml` 檔案。獲得該 `Cargo.toml` 檔案的一個簡單方法是執行 `cargo init`，它會自動為你建立。
+如果你像我們對「Hello, world!」專案那樣，開始了一個不使用 Cargo 的專案，你可以將它轉換為一個使用 Cargo 的專案。將專案程式碼移動到 _src_ 目錄，並建立一個適當的 _Cargo.toml_ 檔案。取得那個 _Cargo.toml_ 檔案的一個簡單方法是執行 `cargo init`，它會自動為你建立。
 
-### 建構與執行 Cargo 專案
+### 建構並執行一個 Cargo 專案
 
-現在讓我們看看當我們使用 Cargo 建構和執行「Hello, world!」程式時有什麼不同！從你的 `hello_cargo` 目錄中，輸入以下命令來建構你的專案：
+現在讓我們來看看當我們用 Cargo 建構並執行「Hello, world!」程式時有什麼不同！從你的 _hello_cargo_ 目錄中，輸入以下指令來建構你的專案：
 
-```text
+```
 $ cargo build
    Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo)
     Finished dev [unoptimized + debuginfo] target(s) in 2.85 secs
 ```
 
-此命令會將 executable file 建立在 `target/debug/hello_cargo` (或 Windows 上的 `target\debug\hello_cargo.exe`)，而不是你的目前目錄中。由於預設的 build 是 debug build，Cargo 會將 binary 放在名為 `debug` 的目錄中。你可以使用此命令執行 executable：
+這個指令會在 _target/debug/hello_cargo_（在 Windows 上是 _target\debug\hello_cargo.exe_）中建立一個可執行檔，而不是在你目前的目錄中。因為預設的建構是 debug build，Cargo 會將二進位檔放在一個名為 _debug_ 的目錄中。你可以用這個指令來執行可執行檔：
 
-```text
+```
 $ ./target/debug/hello_cargo # or .\target\debug\hello_cargo.exe on Windows
 Hello, world!
 ```
 
-如果一切順利，`Hello, world!` 應該會印到終端機上。第一次執行 `cargo build` 也會導致 Cargo 在頂層建立一個新檔案：`Cargo.lock`。此檔案會追蹤你專案中 `dependencies` 的確切版本。此專案沒有 `dependencies`，因此檔案有點稀疏。你永遠不需要手動更改此檔案；Cargo 會為你管理其內容。
+如果一切順利，`Hello, world!` 應該會印在終端機上。第一次執行 `cargo build` 也會導致 Cargo 在頂層建立一個新檔案：_Cargo.lock_。這個檔案會追蹤你專案中 dependencies 的確切版本。這個專案沒有 dependencies，所以這個檔案有點空。你永遠不需要手動更改這個檔案；Cargo 會為你管理它的內容。
 
-我們剛才用 `cargo build` 建構了一個專案，並用 `./target/debug/hello_cargo` 執行了它，但我們也可以使用 `cargo run` 來編譯程式碼，然後在一個命令中執行產生的 executable：
+我們剛剛用 `cargo build` 建構了一個專案，並用 `./target/debug/hello_cargo` 執行了它，但我們也可以用 `cargo run` 來編譯程式碼，然後在一個指令中執行生成的可執行檔：
 
-```text
+```
 $ cargo run
     Finished dev [unoptimized + debuginfo] target(s) in 0.0 secs
      Running `target/debug/hello_cargo`
 Hello, world!
 ```
 
-使用 `cargo run` 比起必須記住執行 `cargo build` 然後使用 binary 的整個路徑更方便，因此大多數開發人員都使用 `cargo run`。
+使用 `cargo run` 比起要記得執行 `cargo build` 然後再用完整的路徑來執行二進位檔要方便得多，所以大多數開發者都使用 `cargo run`。
 
-請注意，這次我們沒有看到指示 Cargo 正在編譯 `hello_cargo` 的輸出。Cargo 發現檔案沒有改變，所以它沒有重新建構，只是執行了 binary。如果你修改了你的 source code，Cargo 會在執行專案之前重新建構專案，你會看到以下輸出：
+注意，這次我們沒有看到指示 Cargo 正在編譯 `hello_cargo` 的輸出。Cargo 發現檔案沒有變動，所以它沒有重新建構，只是執行了二進位檔。如果你修改了你的原始碼，Cargo 會在執行前重新建構專案，而你會看到這樣的輸出：
 
-```text
+```
 $ cargo run
    Compiling hello_cargo v0.1.0 (file:///projects/hello_cargo)
     Finished dev [unoptimized + debuginfo] target(s) in 0.33 secs
@@ -362,35 +363,35 @@ $ cargo run
 Hello, world!
 ```
 
-Cargo 還提供了一個名為 `cargo check` 的命令。此命令會快速檢查你的程式碼，以確保它能編譯，但不會產生 executable：
+Cargo 也提供一個叫做 `cargo check` 的指令。這個指令會快速檢查你的程式碼以確保它能編譯，但不會產生可執行檔：
 
-```text
+```
 $ cargo check
    Checking hello_cargo v0.1.0 (file:///projects/hello_cargo)
     Finished dev [unoptimized + debuginfo] target(s) in 0.32 secs
 ```
 
-你為什麼不想要一個 executable？通常，`cargo check` 比 `cargo build` 快得多，因為它跳過了產生 executable 的步驟。如果你在編寫程式碼時不斷檢查你的工作，使用 `cargo check` 將加快讓你了解你的專案是否仍在編譯的過程！因此，許多 Rustaceans 在編寫程式時會定期執行 `cargo check` 以確保它能編譯。然後，當他們準備使用 executable 時，他們會執行 `cargo build`。
+為什麼你可能不想要可執行檔呢？通常，`cargo check` 比 `cargo build` 快得多，因為它跳過了產生可執行檔的步驟。如果你在寫程式碼時不斷地檢查你的工作，使用 `cargo check` 會加快讓你得知你的專案是否仍然能編譯的過程！因此，許多 Rustaceans 在寫程式時會定期執行 `cargo check` 以確保它能編譯。然後當他們準備好使用可執行檔時，再執行 `cargo build`。
 
-讓我們回顧一下到目前為止我們學到的關於 Cargo 的知識：
+讓我們回顧一下目前為止我們學到的關於 Cargo 的事情：
 
-- 我們可以使用 `cargo new` 建立一個專案。
-- 我們可以使用 `cargo build` 建構一個專案。
-- 我們可以使用 `cargo run` 一步建構並執行專案。
-- 我們可以使用 `cargo check` 建構專案而不產生 binary 來檢查錯誤。
-- Cargo 不會將建構結果儲存在與我們的程式碼相同的目錄中，而是將其儲存在 `target/debug` 目錄中。
+- 我們可以用 `cargo new` 建立一個專案。
+- 我們可以用 `cargo build` 建構一個專案。
+- 我們可以用 `cargo run` 一步完成建構和執行專案。
+- 我們可以用 `cargo check` 建構一個專案但不產生二進位檔，以檢查錯誤。
+- Cargo 將建構的結果儲存在 _target/debug_ 目錄，而不是與我們的程式碼在同一個目錄。
 
-使用 Cargo 的另一個優點是，無論你在哪個作業系統上工作，命令都是相同的。因此，在這一點上，我們將不再提供 Linux 和 macOS 與 Windows 的特定說明。
+使用 Cargo 的另一個好處是，無論你在哪個作業系統上工作，指令都是一樣的。所以，從現在開始，我們將不再為 Linux 和 macOS 與 Windows 提供特定的指示。
 
-### 為發布建構
+### 建構 Release 版本
 
-當你的專案最終準備好發布時，你可以使用 `cargo build --release` 來編譯它並進行 `optimizations`。此命令會在 `target/release` 而不是 `target/debug` 中建立一個 executable。`optimizations` 會使你的 Rust 程式碼執行得更快，但啟用它們會延長你的程式編譯所需的時間。這就是為什麼有兩種不同的 `profiles`：一種用於 `development`，當你想要快速且經常重建時，另一種用於建構最終你會提供給使用者且不會重複重建並會盡可能快地執行的程式。如果你正在 `benchmarking` 你的程式碼執行時間，請務必執行 `cargo build --release` 並使用 `target/release` 中的 executable 進行 `benchmark`。
+當你的專案終於準備好發布時，你可以使用 `cargo build --release` 來進行最佳化編譯。這個指令會在 _target/release_ 中建立一個可執行檔，而不是 _target/debug_。這些最佳化讓你的 Rust 程式碼執行得更快，但開啟它們會延長你的程式編譯所需的時間。這就是為什麼有兩種不同的 profile：一種用於開發，當你想要快速且頻繁地重新建構時使用；另一種用於建構你將要給使用者的最終程式，這個程式不會被重複建構，並且會盡可能快地執行。如果你正在對你的程式碼執行時間進行基準測試，請務必執行 `cargo build --release` 並使用 _target/release_ 中的可執行檔進行基準測試。
 
-### Cargo 的慣例
+### Cargo 作為慣例
 
-對於簡單的專案，Cargo 相較於直接使用 `rustc` 來說，提供的價值並不多，但隨著你的程式變得更複雜，它將證明其價值。一旦程式成長到多個檔案或需要 `dependency`，讓 Cargo 協調建構會容易得多。
+對於簡單的專案，Cargo 相較於只使用 `rustc` 並沒有提供太多的價值，但當你的程式變得更複雜時，它將證明其價值。一旦程式成長到多個檔案或需要一個 dependency，讓 Cargo 來協調建構會容易得多。
 
-儘管 `hello_cargo` 專案很簡單，但它現在使用了你在餘下的 Rust 生涯中將使用的大部分真實工具。事實上，要處理任何現有專案，你可以使用以下命令來使用 Git 檢出程式碼，切換到該專案的目錄，然後建構：
+儘管 `hello_cargo` 專案很簡單，但它現在使用了你在 Rust 生涯中將會使用的大部分真實工具。事實上，要處理任何現有的專案，你可以使用以下指令來使用 Git 取得程式碼、切換到該專案的目錄，然後建構：
 
 ```
 $ git clone example.org/someproject
@@ -398,16 +399,16 @@ $ cd someproject
 $ cargo build
 ```
 
-有關 Cargo 的更多資訊，請查看其位於 [https://doc.rust-lang.org/cargo/](https://doc.rust-lang.org/cargo/) 的文件。
+想了解更多關於 Cargo 的資訊，請查閱其文件，網址為 _https://doc.rust-lang.org/cargo/_。
 
 ## 總結
 
-你的 Rust 旅程已經有了很好的開始！在本章中，你已經學會了如何：
+你的 Rust 旅程已經有了個很棒的開始！在本章中，你學會了如何：
 
 - 使用 `rustup` 安裝最新穩定版的 Rust
 - 更新到較新的 Rust 版本
 - 開啟本機安裝的文件
-- 直接使用 `rustc` 編寫並執行「Hello, world!」程式
-- 使用 Cargo 的慣例建立並執行新專案
+- 直接使用 `rustc` 撰寫並執行一個「Hello, world!」程式
+- 使用 Cargo 的慣例來建立並執行一個新專案
 
-現在正是時候建構一個更實質的程式，以習慣閱讀和編寫 Rust 程式碼。因此，在 [https://doc.rust-lang.org/book/ch02-00-guessing-game.html](https://doc.rust-lang.org/book/ch02-00-guessing-game.html) 中，我們將建構一個猜謎遊戲程式。如果你寧願先學習 Rust 中常見 programming concepts 的運作方式，請參閱 [https://doc.rust-lang.org/book/ch03-00-common-programming-concepts.html](https://doc.rust-lang.org/book/ch03-00-common-programming-concepts.html) 然後再回到 [https://doc.rust-lang.org/book/ch02-00-guessing-game.html](https://doc.rust-lang.org/book/ch02-00-guessing-game.html)。
+現在是個好時機來建構一個更實質的程式，以習慣閱讀和撰寫 Rust 程式碼。所以，在第 2 章，我們將建構一個猜數字遊戲程式。如果你想先學習常見的程式設計概念在 Rust 中是如何運作的，請看第 3 章，然後再回到第 2 章。

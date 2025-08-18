@@ -6,42 +6,42 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-# 無懼的並行 (Fearless Concurrency)
+# 無所畏懼的 Concurrency
 
-安全且有效地處理並行程式設計，是 Rust 的另一個主要目標。_並行程式設計 (Concurrent programming)_ 指的是程式的不同部分獨立執行，而 _平行程式設計 (parallel programming)_ 則指程式的不同部分同時執行，隨著越來越多電腦利用其多個處理器，這兩者變得越來越重要。歷史上，在這些情況下進行程式設計一直很困難且容易出錯。Rust 希望改變這一點。
+安全且有效率地處理 concurrent programming 是 Rust 的另一項主要目標。_Concurrent programming_ 是指程式的不同部分獨立執行，而 _parallel programming_ 是指程式的不同部分同時執行。隨著越來越多的電腦利用其多個處理器，這兩者變得日益重要。過去，在這些情境下進行程式設計既困難又容易出錯。Rust 希望能改變這一點。
 
-最初，Rust 團隊認為確保記憶體安全和防止並行問題是兩個獨立的挑戰，需要用不同的方法來解決。隨著時間的推移，團隊發現 ownership 和型別系統是強大的工具組合，可用於管理記憶體安全*和*並行問題！透過利用 ownership 和型別檢查，許多並行錯誤在 Rust 中是 compile-time errors 而不是 runtime errors。因此，與其讓你花費大量時間試圖重現 runtime 並行錯誤發生的確切情況，不正確的程式碼將拒絕編譯並顯示錯誤解釋問題。結果是，你可以在開發程式碼時就修復它，而不是等到可能已部署到生產環境之後。我們將 Rust 的這一方面戲稱為 _無懼的並行 (fearless concurrency)_。無懼的並行使你能夠編寫沒有微妙錯誤的程式碼，並且易於重構而不會引入新的錯誤。
+最初，Rust 團隊認為確保記憶體安全和預防 concurrency 問題是兩個需要用不同方法解決的獨立挑戰。隨著時間推移，團隊發現 ownership 和型別系統是一套強大的工具，不僅能管理記憶體安全，*還能*處理 concurrency 問題！透過利用 ownership 和型別檢查，許多 concurrency 錯誤在 Rust 中是編譯時錯誤，而非執行時錯誤。因此，你不需要花費大量時間試圖重現 runtime concurrency bug 發生的確切情況，不正確的程式碼將會拒絕編譯，並顯示錯誤訊息解釋問題。如此一來，你可以在開發過程中修復程式碼，而不是等到產品上線後才處理。我們將 Rust 的這個特性暱稱為_無所畏懼的 concurrency_ (fearless concurrency)。Fearless concurrency 讓你能寫出沒有細微 bug 的程式碼，並且能輕鬆重構而不會引入新的 bug。
 
-> 註：為了簡化起見，我們將許多問題稱為 _concurrent_，而不是更精確地說 _concurrent 和/或 parallel_。對於本章，請在我們使用 _concurrent_ 時，在腦海中代入 _concurrent 和/或 parallel_。在下一章，當區別變得更重要時，我們會更具體。
+> 注意：為求簡潔，我們將許多問題稱為 _concurrent_，而不是更精確地說 _concurrent and/or parallel_。在本章中，當我們使用 _concurrent_ 時，請在心中將其替換為 _concurrent and/or parallel_。在下一章，當兩者區別更為重要時，我們會更具體地說明。
 
-許多語言對於處理並行問題提供的解決方案是教條式的。例如，Erlang 具有用於 message-passing concurrency 的優雅功能，但只有不清楚的方式在 threads 之間共享 state。僅支援部分可能的解決方案對於高階語言來說是一種合理的策略，因為高階語言承諾放棄一些控制以獲得抽象的好處。然而，低階語言預期在任何給定情況下提供最佳效能的解決方案，並且對硬體的抽象較少。因此，Rust 提供了各種工具，可以根據你的情況和要求，以任何適當的方式建模問題。
+許多語言對於處理 concurrent 問題的解決方案都非常教條。例如，Erlang 在 message-passing concurrency 方面有優雅的功能，但要在 thread 之間共享狀態的方式卻很晦澀。對於高階語言來說，只支援一部分可能的解決方案是合理的策略，因為高階語言承諾透過放棄一些控制來換取抽象化的好處。然而，低階語言被期望在任何特定情況下都能提供最佳效能的解決方案，並且對硬體的抽象化較少。因此，Rust 提供了多樣的工具，讓你能夠以最適合你情況和需求的方式來模型化問題。
 
-本章將涵蓋以下主題：
+以下是我們將在本章中涵蓋的主題：
 
-- 如何建立 threads 以同時執行多段程式碼
-- _訊息傳遞 (Message-passing)_ 並行，其中 channels 在 threads 之間發送訊息
-- _共享狀態 (Shared-state)_ 並行，其中多個 threads 可以存取某個資料片段
-- `Sync` 和 `Send` traits，它們將 Rust 的並行保證擴展到使用者自訂型別以及標準函式庫提供的型別
+- 如何建立 thread 以同時執行多段程式碼
+- _Message-passing_ concurrency，即 thread 之間透過 channel 傳送訊息
+- _Shared-state_ concurrency，即多個 thread 存取同一份資料
+- `Sync` 和 `Send` trait，它們將 Rust 的 concurrency 保證擴展到使用者定義的型別以及標準函式庫提供的型別
 
-## 使用 Threads 同時執行程式碼
+## 使用 Thread 同時執行程式碼
 
-在大多數目前的作業系統中，已執行的程式碼在一個 _process_ 中執行，作業系統將同時管理多個 processes。在一個程式中，你也可以有獨立的部分同時執行。執行這些獨立部分的功能稱為 _threads_。例如，一個網頁伺服器可以有多個 threads，這樣它就能同時回應多個請求。
+在大多數現代作業系統中，已執行程式的程式碼是在一個 _process_ 中運行的，而作業系統會同時管理多個 process。在一個程式內部，你也可以有多個獨立且同時執行的部分。執行這些獨立部分的功能稱為 _threads_。例如，一個網頁伺服器可以有多個 thread，以便能同時回應多個請求。
 
-將程式中的計算拆分成多個 threads 以同時執行多個任務，可以提高效能，但也會增加複雜性。由於 threads 可以同時執行，因此無法保證不同 threads 上程式碼各部分的執行順序。這可能導致以下問題：
+將程式中的計算分割到多個 thread 以同時執行多個任務可以提升效能，但也會增加複雜性。由於 thread 可以同時執行，無法天生保證不同 thread 上的程式碼片段會以何種順序執行。這可能導致一些問題，例如：
 
-- race conditions (競態條件)，其中 threads 以不一致的順序存取資料或資源
-- deadlocks (死鎖)，其中兩個 threads 互相等待，阻止兩者繼續執行
-- 僅在特定情況下發生且難以可靠重現和修復的 bugs
+- Race conditions，即 thread 以不一致的順序存取資料或資源
+- Deadlocks，即兩個 thread 互相等待對方，導致兩個 thread 都無法繼續執行
+- 只在特定情況下發生且難以重現和可靠修復的 bug
 
-Rust 試圖減輕使用 threads 的負面影響，但在多執行緒環境中進行程式設計仍然需要仔細思考，並且需要與單一執行緒程式不同的程式碼結構。
+Rust 試圖減輕使用 thread 的負面影響，但在多執行緒環境中編程仍然需要仔細思考，並且需要與在單一 thread 中執行的程式有不同的程式碼結構。
 
-程式語言以幾種不同的方式實作 threads，許多作業系統提供了程式語言可以呼叫的 API 以建立新的 threads。Rust 標準函式庫使用 _1:1_ 的 thread 實作模型，程式使用一個作業系統 thread 對應一個語言 thread。也有 crates 實作了其他 thread 模型，這些模型與 1:1 模型有不同的取捨。（Rust 的 `async` 系統，我們將在下一章看到，也提供了另一種並行方法。）
+程式語言以幾種不同的方式實作 thread，許多作業系統也提供了 API 讓程式語言可以呼叫來建立新的 thread。Rust 標準函式庫使用 _1:1_ 的 thread 實作模型，即一個程式為每個語言 thread 使用一個作業系統 thread。有些 crate 實作了其他的 thread 模型，這些模型在 1:1 模型之外做出了不同的權衡取捨。（我們將在下一章看到的 Rust async 系統也提供了另一種 concurrency 的方法。）
 
-### 使用 spawn 建立新的 Thread
+### 使用 `spawn` 建立新 Thread
 
-要建立一個新的 thread，我們呼叫 `thread::spawn` 函式，並傳遞一個 closure（我們在第 13 章討論過 closure），其中包含我們想在新 thread 中執行的程式碼。範例 16-1 中的程式碼從主 thread 打印一些文字，並從新 thread 打印其他文字。
+要建立一個新 thread，我們呼叫 `thread::spawn` 函式，並傳入一個 closure（我們在第 13 章討論過 closure），其中包含我們想在新 thread 中執行的程式碼。範例 16-1 中的程式碼會從主 thread 印出一些文字，並從新 thread 印出另一些文字。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::thread;
@@ -62,9 +62,13 @@ fn main() {
 }
 ```
 
-列表 16-1：建立一個新 thread 在主 thread 打印其他東西時打印一個東西
+範例 16-1：建立一個新 thread 來印出某樣東西，同時主 thread 印出另一樣東西
 
-請注意，當 Rust 程式的主 thread 完成時，所有 spawned threads 都會被關閉，無論它們是否已完成執行。這個程式的輸出每次可能會略有不同，但會類似於以下內容：
+請注意，當 Rust 程式的主 thread 完成時，所有 spawned thread 都會被關閉，無論它們是否已執行完畢。這個程式的輸出每次可能會有些微不同，但看起來會類似於以下內容：
+
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 
 ```
 hi number 1 from the main thread!
@@ -78,17 +82,17 @@ hi number 4 from the spawned thread!
 hi number 5 from the spawned thread!
 ```
 
-對 `thread::sleep` 的呼叫會強制 thread 暫停執行一小段時間，允許其他 thread 運行。這些 threads 可能會輪流執行，但這並非保證：它取決於你的作業系統如何排程這些 threads。在這次執行中，即使 spawned thread 的打印語句在程式碼中先出現，主 thread 還是先打印了。而且儘管我們告訴 spawned thread 打印直到 `i` 為 `9`，它在主 thread 關閉之前只打印到 `5`。
+`thread::sleep` 的呼叫會強制一個 thread 暫停執行一小段時間，讓另一個 thread 得以執行。這些 thread 很可能會輪流執行，但這並非保證：這取決於你的作業系統如何排程 thread。在這次執行中，主 thread 先印出，即使 spawned thread 的 print 陳述式在程式碼中出現得更早。而且即使我們告訴 spawned thread 要印到 `i` 為 `9`，它也只印到 `5` 主 thread 就關閉了。
 
-如果你執行這段程式碼並且只看到主 thread 的輸出，或者沒有看到任何重疊，請嘗試增加 ranges 中的數字，為作業系統在 threads 之間切換創造更多機會。
+如果你執行這段程式碼，只看到主 thread 的輸出，或者沒有看到任何交錯，試著增加範圍中的數字，為作業系統在 thread 之間切換創造更多機會。
 
-### 使用 join Handles 等待所有 Threads 完成
+### 使用 `join` Handle 等待所有 Thread 完成
 
-列表 16-1 中程式碼不僅大多數時候由於主 thread 結束而導致 spawned thread 過早停止，而且由於無法保證 threads 的執行順序，我們也無法保證 spawned thread 會執行！
+範例 16-1 的程式碼不僅因為主 thread 結束而多數時候會提早中止 spawned thread，而且因為無法保證 thread 的執行順序，我們也無法保證 spawned thread 一定有機會執行！
 
-我們可以透過將 `thread::spawn` 的回傳值儲存到變數中，來解決 spawned thread 未執行或過早結束的問題。`thread::spawn` 的回傳型別是 `JoinHandle<T>`。`JoinHandle<T>` 是一個 owned value，當我們呼叫其上的 `join` 方法時，它會等待其 thread 完成。列表 16-2 顯示了如何使用我們在列表 16-1 中建立的 thread 的 `JoinHandle<T>`，以及如何呼叫 `join` 來確保 spawned thread 在 `main` 結束之前完成。
+我們可以透過將 `thread::spawn` 的回傳值儲存在一個變數中，來解決 spawned thread 未執行或提早結束的問題。`thread::spawn` 的回傳型別是 `JoinHandle<T>`。`JoinHandle<T>` 是一個 owned value，當我們對它呼叫 `join` 方法時，它會等待其 thread 完成。範例 16-2 展示如何使用我們在範例 16-1 中建立的 thread 的 `JoinHandle<T>`，以及如何呼叫 `join` 來確保 spawned thread 在 `main` 結束前完成。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::thread;
@@ -111,9 +115,13 @@ fn main() {
 }
 ```
 
-列表 16-2：儲存 `thread::spawn` 的 `JoinHandle<T>` 以確保 thread 執行完成
+範例 16-2：儲存從 `thread::spawn` 來的 `JoinHandle<T>` 以保證 thread 會執行到完成
 
-在 handle 上呼叫 `join` 會阻塞當前正在執行的 thread，直到該 handle 所代表的 thread 終止。_阻塞 (Blocking)_ 一個 thread 意味著該 thread 被阻止執行工作或退出。因為我們將 `join` 的呼叫放在主 thread 的 `for` 迴圈之後，執行列表 16-2 應該產生類似以下的輸出：
+在 handle 上呼叫 `join` 會阻擋目前執行的 thread，直到該 handle 所代表的 thread 結束。_阻擋_ (blocking) 一個 thread 意味著該 thread 被阻止執行工作或退出。因為我們將 `join` 的呼叫放在主 thread 的 `for` 迴圈之後，執行範例 16-2 應該會產生類似這樣的輸出：
+
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 
 ```
 hi number 1 from the main thread!
@@ -131,11 +139,11 @@ hi number 8 from the spawned thread!
 hi number 9 from the spawned thread!
 ```
 
-兩個 threads 繼續交替執行，但由於呼叫了 `handle.join()`，主 thread 會等待，直到 spawned thread 完成才結束。
+兩個 thread 持續交替執行，但主 thread 因為呼叫了 `handle.join()` 而等待，直到 spawned thread 完成後才會結束。
 
-但讓我們看看當我們將 `handle.join()` 移到 `main` 中的 `for` 迴圈之前會發生什麼，像這樣：
+但讓我們看看，如果我們把 `handle.join()` 移到 `main` 的 `for` 迴圈之前會發生什麼事，像這樣：
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::thread;
@@ -158,7 +166,11 @@ fn main() {
 }
 ```
 
-主 thread 將等待 spawned thread 完成，然後才執行其 `for` 迴圈，因此輸出將不再交錯，如下所示：
+主 thread 會等待 spawned thread 完成，然後才執行它的 `for` 迴圈，所以輸出將不再交錯，如下所示：
+
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 
 ```
 hi number 1 from the spawned thread!
@@ -176,15 +188,15 @@ hi number 3 from the main thread!
 hi number 4 from the main thread!
 ```
 
-像 `join` 在何處被呼叫這樣的小細節，會影響你的 threads 是否同時執行。
+一些小細節，例如 `join` 的呼叫位置，會影響你的 thread 是否同時執行。
 
-### 將 move Closures 與 Threads 一起使用
+### 對 Thread 使用 `move` Closure
 
-我們經常將 `move` 關鍵字與傳遞給 `thread::spawn` 的 closures 一起使用，因為 closure 將取得其從環境中使用的值的 ownership，從而將這些值的 ownership 從一個 thread 轉移到另一個 thread。在第 13 章的「捕捉參考或移動 ownership」一節中，我們討論了 closure 環境中的 `move`。現在我們將更專注於 `move` 和 `thread::spawn` 之間的互動。
+我們經常會對傳遞給 `thread::spawn` 的 closure 使用 `move` 關鍵字，因為這樣 closure 就會取得它所使用來自環境的值的 ownership，從而將這些值的 ownership 從一個 thread 轉移到另一個 thread。在第 13 章的「捕捉參考或移動 Ownership」中，我們討論了 closure 情境下的 `move`。現在我們將更專注於 `move` 和 `thread::spawn` 之間的互動。
 
-注意在列表 16-1 中，我們傳遞給 `thread::spawn` 的 closure 沒有任何參數：我們沒有在 spawned thread 的程式碼中使用主 thread 中的任何資料。要在 spawned thread 中使用主 thread 中的資料，spawned thread 的 closure 必須捕獲它需要的值。列表 16-3 顯示了在主 thread 中建立一個 vector 並試圖在 spawned thread 中使用它的嘗試。然而，這目前還行不通，你很快就會看到原因。
+注意在範例 16-1 中，我們傳遞給 `thread::spawn` 的 closure 沒有任何參數：我們沒有在 spawned thread 的程式碼中使用來自於主 thread 的任何資料。要在 spawned thread 中使用主 thread 的資料，spawned thread 的 closure 必須捕捉它所需要的值。範例 16-3 嘗試在主 thread 中建立一個 vector，並在 spawned thread 中使用它。然而，這還行不通，你馬上就會看到。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::thread;
@@ -200,9 +212,9 @@ fn main() {
 }
 ```
 
-列表 16-3：嘗試在另一個 thread 中使用由主 thread 建立的 vector
+範例 16-3：嘗試在另一個 thread 中使用由主 thread 建立的 vector
 
-closure 使用了 `v`，因此它會捕獲 `v` 並使其成為 closure 環境的一部分。因為 `thread::spawn` 在一個新的 thread 中執行這個 closure，我們應該能夠在新 thread 內部存取 `v`。但是當我們編譯這個範例時，我們會得到以下錯誤：
+closure 使用了 `v`，所以它會捕捉 `v` 並使其成為 closure 環境的一部分。因為 `thread::spawn` 在一個新的 thread 中執行這個 closure，我們應該能夠在那個新 thread 內部存取 `v`。但是當我們編譯這個範例時，會得到以下錯誤：
 
 ```
 $ cargo run
@@ -232,11 +244,11 @@ For more information about this error, try `rustc --explain E0373`.
 error: could not compile `threads` (bin "threads") due to 1 previous error
 ```
 
-Rust *推斷*如何捕獲 `v`，而且因為 `println!` 只需要 `v` 的 reference，所以 closure 試圖借用 `v`。然而，這裡有一個問題：Rust 無法判斷 spawned thread 會執行多久，所以它不知道 `v` 的 reference 是否會一直有效。
+Rust *推斷*如何捕捉 `v`，而且因為 `println!` 只需要 `v` 的一個參考，所以 closure 試圖 borrow `v`。然而，這裡有個問題：Rust 無法判斷 spawned thread 會執行多久，所以它不知道對 `v` 的參考是否永遠有效。
 
-列表 16-4 提供了一個更有可能導致 `v` 的 reference 無效的場景。
+範例 16-4 提供了一個更有可能讓 `v` 的參考失效的情境。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::thread;
@@ -254,11 +266,15 @@ fn main() {
 }
 ```
 
-列表 16-4：一個包含 closure 的 thread 嘗試從執行 `drop v` 的主 thread 中捕獲 `v` 的 reference
+範例 16-4：一個 thread 的 closure 試圖從一個會 drop `v` 的主 thread 中捕捉 `v` 的參考
 
-如果 Rust 允許我們執行這段程式碼，spawned thread 有可能在完全沒有執行的情況下立即被放到後台。spawned thread 內部有一個 `v` 的 reference，但主 thread 立即使用我們在第 15 章討論過的 `drop` 函式將 `v` 丟棄。然後，當 spawned thread 開始執行時，`v` 不再有效，因此它的 reference 也無效。糟糕！
+如果 Rust 允許我們執行這段程式碼，spawned thread 有可能立即被放到背景而完全不執行。spawned thread 內部有對 `v` 的參考，但主 thread 立即 drop 了 `v`，使用了我們在第 15 章討論過的 `drop` 函式。然後，當 spawned thread 開始執行時，`v` 已經不再有效，所以對它的參考也是無效的。糟糕！
 
-為了修復列表 16-3 中的編譯器錯誤，我們可以參考錯誤訊息的建議：
+要修正範例 16-3 的編譯錯誤，我們可以使用錯誤訊息的建議：
+
+<!-- manual-regeneration
+after automatic regeneration, look at listings/ch16-fearless-concurrency/listing-16-03/output.txt and copy the relevant part
+-->
 
 ```
 help: to force the closure to take ownership of `v` (and any other referenced variables), use the `move` keyword
@@ -267,9 +283,9 @@ help: to force the closure to take ownership of `v` (and any other referenced va
   |                                ++++
 ```
 
-透過在 closure 前面加上 `move` 關鍵字，我們強制 closure 取得它所使用值的 ownership，而不是讓 Rust 推斷它應該借用這些值。列表 16-5 中對列表 16-3 的修改將會編譯並如我們所願地執行。
+透過在 closure 前面加上 `move` 關鍵字，我們強制 closure 取得它所使用值的 ownership，而不是讓 Rust 推斷它應該 borrow 這些值。如範例 16-5 所示對範例 16-3 的修改將會如我們預期地編譯和執行。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::thread;
@@ -285,9 +301,9 @@ fn main() {
 }
 ```
 
-列表 16-5：使用 `move` 關鍵字強制 closure 取得其使用值的 ownership
+範例 16-5：使用 `move` 關鍵字強制 closure 取得它所用值的 ownership
 
-我們可能會想嘗試用同樣的方式來修復列表 16-4 中主 thread 呼叫 `drop` 的程式碼，即使用 `move` closure。然而，這個修復不會奏效，因為列表 16-4 試圖做的事情基於不同的原因是不被允許的。如果我們在 closure 中加入 `move`，我們會將 `v` 移動到 closure 的環境中，然後我們就不能在主 thread 中對它呼叫 `drop` 了。我們會得到以下編譯器錯誤：
+我們可能會想用同樣的方法來修復範例 16-4 中主 thread 呼叫 `drop` 的程式碼，即使用一個 `move` closure。然而，這個修復方法行不通，因為範例 16-4 試圖做的事情是出於另一個原因而不被允許的。如果我們對 closure 加上 `move`，我們會將 `v` move 到 closure 的環境中，然後我們就不能再在主 thread 中對它呼叫 `drop` 了。我們會得到這個編譯錯誤：
 
 ```
 $ cargo run
@@ -310,25 +326,25 @@ For more information about this error, try `rustc --explain E0382`.
 error: could not compile `threads` (bin "threads") due to 1 previous error
 ```
 
-Rust 的 ownership 規則再次拯救了我們！我們在列表 16-3 的程式碼中得到了錯誤，因為 Rust 比較保守，只為 thread 借用了 `v`，這意味著主 thread 理論上可能會使 spawned thread 的 reference 無效。透過告訴 Rust 將 `v` 的 ownership 移動到 spawned thread，我們向 Rust 保證主 thread 將不再使用 `v`。如果我們以相同的方式改變列表 16-4，那麼我們在主 thread 中試圖使用 `v` 時就違反了 ownership 規則。`move` 關鍵字會覆蓋 Rust 借用的保守預設；它不允許我們違反 ownership 規則。
+Rust 的 ownership 規則又一次拯救了我們！我們從範例 16-3 的程式碼中得到錯誤，是因為 Rust 採取了保守的策略，只為 thread borrow `v`，這意味著主 thread 理論上可能使 spawned thread 的參考失效。透過告訴 Rust 將 `v` 的 ownership move 到 spawned thread，我們向 Rust 保證主 thread 不會再使用 `v`。如果我們以同樣的方式修改範例 16-4，那麼當我們試圖在主 thread 中使用 `v` 時，就會違反 ownership 規則。`move` 關鍵字覆蓋了 Rust 保守的預設 borrow 行為；它不允許我們違反 ownership 規則。
 
-現在我們已經涵蓋了 threads 是什麼以及 thread API 提供的各種方法，接下來讓我們看看一些可以使用 threads 的情況。
+現在我們已經介紹了 thread 是什麼，以及 thread API 提供的方法，讓我們來看看一些可以使用 thread 的情境。
 
-## 使用訊息傳遞在 Threads 之間傳輸資料
+## 使用 Message Passing 在 Thread 之間傳輸資料
 
-一種日益流行的確保安全並行的方法是 _訊息傳遞 (message passing)_，其中 threads 或 actors 透過互相發送包含資料的訊息來進行通訊。這是一個來自 Go 語言文件 (`https://golang.org/doc/effective_go.html#concurrency`) 的標語中的想法：「不要透過共享記憶體來通訊；相反地，透過通訊來共享記憶體。」
+一個日益流行的確保安全 concurrency 的方法是 _message passing_，即 thread 或 actor 透過互相傳送包含資料的訊息來進行通訊。這個想法來自 Go 語言文件的口號 _https://golang.org/doc/effective_go.html#concurrency_：「不要透過共享記憶體來通訊；而是透過通訊來共享記憶體。」
 
-為了實現訊息傳遞並行，Rust 的標準函式庫提供了 channels 的實作。_channel (通道)_ 是一個通用的程式設計概念，透過它資料從一個 thread 發送到另一個 thread。
+為了實現 message-sending concurrency，Rust 的標準函式庫提供了一個 channel 的實作。_channel_ 是一種通用的程式設計概念，藉此資料可以從一個 thread 傳送到另一個 thread。
 
-你可以把程式設計中的 channel 想像成一個單向的水道，例如一條溪流或一條河流。如果你把像橡皮鴨一樣的東西放進河裡，它就會順流而下，到達水道的盡頭。
+你可以想像程式設計中的 channel 就像一條有方向的水道，例如小溪或河流。如果你把像橡皮鴨這樣的東西放進河裡，它會順流而下，到達水道的盡頭。
 
-一個 channel 有兩半：一個 transmitter (發送端) 和一個 receiver (接收端)。transmitter 半是上游你把橡皮鴨放進河裡的位置，而 receiver 半是橡皮鴨最終到達下游的位置。你的程式碼的一部分在 transmitter 上呼叫方法，帶上你想發送的資料，另一部分則檢查接收端是否有訊息到達。如果 transmitter 或 receiver 的任何一半被 drop 掉了，則該 channel 被稱為 _關閉 (closed)_。
+一個 channel 有兩半：一個 transmitter 和一個 receiver。transmitter half 是上游，你在那裡把橡皮鴨放進河裡；而 receiver half 是橡皮鴨最終到達的下游。你程式的一部分會呼叫 transmitter 上的方法，傳入你想傳送的資料，另一部分則在接收端檢查是否有訊息到達。如果 transmitter 或 receiver half 被 dropped，則稱 channel 為 _closed_。
 
-在這裡，我們將逐步建構一個程式，它有一個 thread 用來產生值並將它們發送到 channel 中，另一個 thread 則接收這些值並將它們打印出來。我們將使用 channel 在 threads 之間傳送簡單的值以說明這個特性。一旦你熟悉了這個技術，你就可以將 channels 用於任何需要互相通訊的 threads，例如聊天系統，或是一個許多 threads 執行部分計算並將這些部分發送到一個聚合結果的 thread 的系統。
+接下來，我們將逐步建立一個程式，其中一個 thread 產生值並將它們送入 channel，另一個 thread 接收這些值並將它們印出。我們將使用 channel 在 thread 之間傳送簡單的值，以說明這個功能。一旦你熟悉了這種技巧，你就可以將 channel 用於任何需要互相通訊的 thread，例如聊天系統，或是一個由多個 thread 執行部分計算，並將結果傳送給一個 thread 進行匯總的系統。
 
-首先，在列表 16-6 中，我們將建立一個 channel，但不對它做任何操作。請注意，這目前還無法編譯，因為 Rust 無法判斷我們希望透過 channel 發送什麼型別的值。
+首先，在範例 16-6 中，我們將建立一個 channel，但還不做任何事。注意這還不能編譯，因為 Rust 不知道我們想在 channel 上傳送什麼型別的值。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::mpsc;
@@ -338,15 +354,15 @@ fn main() {
 }
 ```
 
-列表 16-6：建立一個 channel 並將兩半分配給 `tx` 和 `rx`
+範例 16-6：建立一個 channel 並將兩半分別賦值給 `tx` 和 `rx`
 
-我們使用 `mpsc::channel` 函式建立一個新的 channel；`mpsc` 代表 _multiple producer, single consumer_ (多生產者，單消費者)。簡而言之，Rust 標準函式庫實作 channels 的方式意味著一個 channel 可以有多個產生值的 _發送_ 端，但只有一個消耗這些值的 _接收_ 端。想像多條溪流匯合成一條大河：所有沿著任何一條溪流發送的東西最終都會匯集到終點的那條河。我們將從單一生產者開始，但當這個範例開始運作時，我們將新增多個生產者。
+我們使用 `mpsc::channel` 函式來建立一個新的 channel；`mpsc` 代表 _multiple producer, single consumer_。簡而言之，Rust 標準函式庫實作 channel 的方式意味著一個 channel 可以有多個產生值的*發送*端，但只有一個消耗這些值的*接收*端。想像一下多條小溪匯流成一條大河：任何從溪流中送出的東西最終都會匯集到一條河裡。我們現在先從單一 producer 開始，等這個範例能運作後再加入多個 producer。
 
-`mpsc::channel` 函式回傳一個 tuple，其中第一個元素是發送端——transmitter——第二個元素是接收端——receiver。縮寫 `tx` 和 `rx` 傳統上在許多領域分別用於 _transmitter_ 和 _receiver_，所以我們將變數命名為此，以表示每一端。我們使用帶有模式的 `let` 語句來解構 tuples；我們將在第 19 章討論在 `let` 語句中使用模式和解構。目前，你只需要知道以這種方式使用 `let` 語句是提取 `mpsc::channel` 回傳的 tuple 片段的便捷方法。
+`mpsc::channel` 函式回傳一個 tuple，第一個元素是發送端——transmitter——第二個元素是接收端——receiver。縮寫 `tx` 和 `rx` 在許多領域中傳統上分別用於 _transmitter_ 和 _receiver_，所以我們如此命名變數以表示每一端。我們使用一個帶有 pattern 的 `let` 陳述式來解構 tuple；我們將在第 19 章討論在 `let` 陳述式中使用 pattern 和解構。目前，只要知道用這種方式的 `let` 陳述式是提取 `mpsc::channel` 回傳的 tuple 中各個部分的便利方法。
 
-讓我們將發送端移動到一個 spawned thread 中，讓它發送一個字串，這樣 spawned thread 就能與主 thread 通訊，如列表 16-7 所示。這就像把一隻橡皮鴨放進上游的河裡，或者從一個 thread 向另一個 thread 發送聊天訊息。
+讓我們將發送端移到一個 spawned thread 中，讓它傳送一個字串，這樣 spawned thread 就能與主 thread 進行通訊，如範例 16-7 所示。這就像把一隻橡皮鴨放入上游的河流，或從一個 thread 向另一個 thread 傳送一條聊天訊息。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::mpsc;
@@ -362,15 +378,15 @@ fn main() {
 }
 ```
 
-列表 16-7：將 `tx` 移動到一個 spawned thread 並發送 `"hi"`
+範例 16-7：將 `tx` move 到一個 spawned thread 並傳送 `"hi"`
 
-我們再次使用 `thread::spawn` 建立一個新 thread，然後使用 `move` 將 `tx` 移動到 closure 中，這樣 spawned thread 就擁有 `tx`。spawned thread 需要擁有 transmitter 才能透過 channel 發送訊息。
+再次，我們使用 `thread::spawn` 來建立一個新 thread，然後使用 `move` 將 `tx` move 到 closure 中，讓 spawned thread 擁有 `tx`。spawned thread 需要擁有 transmitter 才能透過 channel 傳送訊息。
 
-transmitter 有一個 `send` 方法，它接收我們想發送的值。`send` 方法回傳一個 `Result<T, E>` 型別，所以如果 receiver 已經被 drop 掉了，並且沒有地方可以發送值，send 操作將會回傳一個錯誤。在這個範例中，我們呼叫 `unwrap` 以在發生錯誤時 panic。但在實際應用程式中，我們會妥善處理它：請回到第 9 章回顧正確錯誤處理的策略。
+transmitter 有一個 `send` 方法，它接受我們想要傳送的值。`send` 方法回傳一個 `Result<T, E>` 型別，所以如果 receiver 已經被 dropped 且沒有地方可以傳送值，send 操作將會回傳一個錯誤。在這個範例中，我們呼叫 `unwrap` 在發生錯誤時 panic。但在一個真實的應用程式中，我們會妥善處理它：回到第 9 章複習正確的錯誤處理策略。
 
-在列表 16-8 中，我們將在主 thread 中從 receiver 獲取值。這就像從河的盡頭打撈橡皮鴨，或接收聊天訊息一樣。
+在範例 16-8 中，我們將在主 thread 中從 receiver 取得值。這就像從河的盡頭撈起橡皮鴨，或接收一條聊天訊息。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::mpsc;
@@ -389,15 +405,19 @@ fn main() {
 }
 ```
 
-列表 16-8：在主 thread 中接收值 `"hi"` 並打印
+範例 16-8：在主 thread 中接收值 `"hi"` 並將其印出
 
-接收端有兩個有用的方法：`recv` 和 `try_recv`。我們使用的是 `recv`，它是 _receive_ 的縮寫，它會阻塞主 thread 的執行，並等待直到一個值被發送到 channel。一旦值被發送，`recv` 會將其以 `Result<T, E>` 的形式回傳。當 transmitter 關閉時，`recv` 會回傳一個錯誤，表示不會再有值傳來。
+receiver 有兩個有用的方法：`recv` 和 `try_recv`。我們使用的是 `recv`，是 _receive_ 的縮寫，它會阻擋主 thread 的執行，並等待直到有值被送入 channel。一旦有值被送出，`recv` 將會以 `Result<T, E>` 的形式回傳它。當 transmitter 關閉時，`recv` 將回傳一個錯誤，表示不會再有值傳來。
 
-`try_recv` 方法不會阻塞，而是會立即回傳一個 `Result<T, E>`：如果有一個訊息可用，則是一個包含訊息的 `Ok` 值；如果這次沒有任何訊息，則是一個 `Err` 值。如果這個 thread 在等待訊息時還有其他工作要做，使用 `try_recv` 會很有用：我們可以編寫一個迴圈，每隔一段時間呼叫 `try_recv`，如果訊息可用就處理，否則做其他工作一小段時間直到再次檢查。
+`try_recv` 方法不會阻擋，而是會立即回傳一個 `Result<T, E>`：如果有一條可用的訊息，則為一個包含訊息的 `Ok` 值；如果這次沒有任何訊息，則為一個 `Err` 值。如果這個 thread 在等待訊息的同時還有其他工作要做，使用 `try_recv` 會很有用：我們可以寫一個迴圈，每隔一段時間呼叫 `try_recv`，如果有一條可用的訊息就處理它，否則就做一會兒其他工作，直到再次檢查。
 
-為了簡便起見，我們在這個範例中使用了 `recv`；主 thread 除了等待訊息之外沒有其他工作要做，因此阻塞主 thread 是合適的。
+在這個範例中，為求簡單，我們使用了 `recv`；主 thread 除了等待訊息外沒有其他工作要做，所以阻擋主 thread 是合適的。
 
-當我們執行列表 16-8 中的程式碼時，我們會看到從主 thread 打印出的值：
+當我們執行範例 16-8 的程式碼時，我們將會看到從主 thread 印出的值：
+
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 
 ```
 Got: hi
@@ -405,11 +425,11 @@ Got: hi
 
 完美！
 
-### Channels 和 Ownership 的轉移
+### Channel 和 Ownership 轉移
 
-ownership 規則在訊息傳遞中扮演著至關重要的角色，因為它們幫助你編寫安全的並行程式碼。防止並行程式設計中的錯誤是貫穿你的 Rust 程式思考 ownership 的優勢。讓我們做一個實驗來展示 channels 和 ownership 如何協同工作以防止問題：我們將嘗試在透過 channel 發送 `val` 值_之後_，在 spawned thread 中使用它。試著編譯列表 16-9 中的程式碼，看看為什麼不允許這段程式碼。
+Ownership 規則在 message sending 中扮演著至關重要的角色，因為它們幫助你寫出安全的 concurrent 程式碼。在整個 Rust 程式中思考 ownership 是預防 concurrent programming 中錯誤的優勢所在。讓我們做個實驗，來展示 channel 和 ownership 如何共同作用以防止問題：我們將嘗試在 spawned thread 中使用一個 `val` 值，*在*我們將它送入 channel 之後。試著編譯範例 16-9 的程式碼，看看為什麼這段程式碼不被允許。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::mpsc;
@@ -429,9 +449,9 @@ fn main() {
 }
 ```
 
-列表 16-9：試圖在透過 channel 發送 `val` 後使用它
+範例 16-9：試圖在我們將 `val` 送入 channel 後使用它
 
-在這裡，我們試圖在透過 `tx.send` 將 `val` 沿著 channel 發送後打印它。允許這樣做會是一個壞主意：一旦值被發送到另一個 thread，該 thread 可能會在我們再次嘗試使用該值之前修改或 drop 掉它。潛在的，另一個 thread 的修改可能會因為資料不一致或不存在而導致錯誤或意外結果。然而，如果我們嘗試編譯列表 16-9 中的程式碼，Rust 會給我們一個錯誤：
+在這裡，我們試圖在透過 `tx.send` 將 `val` 送入 channel 後印出 `val`。允許這樣做會是個壞主意：一旦值被送到另一個 thread，那個 thread 可能會在我們再次嘗試使用該值之前修改或 drop 它。潛在地，另一個 thread 的修改可能會因為不一致或不存在的資料而導致錯誤或非預期的結果。然而，如果我們嘗試編譯範例 16-9 的程式碼，Rust 會給我們一個錯誤：
 
 ```
 $ cargo run
@@ -452,15 +472,15 @@ For more information about this error, try `rustc --explain E0382`.
 error: could not compile `message-passing` (bin "message-passing") due to 1 previous error
 ```
 
-我們的並行錯誤導致了一個 compile-time error。`send` 函式取得了其參數的 ownership，當值被移動時，接收端取得了它的 ownership。這阻止了我們在發送值後意外地再次使用它；ownership 系統檢查一切是否正常。
+我們的 concurrency 錯誤導致了一個編譯時錯誤。`send` 函式取得了其參數的 ownership，當值被 move 時，receiver 就取得了它的 ownership。這阻止我們在傳送值之後意外地再次使用它；ownership 系統檢查一切是否正常。
 
-### 發送多個值並查看 Receiver 等待
+### 傳送多個值並觀察 Receiver 等待
 
-列表 16-8 中的程式碼已編譯並執行，但它沒有清楚地顯示兩個獨立的 threads 正在透過 channel 互相通訊。
+範例 16-8 的程式碼編譯並執行了，但它沒有清楚地顯示出兩個獨立的 thread 正在透過 channel 互相交談。
 
-在列表 16-10 中，我們進行了一些修改，將證明列表 16-8 中的程式碼正在並行執行：spawned thread 現在將發送多條訊息，並在每條訊息之間暫停一秒鐘。
+在範例 16-10 中，我們做了一些修改，這將證明範例 16-8 的程式碼是 concurrently 執行的：spawned thread 現在將傳送多個訊息，並在每條訊息之間暫停一秒。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::mpsc;
@@ -490,13 +510,17 @@ fn main() {
 }
 ```
 
-列表 16-10：發送多個訊息並在每個訊息之間暫停
+範例 16-10：傳送多個訊息並在每個之間暫停
 
-這次，spawned thread 有一個字串 vector，我們想將其發送到主 thread。我們迭代它們，逐個發送，並透過呼叫 `thread::sleep` 函式並傳遞一個 `Duration` 值為一秒來在每個之間暫停。
+這次，spawned thread 有一個我們想傳送給主 thread 的字串 vector。我們迭代它們，個別傳送每個字串，並在每次之間呼叫 `thread::sleep` 函式，傳入一秒的 `Duration` 值來暫停。
 
-在主 thread 中，我們不再明確呼叫 `recv` 函式：相反，我們將 `rx` 視為一個 iterator。對於每個收到的值，我們都會打印它。當 channel 關閉時，迭代將結束。
+在主 thread 中，我們不再明確呼叫 `recv` 函式：而是將 `rx` 當作一個 iterator。對於每個接收到的值，我們將它印出。當 channel 關閉時，迭代將會結束。
 
-當執行列表 16-10 中的程式碼時，你應該會看到以下輸出，每行之間暫停一秒：
+當執行範例 16-10 的程式碼時，你應該會看到以下輸出，每行之間有一秒的暫停：
+
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 
 ```
 Got: hi
@@ -505,13 +529,13 @@ Got: the
 Got: thread
 ```
 
-因為我們在主 thread 的 `for` 迴圈中沒有任何暫停或延遲的程式碼，所以我們可以判斷主 thread 正在等待從 spawned thread 接收值。
+因為我們在主 thread 的 `for` 迴圈中沒有任何暫停或延遲的程式碼，我們可以判斷主 thread 正在等待從 spawned thread 接收值。
 
-### 透過複製 Transmitter 建立多個 Producers
+### 透過複製 Transmitter 來建立多個 Producer
 
-前面我們提到 `mpsc` 是 _multiple producer, single consumer_ 的縮寫。讓我們來利用 `mpsc`，並擴展列表 16-10 中的程式碼，建立多個 threads，它們都將值發送到同一個 receiver。我們可以透過複製 transmitter 來實現，如列表 16-11 所示。
+稍早我們提到 `mpsc` 是 _multiple producer, single consumer_ 的縮寫。讓我們來利用 `mpsc`，擴展示範 16-10 的程式碼，建立多個 thread，它們都將值傳送到同一個 receiver。我們可以透過複製 transmitter 來做到這一點，如範例 16-11 所示。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
     // --snip--
@@ -554,11 +578,15 @@ Got: thread
     // --snip--
 ```
 
-列表 16-11：從多個生產者發送多個訊息
+範例 16-11：從多個 producer 傳送多個訊息
 
-這次，在我們建立第一個 spawned thread 之前，我們在 transmitter 上呼叫了 `clone`。這會給我們一個新的 transmitter，我們可以將其傳遞給第一個 spawned thread。我們將原始的 transmitter 傳遞給第二個 spawned thread。這就給了我們兩個 threads，每個都向同一個 receiver 發送不同的訊息。
+這次，在我們建立第一個 spawned thread 之前，我們先對 transmitter 呼叫 `clone`。這會給我們一個新的 transmitter，我們可以把它傳遞給第一個 spawned thread。我們將原始的 transmitter 傳遞給第二個 spawned thread。這樣我們就有兩個 thread，每個都向同一個 receiver 傳送不同的訊息。
 
-當你執行程式碼時，你的輸出應該類似這樣：
+當你執行這段程式碼時，你的輸出應該會像這樣：
+
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 
 ```
 Got: hi
@@ -571,36 +599,36 @@ Got: thread
 Got: you
 ```
 
-你可能會看到值以不同的順序出現，這取決於你的系統。這就是並行既有趣又困難的地方。如果你嘗試使用 `thread::sleep`，在不同的 threads 中給予它不同的值，每次執行都會更加不確定，並產生不同的輸出。
+你可能會看到值的順序不同，這取決於你的系統。這就是 concurrency 有趣也困難的地方。如果你對 `thread::sleep` 進行實驗，在不同的 thread 中給予不同的值，每次執行都會更加不確定，並產生不同的輸出。
 
-現在我們已經了解了 channels 的運作方式，接下來讓我們看看另一種並行方法。
+現在我們已經看過了 channel 是如何運作的，讓我們來看看另一種 concurrency 的方法。
 
-## 共享狀態並行 (Shared-State Concurrency)
+## Shared-State Concurrency
 
-訊息傳遞是處理並行的一種好方法，但它不是唯一的方法。另一種方法是讓多個 threads 存取相同的共享資料。再次思考 Go 語言文件中標語的這部分：「不要透過共享記憶體來通訊。」
+Message passing 是處理 concurrency 的一種好方法，但它不是唯一的方法。另一種方法是讓多個 thread 存取相同的共享資料。再次思考一下 Go 語言文件的口號中的這部分：「不要透過共享記憶體來通訊。」
 
-透過共享記憶體進行通訊會是什麼樣子？此外，為什麼訊息傳遞愛好者會警告不要使用記憶體共享？
+透過共享記憶體來通訊會是什麼樣子？此外，為什麼 message-passing 的愛好者會警告不要使用記憶體共享？
 
-在某種程度上，任何程式語言中的 channels 都類似於單一 ownership，因為一旦你透過 channel 傳輸了一個值，你就不應該再使用那個值。共享記憶體並行則像多重 ownership：多個 threads 可以同時存取相同的記憶體位置。正如你在第 15 章看到的，智能指標使得多重 ownership 成為可能，多重 ownership 會增加複雜性，因為這些不同的 owner 需要管理。Rust 的型別系統和 ownership 規則在正確管理這方面提供了極大的幫助。作為範例，讓我們看看 mutexes，這是共享記憶體最常見的並行原語之一。
+在某種程度上，任何程式語言中的 channel 都類似於 single ownership，因為一旦你將一個值傳送至 channel，你就不應該再使用那個值。Shared-memory concurrency 就像 multiple ownership：多個 thread 可以同時存取同一個記憶體位置。正如你在第 15 章中所見，智慧指標使得 multiple ownership 成為可能，但 multiple ownership 可能會增加複雜性，因為這些不同的 owner 需要被管理。Rust 的型別系統和 ownership 規則極大地幫助我們正確地進行這種管理。舉個例子，讓我們來看看 mutexes，這是 shared memory 中最常見的 concurrency primitive 之一。
 
-### 使用 Mutexes 允許一次從一個 Thread 存取資料
+### 使用 Mutex 一次只允許一個 Thread 存取資料
 
-_Mutex_ 是 _mutual exclusion (互斥)_ 的縮寫，意指 mutex 在任何給定時間只允許一個 thread 存取某些資料。要存取 mutex 中的資料，thread 必須首先透過要求取得 mutex 的 lock 來表示它想要存取。_lock (鎖)_ 是 mutex 的一部分，它追蹤誰當前對資料擁有獨佔存取權限。因此，mutex 被描述為透過鎖定系統來 _保護 (guarding)_ 它所持有的資料。
+_Mutex_ 是 _mutual exclusion_ 的縮寫，意思是 mutex 在任何給定時間只允許一個 thread 存取某些資料。要存取 mutex 中的資料，一個 thread 必須首先透過請求獲取 mutex 的 lock 來表示它想要存取。_lock_ 是 mutex 的一部分，是一個資料結構，用來追蹤目前誰對資料擁有獨佔存取權。因此，mutex 被描述為透過 locking system *保護*它所持有的資料。
 
-Mutexes 因難以使用而聞名，因為你必須記住兩條規則：
+Mutex 以難用著稱，因為你必須記住兩條規則：
 
-1. 在使用資料之前，你必須嘗試取得 lock。
-2. 當你完成使用 mutex 保護的資料後，你必須解鎖資料，以便其他 threads 可以取得 lock。
+1. 在使用資料之前，你必須嘗試獲取 lock。
+2. 當你用完 mutex 保護的資料後，你必須 unlock 資料，這樣其他 thread 才能獲取 lock。
 
-對於 mutex 的現實世界比喻，想像一下會議中的小組討論，只有一個麥克風。在小組成員發言之前，他們必須詢問或表示他們想使用麥克風。當他們拿到麥克風後，他們可以隨心所欲地講話，然後將麥克風遞給下一個要求發言的小組成員。如果小組成員在使用完麥克風後忘記將其交出，其他人就無法發言。如果共享麥克風的管理出了問題，小組討論就無法按計畫進行！
+對於 mutex 的真實世界比喻，想像一個會議的座談會，只有一支麥克風。在座談者發言之前，他們必須請求或示意他們想要使用麥克風。當他們拿到麥克風後，他們可以想說多久就說多久，然後把麥克風交給下一個請求發言的座談者。如果座談者用完麥克風後忘了交出去，就沒有其他人能發言了。如果共享麥克風的管理出了問題，座談會就無法如計畫進行！
 
-Mutexes 的管理可能極其棘手，這就是為什麼這麼多人熱衷於 channels 的原因。然而，由於 Rust 的型別系統和 ownership 規則，你不可能將鎖定和解鎖搞錯。
+Mutex 的管理可能非常棘手，這也是為什麼這麼多人熱衷於 channel。然而，多虧了 Rust 的型別系統和 ownership 規則，你不會搞錯 locking 和 unlocking。
 
-#### Mutex<T> 的 API
+#### `Mutex<T>` 的 API
 
-作為如何使用 mutex 的範例，讓我們首先在單一執行緒環境中使用 mutex，如列表 16-12 所示。
+作為如何使用 mutex 的範例，讓我們從在單一 thread 的情境下使用 mutex 開始，如範例 16-12 所示。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::Mutex;
@@ -617,23 +645,23 @@ fn main() {
 }
 ```
 
-列表 16-12：為簡化起見，在單執行緒環境中探索 `Mutex<T>` 的 API
+範例 16-12：為求簡潔，在單一 thread 情境下探索 `Mutex<T>` 的 API
 
-與許多型別一樣，我們使用關聯函式 `new` 建立一個 `Mutex<T>`。要存取 mutex 內部資料，我們使用 `lock` 方法來取得 lock。這個呼叫將會阻塞當前 thread，使其無法執行任何工作，直到輪到我們取得 lock 為止。
+與許多型別一樣，我們使用關聯函式 `new` 來建立一個 `Mutex<T>`。要存取 mutex 內的資料，我們使用 `lock` 方法來獲取 lock。這個呼叫會阻擋目前的 thread，使其無法做任何工作，直到輪到我們擁有 lock。
 
-如果持有 lock 的另一個 thread panic 了，對 `lock` 的呼叫就會失敗。在這種情況下，沒有人能再取得 lock，所以我們選擇 `unwrap` 並讓這個 thread 在這種情況下 panic。
+如果另一個持有 lock 的 thread panic 了，`lock` 的呼叫就會失敗。在這種情況下，沒有人能再獲取 lock，所以我們選擇 `unwrap`，如果我們處於這種情況，就讓這個 thread panic。
 
-在我們取得了 lock 之後，我們可以將回傳值（在此情況下命名為 `num`）視為內部資料的 mutable reference。型別系統確保我們在使用 `m` 中的值之前取得 lock。`m` 的型別是 `Mutex<i32>`，而不是 `i32`，所以我們*必須*呼叫 `lock` 才能使用 `i32` 值。我們不能忘記；否則型別系統不允許我們存取內部的 `i32`。
+在我們獲取 lock 之後，我們可以將回傳值（此處命名為 `num`）視為內部資料的可變參考。型別系統確保我們在使用 `m` 中的值之前先獲取一個 lock。`m` 的型別是 `Mutex<i32>`，而不是 `i32`，所以我們*必須*呼叫 `lock` 才能使用 `i32` 的值。我們不會忘記；否則型別系統不會讓我們存取內部的 `i32`。
 
-對 `lock` 的呼叫會回傳一個名為 `MutexGuard` 的型別，它被包裝在一個我們用 `unwrap` 處理的 `LockResult` 中。`MutexGuard` 型別實作了 `Deref` 以指向我們的內部資料；該型別還實作了 `Drop`，當 `MutexGuard` 超出 scope 時（這發生在內部 scope 結束時），會自動釋放 lock。因此，我們不會有忘記釋放 lock 並阻止其他 threads 使用 mutex 的風險，因為 lock 會自動釋放。
+`lock` 的呼叫回傳一個名為 `MutexGuard` 的型別，它被包在一個 `LockResult` 中，我們用 `unwrap` 呼叫來處理它。`MutexGuard` 型別實作了 `Deref` 來指向我們的內部資料；該型別還有一個 `Drop` 實作，當 `MutexGuard` 離開 scope 時會自動釋放 lock，這發生在內部 scope 的結尾。因此，我們不會有忘記釋放 lock 並阻礙其他 thread 使用 mutex 的風險，因為 lock 的釋放是自動發生的。
 
-在 drop 掉 lock 之後，我們可以打印 mutex 值，並看到我們能夠將內部 `i32` 更改為 `6`。
+在 drop lock 之後，我們可以印出 mutex 的值，並看到我們能夠將內部的 `i32` 改為 `6`。
 
-#### 在多個 Threads 之間共享 Mutex<T>
+#### 在多個 Thread 之間共享 `Mutex<T>`
 
-現在讓我們嘗試使用 `Mutex<T>` 在多個 threads 之間共享一個值。我們將啟動 10 個 threads，讓它們每個將計數器值增加 1，這樣計數器將從 0 增加到 10。列表 16-13 中的範例將會有一個編譯器錯誤，我們將利用這個錯誤來學習更多關於使用 `Mutex<T>` 以及 Rust 如何幫助我們正確使用它的知識。
+現在讓我們試著使用 `Mutex<T>` 在多個 thread 之間共享一個值。我們將啟動 10 個 thread，讓它們每個都將一個計數器值加 1，所以計數器會從 0 變到 10。範例 16-13 的程式碼會有一個編譯錯誤，我們將利用這個錯誤來學習更多關於使用 `Mutex<T>` 以及 Rust 如何幫助我們正確地使用它。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::Mutex;
@@ -660,13 +688,13 @@ fn main() {
 }
 ```
 
-列表 16-13：十個 threads，每個都增加一個由 `Mutex<T>` 保護的計數器
+範例 16-13：十個 thread，每個都增加一個由 `Mutex<T>` 保護的計數器
 
-我們建立了一個 `counter` 變數來在 `Mutex<T>` 內部保存一個 `i32`，就像我們在列表 16-12 中做的那樣。接下來，我們透過迭代一系列數字來建立 10 個 threads。我們使用 `thread::spawn` 並給所有 threads 相同的 closure：一個將計數器移動到 thread 中，透過呼叫 `lock` 方法取得 `Mutex<T>` 的 lock，然後將 mutex 中的值加 1。當 thread 完成執行其 closure 時，`num` 將超出 scope 並釋放 lock，以便另一個 thread 可以取得它。
+我們建立一個 `counter` 變數，用來在 `Mutex<T>` 中存放一個 `i32`，就像我們在範例 16-12 中做的那樣。接下來，我們透過迭代一個數字範圍來建立 10 個 thread。我們使用 `thread::spawn` 並給所有 thread 相同的 closure：一個將 counter move 到 thread 中，透過呼叫 `lock` 方法獲取 `Mutex<T>` 上的 lock，然後將 mutex 中的值加 1 的 closure。當一個 thread 執行完它的 closure 後，`num` 將會離開 scope 並釋放 lock，這樣另一個 thread 就可以獲取它。
 
-在主 thread 中，我們收集所有 join handles。然後，就像我們在列表 16-2 中所做的那樣，我們在每個 handle 上呼叫 `join` 以確保所有 threads 都完成。此時，主 thread 將取得 lock 並打印這個程式的結果。
+在主 thread 中，我們收集所有的 join handle。然後，就像我們在範例 16-2 中做的那樣，我們對每個 handle 呼叫 `join` 來確保所有 thread 都完成。到那時，主 thread 將會獲取 lock 並印出這個程式的結果。
 
-我們暗示這個範例無法編譯。現在讓我們找出原因！
+我們暗示過這個範例無法編譯。現在讓我們來看看為什麼！
 
 ```
 $ cargo run
@@ -697,13 +725,13 @@ For more information about this error, try `rustc --explain E0382`.
 error: could not compile `shared-state` (bin "shared-state") due to 1 previous error
 ```
 
-錯誤訊息指出 `counter` 值在迴圈的上一次迭代中被移動了。Rust 告訴我們不能將 lock `counter` 的 ownership 移動到多個 threads 中。讓我們用我們在第 15 章討論過的多重 ownership 方法來修復這個編譯器錯誤。
+錯誤訊息指出 `counter` 值在迴圈的上一次迭代中被 move 了。Rust 告訴我們，我們不能將 lock `counter` 的 ownership move 到多個 thread 中。讓我們用我們在第 15 章討論過的多重 ownership 方法來修正這個編譯錯誤。
 
 #### 多執行緒下的多重 Ownership
 
-在第 15 章，我們透過使用智能指標 `Rc<T>` 建立一個 reference counted value 來將一個值賦予多個 owner。讓我們在這裡也這樣做，看看會發生什麼。我們將在列表 16-14 中將 `Mutex<T>` 包裝在 `Rc<T>` 中，並在將 ownership 移動到 thread 之前複製 `Rc<T>`。
+在第 15 章，我們透過使用智慧指標 `Rc<T>` 建立一個 reference counted value，將一個值賦予多個 owner。讓我們在這裡也做同樣的事，看看會發生什麼。我們將在範例 16-14 中用 `Rc<T>` 包裝 `Mutex<T>`，並在將 ownership move 到 thread 之前 clone `Rc<T>`。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::rc::Rc;
@@ -732,9 +760,9 @@ fn main() {
 }
 ```
 
-列表 16-14：嘗試使用 `Rc<T>` 允許多個 threads 擁有 `Mutex<T>`
+範例 16-14：試圖使用 `Rc<T>` 來允許多個 thread 擁有 `Mutex<T>`
 
-再一次，我們編譯並得到了……不同的錯誤！編譯器教會了我們很多東西。
+我們再次編譯，然後得到...不同的錯誤！編譯器教會了我們很多東西。
 
 ```
 $ cargo run
@@ -767,19 +795,19 @@ For more information about this error, try `rustc --explain E0277`.
 error: could not compile `shared-state` (bin "shared-state") due to 1 previous error
 ```
 
-哇，這錯誤訊息真囉嗦！這裡最重要的部分是：「`Rc<Mutex<i32>>` 不能在 threads 之間安全地傳送。」編譯器也告訴了我們原因：「`Send` trait 沒有為 `Rc<Mutex<i32>>` 實作。」我們將在下一節討論 `Send`：它是確保我們與 threads 一起使用的型別適用於並行情況的 traits 之一。
+哇，這個錯誤訊息真長！這裡需要關注的重點是：`` `Rc<Mutex<i32>>` cannot be sent between threads safely ``。編譯器也告訴我們原因：`` the trait `Send` is not implemented for `Rc<Mutex<i32>>` ``。我們將在下一節討論 `Send`：它是確保我們與 thread 一起使用的型別適用於 concurrent 情境的 trait 之一。
 
-不幸的是，`Rc<T>` 無法安全地在 threads 之間共享。當 `Rc<T>` 管理 reference count 時，它在每次呼叫 `clone` 時增加計數，並在每個 clone 被 drop 時減少計數。但它沒有使用任何 concurrency primitives 來確保計數的更改不會被另一個 thread 中斷。這可能導致錯誤的計數——微妙的錯誤，進而可能導致記憶體洩漏或一個值在我們完成使用之前就被 drop 掉。我們需要的是一個與 `Rc<T>` 完全相同的型別，但能以 thread-safe 的方式修改 reference count。
+不幸的是，`Rc<T>` 在跨 thread 共享時並不安全。當 `Rc<T>` 管理參考計數時，它會為每次 `clone` 呼叫增加計數，並在每個 clone 被 drop 時減少計數。但它不使用任何 concurrency primitives 來確保計數的更改不會被另一個 thread 中斷。這可能導致錯誤的計數——細微的 bug，進而可能導致記憶體洩漏或值在我們用完之前就被 drop。我們需要的是一個與 `Rc<T>` 完全相同，但在更改參考計數時是 thread-safe 的型別。
 
-#### 使用 Arc<T> 進行原子參考計數
+#### 使用 `Arc<T>` 進行原子參考計數
 
-幸運的是，`Arc<T>` *是*一種像 `Rc<T>` 那樣在並行情況下可以安全使用的型別。_a_ 代表 _atomic_，意思是它是一個 _原子參考計數 (atomically reference-counted)_ 型別。原子操作是另一種並行原語，我們在這裡不會詳細介紹：更多細節請參閱 `std::sync::atomic` 的標準函式庫文件。此時，你只需要知道原子操作像 primitive types 一樣工作，但可以安全地在 threads 之間共享。
+幸運的是，`Arc<T>` *是*一個像 `Rc<T>` 一樣的型別，但在 concurrent 情境下是安全的。_a_ 代表 _atomic_，意思是它是一個_原子參考計數_ (atomically reference-counted) 型別。Atomics 是另一種我們不會在這裡詳細介紹的 concurrency primitive：詳情請參閱標準函式庫 `std::sync::atomic` 的文件。目前，你只需要知道 atomics 的運作方式類似於基本型別，但在跨 thread 共享時是安全的。
 
-你可能會想，為什麼所有 primitive types 都不是原子的，以及為什麼標準函式庫的型別預設不實作 `Arc<T>`。原因在於 thread 安全性會帶來效能損失，你只會在真正需要時才願意付出這種代價。如果你只是在單一 thread 內對值執行操作，你的程式碼如果不需要強制原子操作提供的保證，就可以執行得更快。
+你可能會想，為什麼不是所有的基本型別都是 atomic 的，為什麼標準函式庫的型別不是預設使用 `Arc<T>` 實作的。原因是 thread safety 帶來了效能上的代價，你只希望在真正需要時才支付這個代價。如果你只是在單一 thread 內對值進行操作，如果不需要強制執行 atomics 提供的保證，你的程式碼可以跑得更快。
 
-讓我們回到我們的範例：`Arc<T>` 和 `Rc<T>` 有著相同的 API，所以我們透過更改 `use` 行、對 `new` 的呼叫以及對 `clone` 的呼叫來修復我們的程式。列表 16-15 中的程式碼最終將會編譯並執行。
+讓我們回到我們的範例：`Arc<T>` 和 `Rc<T>` 有相同的 API，所以我們透過更改 `use` 行、`new` 的呼叫和 `clone` 的呼叫來修正我們的程式。範例 16-15 中的程式碼最終將會編譯並執行。
 
-<span class="filename">src/main.rs</span>
+src/main.rs
 
 ```rust
 use std::sync::{Arc, Mutex};
@@ -807,56 +835,64 @@ fn main() {
 }
 ```
 
-列表 16-15：使用 `Arc<T>` 包裝 `Mutex<T>` 以便在多個 threads 之間共享 ownership
+範例 16-15：使用 `Arc<T>` 來包裝 `Mutex<T>`，以便在多個 thread 之間共享 ownership
 
-這段程式碼將打印以下內容：
+這段程式碼將會印出以下內容：
+
+<!-- Not extracting output because changes to this output aren't significant;
+the changes are likely to be due to the threads running differently rather than
+changes in the compiler -->
 
 ```
 Result: 10
 ```
 
-我們成功了！我們從 0 數到 10，這可能看起來不是很令人印象深刻，但它確實教會了我們很多關於 `Mutex<T>` 和 thread 安全性的知識。你也可以使用這個程式的結構來執行比僅增加計數器更複雜的操作。使用此策略，你可以將計算分成獨立的部分，將這些部分分配到不同的 threads 中，然後使用 `Mutex<T>` 讓每個 thread 用其部分更新最終結果。
+我們成功了！我們從 0 數到 10，這可能看起來不怎麼 impressive，但它教會了我們很多關於 `Mutex<T>` 和 thread safety 的知識。你也可以用這個程式的結構來做比單純增加計數器更複雜的操作。使用這個策略，你可以將一個計算分成獨立的部分，將這些部分分配到不同的 thread，然後使用 `Mutex<T>` 讓每個 thread 用它的部分來更新最終結果。
 
-請注意，如果你正在進行簡單的數值運算，標準函式庫的 `std::sync::atomic` 模組提供了比 `Mutex<T>` 型別更簡單的型別。這些型別提供了安全、並行、原子地存取 primitive types 的功能。我們選擇在此範例中使用 `Mutex<T>` 與 primitive type，以便我們能夠專注於 `Mutex<T>` 的運作方式。
+請注意，如果你正在進行簡單的數值運算，標準函式庫的 `std::sync::atomic` 模組提供了比 `Mutex<T>` 更簡單的型別。這些型別提供了對基本型別的安全、concurrent、atomic 的存取。我們在這個範例中選擇使用 `Mutex<T>` 搭配基本型別，是為了讓我們能專注於 `Mutex<T>` 的運作方式。
 
-### RefCell<T>/Rc<T> 與 Mutex<T>/Arc<T> 之間的相似性
+### `RefCell<T>`/`Rc<T>` 與 `Mutex<T>`/`Arc<T>` 的相似之處
 
-你可能已經注意到 `counter` 是 immutable 的，但我們可以取得其內部值的 mutable reference；這意味著 `Mutex<T>` 提供了 interior mutability，就像 `Cell` 家族所做的那樣。我們在第 15 章使用 `RefCell<T>` 允許我們在 `Rc<T>` 內部修改內容，同樣地，我們使用 `Mutex<T>` 在 `Arc<T>` 內部修改內容。
+你可能已經注意到 `counter` 是不可變的，但我們卻能得到它內部值的可變參考；這意味著 `Mutex<T>` 提供了內部可變性 (interior mutability)，就像 `Cell` 家族一樣。就像我們在第 15 章使用 `RefCell<T>` 來允許我們改變 `Rc<T>` 內的內容一樣，我們使用 `Mutex<T>` 來改變 `Arc<T>` 內的內容。
 
-另一個需要注意的細節是，當你使用 `Mutex<T>` 時，Rust 無法保護你免受所有類型的邏輯錯誤。回想一下第 15 章，使用 `Rc<T>` 存在產生 reference cycles 的風險，即兩個 `Rc<T>` 值互相參考，導致記憶體洩漏。類似地，`Mutex<T>` 存在產生 _deadlocks (死鎖)_ 的風險。當一個操作需要鎖定兩個資源，而兩個 threads 各自取得其中一個鎖定時，就會發生死鎖，導致它們永遠互相等待。如果你對死鎖感興趣，試著建立一個有死鎖的 Rust 程式；然後研究任何語言中 mutexes 的死鎖緩解策略，並嘗試在 Rust 中實作它們。`Mutex<T>` 和 `MutexGuard` 的標準函式庫 API 文件提供了有用的資訊。
+另一個需要注意的細節是，當你使用 `Mutex<T>` 時，Rust 無法保護你免於所有種類的邏輯錯誤。回想第 15 章，使用 `Rc<T>` 伴隨著產生參考循環的風險，即兩個 `Rc<T>` 值互相引用，導致記憶體洩漏。同樣地，`Mutex<T>` 也伴隨著產生 _deadlocks_ 的風險。這種情況發生在一個操作需要鎖定兩個資源，而兩個 thread 各自獲取了其中一個 lock，導致它們永遠互相等待。如果你對 deadlocks 感興趣，試著寫一個有 deadlock 的 Rust 程式；然後研究任何語言中 mutex 的 deadlock 緩解策略，並試著在 Rust 中實作它們。標準函式庫 API 文件中關於 `Mutex<T>` 和 `MutexGuard` 的部分提供了有用的資訊。
 
-我們將透過討論 `Send` 和 `Sync` traits 以及如何將它們與自訂型別一起使用來結束本章。
+我們將以討論 `Send` 和 `Sync` trait 以及如何將它們與自訂型別一起使用來結束本章。
 
-## 透過 Send 和 Sync Traits 擴展並行能力
+## 使用 `Send` 和 `Sync` Trait 實現可擴展的 Concurrency
 
-有趣的是，本章到目前為止我們討論的幾乎所有並行功能都是標準函式庫的一部分，而不是語言本身。你處理並行的方式不限於語言或標準函式庫；你可以編寫自己的並行功能或使用他人編寫的功能。
+<!-- Old link, do not remove -->
 
-然而，嵌入在語言而非標準函式庫中的關鍵並行概念是 `std::marker` traits `Send` 和 `Sync`。
+<a id="extensible-concurrency-with-the-sync-and-send-traits"></a>
 
-### 透過 Send 允許 ownership 在 Threads 之間轉移
+有趣的是，本章到目前為止我們討論過的幾乎所有 concurrency 特性都是標準函式庫的一部分，而不是語言本身。你處理 concurrency 的選項不僅限於語言或標準函式庫；你可以編寫自己的 concurrency 特性，或使用他人編寫的。
 
-`Send` 標記 trait 表示實作 `Send` 的型別的 ownership 可以在 threads 之間轉移。幾乎所有 Rust 型別都實作了 `Send`，但也有一些例外，包括 `Rc<T>`：它無法實作 `Send`，因為如果你複製一個 `Rc<T>` 值並嘗試將複製品的 ownership 轉移到另一個 thread，兩個 threads 可能會同時更新 reference count。因此，`Rc<T>` 是為單執行緒情況設計的，你不希望為 thread-safe 支付效能損失。
+然而，在嵌入語言而非標準函式庫中的關鍵 concurrency 概念中，有 `std::marker` traits `Send` 和 `Sync`。
 
-因此，Rust 的型別系統和 trait bounds 確保你永遠不會不安全地意外地在 threads 之間傳送 `Rc<T>` 值。當我們在列表 16-14 中嘗試這樣做時，我們得到了錯誤：「`Send` trait 沒有為 `Rc<Mutex<i32>>` 實作。」當我們切換到實作了 `Send` 的 `Arc<T>` 時，程式碼就編譯成功了。
+### 使用 `Send` 允許在 Thread 之間轉移 Ownership
 
-任何完全由 `Send` 型別組成的型別，也會自動被標記為 `Send`。除了 raw pointers 之外，幾乎所有 primitive types 都是 `Send`，我們將在第 20 章討論 raw pointers。
+`Send` marker trait 表示實作 `Send` 的型別的值的 ownership 可以在 thread 之間轉移。幾乎每個 Rust 型別都實作了 `Send`，但也有一些例外，包括 `Rc<T>`：它不能實作 `Send`，因為如果你複製了一個 `Rc<T>` 值並試圖將 clone 的 ownership 轉移到另一個 thread，兩個 thread 可能會同時更新參考計數。因此，`Rc<T>` 是為單一 thread 情境設計的，在這種情況下你不想支付 thread-safe 的效能代價。
 
-### 透過 Sync 允許從多個 Threads 存取
+因此，Rust 的型別系統和 trait bounds 確保你永遠不會意外地不安全地跨 thread 傳送 `Rc<T>` 值。當我們在範例 16-14 中嘗試這樣做時，我們得到了錯誤 `` the trait `Send` is not implemented for `Rc<Mutex<i32>>` ``。當我們換成 `Arc<T>`（它確實實作了 `Send`）時，程式碼就編譯通過了。
 
-`Sync` 標記 trait 表示實作 `Sync` 的型別可以安全地從多個 threads 參考。換句話說，如果 `&T` (對 `T` 的 immutable reference) 實作了 `Send`，則任何型別 `T` 都實作了 `Sync`，這意味著該 reference 可以安全地發送到另一個 thread。類似於 `Send`，primitive types 都實作了 `Sync`，並且完全由實作 `Sync` 的型別組成的型別也實作了 `Sync`。
+任何完全由 `Send` 型別組成的型別也都會自動被標記為 `Send`。幾乎所有的基本型別都是 `Send`，除了 raw pointers，我們將在第 20 章討論。
 
-智能指標 `Rc<T>` 也沒有實作 `Sync`，原因與它沒有實作 `Send` 相同。`RefCell<T>` 型別（我們在第 15 章討論過）以及相關的 `Cell<T>` 型別家族都沒有實作 `Sync`。`RefCell<T>` 在 runtime 進行的借用檢查實作並非 thread-safe。智能指標 `Mutex<T>` 實作了 `Sync`，並且可以用於與多個 threads 共享存取，正如你在「在多個 Threads 之間共享 `Mutex<T>`」一節中看到的。
+### 使用 `Sync` 允許多個 Thread 存取
 
-### 手動實作 Send 和 Sync 是不安全的
+`Sync` marker trait 表示實作 `Sync` 的型別可以安全地從多個 thread 引用。換句話說，任何型別 `T` 如果 `&T`（一個對 `T` 的不可變參考）實作了 `Send`，那麼 `T` 就實作了 `Sync`，這意味著該參考可以安全地傳送到另一個 thread。與 `Send` 類似，所有基本型別都實作 `Sync`，而完全由實作 `Sync` 的型別組成的型別也實作 `Sync`。
 
-由於完全由實作 `Send` 和 `Sync` traits 的其他型別組成的型別也會自動實作 `Send` 和 `Sync`，我們不需要手動實作這些 traits。作為標記 traits，它們甚至沒有任何方法需要實作。它們只是用於強制執行與並行相關的不變式。
+智慧指標 `Rc<T>` 也沒有實作 `Sync`，原因與它沒有實作 `Send` 相同。`RefCell<T>` 型別（我們在第 15 章討論過）以及相關的 `Cell<T>` 型別家族也沒有實作 `Sync`。`RefCell<T>` 在 runtime 進行的 borrow checking 實作不是 thread-safe 的。智慧指標 `Mutex<T>` 實作了 `Sync`，可以用來與多個 thread 共享存取權，正如你在「在多個 Thread 之間共享 `Mutex<T>`」中所見。
 
-手動實作這些 traits 涉及實作 unsafe Rust 程式碼。我們將在第 20 章討論使用 unsafe Rust 程式碼；目前，重要的資訊是，建構不由 `Send` 和 `Sync` 部分組成的新並行型別需要仔細考慮以維持安全保證。_《Rustonomicon》_ (`https://doc.rust-lang.org/book/../nomicon/index.html`) 提供了更多關於這些保證以及如何維持它們的資訊。
+### 手動實作 `Send` 和 `Sync` 是 Unsafe 的
+
+因為完全由實作 `Send` 和 `Sync` trait 的其他型別組成的型別也會自動實作 `Send` 和 `Sync`，所以我們不需要手動實作這些 trait。作為 marker traits，它們甚至沒有任何方法需要實作。它們只是用來強制執行與 concurrency 相關的不變性。
+
+手動實作這些 trait 涉及實作 unsafe Rust 程式碼。我們將在第 20 章討論使用 unsafe Rust 程式碼；目前，重要的資訊是，建立不是由 `Send` 和 `Sync` 組件構成的新 concurrent 型別需要仔細思考以維護安全保證。「The Rustonomicon」在 _https://doc.rust-lang.org/nomicon/index.html_ 有更多關於這些保證以及如何維護它們的資訊。
 
 ## 總結
 
-這不是本書中你最後一次看到並行：下一章將重點介紹 async 程式設計，第 21 章中的專案將在比這裡討論的小範例更現實的情況下使用本章中的概念。
+這不是你在本書中最後一次看到 concurrency：下一章將專注於 async programming，而第 21 章的專案將在比這裡討論的小範例更真實的情境中使用本章的概念。
 
-如前所述，由於 Rust 處理並行的方式很少是語言本身的一部分，許多並行解決方案都實作為 crates。這些 crates 的演化速度比標準函式庫快，因此務必在線上搜尋目前最先進的 crates，以便在多執行緒環境中使用。
+如前所述，由於 Rust 處理 concurrency 的方式很少是語言的一部分，許多 concurrency 解決方案是以 crate 的形式實作的。這些 crate 的演進速度比標準函式庫快，所以請務必在網上搜尋當前最先進的 crate，以便在多執行緒情境中使用。
 
-Rust 標準函式庫提供了用於訊息傳遞的 channels 以及智能指標型別，例如 `Mutex<T>` 和 `Arc<T>`，這些型別在並行環境中可以安全使用。型別系統和借用檢查器確保使用這些解決方案的程式碼不會出現 data races 或無效的 reference。一旦你的程式碼編譯成功，你就可以放心，它將愉快地在多個 threads 上運行，而不會出現其他語言中常見的難以追蹤的 bugs。並行程式設計不再是一個令人畏懼的概念：勇敢地去實現你的並行程式吧，無懼地！
+Rust 標準函式庫提供了用於 message passing 的 channel，以及像是 `Mutex<T>` 和 `Arc<T>` 這樣的智慧指標型別，它們在 concurrent 的情境下是安全的。型別系統和 borrow checker 確保使用這些解決方案的程式碼不會出現 data races 或無效的參考。一旦你的程式碼編譯通過，你就可以放心，它會在多個 thread 上愉快地運行，而不會有其他語言中常見的那種難以追蹤的 bug。Concurrent programming 不再是一個需要害怕的概念：放手去做，讓你的程式 concurrent，無所畏懼！
