@@ -6,49 +6,49 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-# 一個 I/O 專案：建立命令列程式
+# 一個 I/O 專案：建構一個命令列程式
 
-本章將回顧你到目前為止所學的許多技能，並探索一些其他的標準函式庫功能。我們將建立一個與檔案和命令列輸入/輸出互動的命令列工具，以練習你現在已經掌握的 Rust 概念。
+本章節回顧了你目前為止學到的許多技巧，並探索了一些標準函式庫的其他功能。我們將建構一個與檔案和命令列 I/O 互動的 command line 工具，來練習你已經掌握的一些 Rust 概念。
 
-Rust 的速度、安全性、單一 binary 輸出以及跨平台支援，使其成為建立命令列工具的理想語言。因此，對於我們的專案，我們將建立自己版本的經典命令列搜尋工具 `grep`（**g**lobally search a **r**egular **e**xpression and **p**rint，全域搜尋正規表示式並列印）。在最簡單的使用情境下，`grep` 會在指定檔案中搜尋指定字串。為此，`grep` 接受檔案路徑和字串作為其參數。然後，它會讀取檔案，找出檔案中包含字串參數的行，並列印這些行。
+Rust 的速度、安全性、單一二進位檔輸出以及跨平台支援，使其成為建立 command line 工具的理想語言。因此，在我們的專案中，我們將製作我們自己版本的經典 command line 搜尋工具 `grep`（**g**lobally search a **r**egular **e**xpression and **p**rint）。在最簡單的使用情境中，`grep` 會在指定的檔案中搜尋指定的字串。為此，`grep` 接受檔案路徑與字串作為其引數。然後它會讀取檔案，找到檔案中包含該字串引數的行，並將這些行印出來。
 
-在此過程中，我們將展示如何讓我們的命令列工具使用許多其他命令列工具所使用的終端機功能。我們將讀取環境變數的值，以允許使用者設定我們工具的行為。我們還會將錯誤訊息列印到標準錯誤主控台串流 (`stderr`)，而不是標準輸出 (`stdout`)，這樣，舉例來說，使用者可以將成功的輸出重新導向到檔案，同時仍能在螢幕上看到錯誤訊息。
+在此過程中，我們將展示如何讓我們的 command line 工具使用許多其他 command line 工具所使用的終端機功能。我們將讀取一個環境變數的值，以允許使用者設定我們工具的行為。我們也會將錯誤訊息印到標準錯誤（standard error）主控台串流（`stderr`），而不是標準輸出（`stdout`），這樣一來，舉例來說，使用者可以將成功的輸出重新導向到一個檔案，同時仍然在螢幕上看到錯誤訊息。
 
-一位 Rust 社群成員 Andrew Gallant 已經建立了一個功能齊全、速度非常快的 `grep` 版本，稱為 `ripgrep`。相較之下，我們的版本會相當簡單，但本章將為你提供理解 `ripgrep` 等真實世界專案所需的一些背景知識。
+一位 Rust 社群成員 Andrew Gallant 已經建立了一個功能齊全、速度非常快的 `grep` 版本，稱為 `ripgrep`。相較之下，我們的版本會相當簡單，但本章節將提供你一些必要的背景知識，以便理解像 `ripgrep` 這樣的真實世界專案。
 
-我們的 `grep` 專案將結合你到目前為止學到的許多概念：
+我們的 `grep` 專案將結合你目前為止學到的多個概念：
 
-- 組織程式碼 (第 7 章)
-- 使用 vector 和字串 (第 8 章)
-- 處理錯誤 (第 9 章)
-- 適當地使用 trait 和 lifetime (第 10 章)
-- 編寫測試 (第 11 章)
+- 組織程式碼（第 7 章）
+- 使用 vector 和 string（第 8 章）
+- 處理錯誤（第 9 章）
+- 在適當時機使用 trait 和 lifetime（第 10 章）
+- 撰寫測試（第 11 章）
 
-我們還將簡要介紹 closure、iterator 和 trait object，這些內容將在第 13 章和第 18 章中詳細介紹。
+我們也將簡要介紹 closure、iterator 和 trait object，這些將在第 13 章和第 18 章中詳細介紹。
 
-## 接受命令列參數
+## 接受命令列引數
 
-一如往常，讓我們使用 `cargo new` 來建立一個新專案。我們將我們的專案命名為 `minigrep`，以區別於你系統中可能已經存在的 `grep` 工具。
+讓我們一如既往地使用 `cargo new` 建立一個新專案。我們將專案命名為 `minigrep`，以區別於你系統上可能已經有的 `grep` 工具。
 
-```
+```bash
 $ cargo new minigrep
      Created binary (application) `minigrep` project
 $ cd minigrep
 ```
 
-第一個任務是讓 `minigrep` 接受它的兩個命令列參數：檔案路徑和要搜尋的字串。也就是說，我們希望能夠使用 `cargo run` 執行我們的程式，後跟兩個連字號以指示後面的參數是針對我們的程式而非 `cargo` 的，然後是一個要搜尋的字串，以及一個要搜尋的檔案路徑，就像這樣：
+第一個任務是讓 `minigrep` 接受它的兩個命令列引數：檔案路徑和要搜尋的字串。也就是說，我們希望能夠用 `cargo run`、兩個連字號（表示後面的引數是給我們的程式而不是給 `cargo` 的）、要搜尋的字串，以及要搜尋的檔案路徑來執行我們的程式，像這樣：
 
-```
+```bash
 $ cargo run -- searchstring example-filename.txt
 ```
 
-目前，`cargo new` 產生的程式無法處理我們給它的參數。`crates.io` 上現有的函式庫，網址為 _https://crates.io/_，可以幫助編寫接受命令列參數的程式，但因為你才剛學習這個概念，所以讓我們自己來實作這個功能。
+目前，`cargo new` 產生的程式無法處理我們給它的引數。在 _https://crates.io/_ 上的 crates.io 有一些現成的函式庫可以幫助撰寫接受命令列引數的程式，但因為你正在學習這個概念，讓我們自己來實作這個功能。
 
-### 讀取參數值
+### 讀取引數值
 
-為了讓 `minigrep` 能夠讀取我們傳給它的命令列參數值，我們需要 Rust 標準函式庫中提供的 `std::env::args` 函式。這個函式會回傳一個 `minigrep` 接收到的命令列參數的 iterator。我們將在第 13 章中完整介紹 iterator。現在，你只需要知道關於 iterator 的兩個細節：iterator 會產生一系列值，並且我們可以對 iterator 呼叫 `collect` 方法，將它轉換成一個集合，例如一個 vector，其中包含 iterator 產生的所有元素。
+為了讓 `minigrep` 能夠讀取我們傳遞給它的命令列引數值，我們需要 Rust 標準函式庫中提供的 `std::env::args` 函式。這個函式會回傳一個傳遞給 `minigrep` 的命令列引數的 iterator。我們將在第 13 章完整介紹 iterator。目前，你只需要知道關於 iterator 的兩件事：iterator 會產生一系列的值，而且我們可以在 iterator 上呼叫 `collect` 方法，將其轉換成一個集合，例如一個 vector，其中包含 iterator 產生的所有元素。
 
-清單 12-1 中的程式碼允許你的 `minigrep` 程式讀取任何傳給它的命令列參數，然後將這些值收集到一個 vector 中。
+列表 12-1 中的程式碼讓你的 `minigrep` 程式可以讀取傳遞給它的任何命令列引數，然後將這些值收集到一個 vector 中。
 
 src/main.rs
 
@@ -61,19 +61,19 @@ fn main() {
 }
 ```
 
-清單 12-1：將命令列參數收集到 vector 中並列印出來
+列表 12-1：將命令列引數收集到 vector 中並印出
 
-首先，我們使用 `use` 宣告將 `std::env` 模組引入作用域，這樣我們就可以使用它的 `args` 函式。請注意，`std::env::args` 函式巢狀在兩層模組中。正如我們在第 7 章中討論的，在所需函式巢狀在一個以上模組中的情況下，我們選擇將父模組引入作用域，而不是函式本身。這樣一來，我們可以輕鬆使用 `std::env` 中的其他函式。它也比新增 `use std::env::args` 然後只用 `args` 呼叫函式來得不明確，因為 `args` 可能很容易被誤認為是在目前模組中定義的函式。
+首先，我們用 `use` 陳述式將 `std::env` 模組引入作用域，這樣我們就可以使用它的 `args` 函式。請注意，`std::env::args` 函式是巢狀在兩層模組中的。如我們在第 7 章討論過的，在所需函式巢狀在多個模組中的情況下，我們選擇將父模組引入作用域，而不是函式本身。這樣做，我們可以輕鬆地使用 `std::env` 中的其他函式。這也比加入 `use std::env::args` 然後只用 `args` 呼叫函式來得不那麼模稜兩可，因為 `args` 很容易被誤認為是定義在目前模組中的函式。
 
-> ### `args` 函式與無效的 Unicode
+> ### args 函式與無效的 Unicode
 >
-> 請注意，如果任何參數包含無效的 Unicode，`std::env::args` 將會 panic。如果你的程式需要接受包含無效 Unicode 的參數，請改用 `std::env::args_os`。該函式會回傳一個產生 `OsString` 值而不是 `String` 值的 iterator。為了簡化起見，我們在此選擇使用 `std::env::args`，因為 `OsString` 值因平台而異，並且比 `String` 值更複雜。
+> 請注意，如果任何引數包含無效的 Unicode，`std::env::args` 會 panic。如果你的程式需要接受包含無效 Unicode 的引數，請改用 `std::env::args_os`。該函式回傳一個 iterator，它產生的是 `OsString` 值而不是 `String` 值。我們在這裡選擇使用 `std::env::args` 是為了簡單起見，因為 `OsString` 值因平台而異，並且比 `String` 值更複雜。
 
-在 `main` 的第一行，我們呼叫 `env::args`，並立即使用 `collect` 將 iterator 轉換為一個包含 iterator 產生之所有值的 vector。我們可以使用 `collect` 函式來建立許多類型的集合，因此我們明確註解 `args` 的型別，以指定我們想要一個字串的 vector。儘管你在 Rust 中很少需要註解型別，但 `collect` 是一個你確實經常需要註解的函式，因為 Rust 無法推斷你想要的集合類型。
+在 `main` 的第一行，我們呼叫 `env::args`，並立即使用 `collect` 將 iterator 轉換成一個包含 iterator 產生所有值的 vector。我們可以用 `collect` 函式來建立多種集合，所以我們明確地標註 `args` 的型別，以指定我們想要一個字串的 vector。雖然在 Rust 中你很少需要標註型別，但 `collect` 是你經常需要標註的函式之一，因為 Rust 無法推斷你想要哪種集合。
 
-最後，我們使用 debug macro 列印 vector。讓我們嘗試先不帶任何參數，然後再帶兩個參數執行程式碼：
+最後，我們使用 debug macro 印出這個 vector。讓我們試著先不帶引數執行程式碼，然後再帶兩個引數：
 
-```
+```bash
 $ cargo run
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.61s
@@ -83,7 +83,7 @@ $ cargo run
 ]
 ```
 
-```
+```bash
 $ cargo run -- needle haystack
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.57s
@@ -95,11 +95,11 @@ $ cargo run -- needle haystack
 ]
 ```
 
-請注意，vector 中的第一個值是 `"target/debug/minigrep"`，這是我們 binary 的名稱。這與 C 語言中參數列表的行為一致，讓程式能夠使用它們被呼叫時的名稱來執行。在需要將程式名稱列印在訊息中，或者根據用於呼叫程式的命令列別名來改變程式行為時，能夠存取程式名稱通常很方便。但對於本章的目的，我們將忽略它，只儲存我們需要的兩個參數。
+請注意，vector 中的第一個值是 `"target/debug/minigrep"`，這是我們二進位檔的名稱。這與 C 語言中引數列表的行為相符，讓程式可以在執行時使用它們被呼叫的名稱。能夠存取程式名稱通常很方便，以防你想要在訊息中印出它，或者根據用來呼叫程式的命令列別名來改變程式的行為。但就本章的目的而言，我們將忽略它，只儲存我們需要的兩個引數。
 
-### 將參數值儲存在變數中
+### 將引數值存入變數
 
-程式目前能夠存取指定為命令列參數的值。現在我們需要將這兩個參數的值儲存在變數中，以便我們可以在程式的其餘部分使用這些值。我們在清單 12-2 中實現了這一點。
+程式目前能夠存取指定為命令列引數的值。現在我們需要將這兩個引數的值儲存在變數中，以便在程式的其餘部分使用這些值。我們在列表 12-2 中這樣做。
 
 src/main.rs
 
@@ -117,13 +117,13 @@ fn main() {
 }
 ```
 
-清單 12-2：建立變數來儲存查詢參數和檔案路徑參數
+列表 12-2：建立變數來存放查詢引數和檔案路徑引數
 
-正如我們在列印 vector 時所看到的，程式的名稱佔據了 vector 中 `args[0]` 處的第一個值，因此我們從索引 1 開始處理參數。`minigrep` 接受的第一個參數是我們要搜尋的字串，所以我們將對第一個參數的參考放入 `query` 變數中。第二個參數將是檔案路徑，所以我們將對第二個參數的參考放入 `file_path` 變數中。
+正如我們印出 vector 時所見，程式的名稱佔據了 vector 中的第一個值，位於 `args[0]`，所以我們從索引 1 開始處理引數。`minigrep` 接受的第一個引數是我們要搜尋的字串，所以我們將第一個引數的參考存入變數 `query`。第二個引數是檔案路徑，所以我們將第二個引數的參考存入變數 `file_path`。
 
-我們暫時列印這些變數的值，以證明程式碼按我們預期的方式運作。讓我們再次運行此程式，並使用參數 `test` 和 `sample.txt`：
+我們暫時印出這些變數的值，以證明程式碼如我們預期地運作。讓我們再次用引數 `test` 和 `sample.txt` 來執行這個程式：
 
-```
+```bash
 $ cargo run -- test sample.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.0s
@@ -132,11 +132,11 @@ Searching for test
 In file sample.txt
 ```
 
-太棒了，程式正常運作！我們需要的參數值被儲存到正確的變數中。稍後，我們將新增一些錯誤處理來處理某些潛在的錯誤情況，例如當使用者沒有提供任何參數時；目前，我們將忽略這種情況，轉而著手新增檔案讀取功能。
+太好了，程式運作正常！我們需要的引數值被儲存到正確的變數中。稍後我們會加入一些錯誤處理來應對某些潛在的錯誤情況，例如使用者沒有提供任何引數；目前，我們先忽略這種情況，轉而致力於加入讀取檔案的功能。
 
 ## 讀取檔案
 
-現在我們將新增功能來讀取 `file_path` 參數中指定的檔案。首先，我們需要一個範例檔案來測試：我們將使用一個包含少量多行文字和一些重複單字的檔案。清單 12-3 中有一首 Emily Dickinson 的詩，它會很適合！在你的專案根目錄下建立一個名為 _poem.txt_ 的檔案，並輸入詩歌「I'm Nobody! Who are you?」。
+現在我們將新增功能來讀取 `file_path` 引數中指定的檔案。首先，我們需要一個範例檔案來測試它：我們將使用一個包含少量文字、多行且有重複單字的檔案。列表 12-3 中有一首艾蜜莉・狄金生的詩，非常適合！在你的專案根目錄下建立一個名為 _poem.txt_ 的檔案，並輸入這首詩「I’m Nobody! Who are you?」。
 
 poem.txt
 
@@ -152,9 +152,9 @@ To tell your name the livelong day
 To an admiring bog!
 ```
 
-清單 12-3：Emily Dickinson 的詩是一個很好的測試案例。
+列表 12-3：艾蜜莉・狄金生的詩是個很好的測試案例。
 
-準備好文字後，編輯 _src/main.rs_ 並新增讀取檔案的程式碼，如清單 12-4 所示。
+有了文字內容後，編輯 _src/main.rs_ 並加入讀取檔案的程式碼，如列表 12-4 所示。
 
 src/main.rs
 
@@ -173,17 +173,17 @@ fn main() {
 }
 ```
 
-清單 12-4：讀取第二個參數指定的檔案內容
+列表 12-4：讀取第二個引數指定的檔案內容
 
-首先，我們使用 `use` 宣告引入標準函式庫的相關部分：我們需要 `std::fs` 來處理檔案。
+首先，我們用 `use` 陳述式引入標準函式庫的相關部分：我們需要 `std::fs` 來處理檔案。
 
-在 `main` 函式中，新的 `fs::read_to_string` 宣告會接收 `file_path`，開啟該檔案，並回傳一個 `std::io::Result<String>` 型別的值，其中包含檔案的內容。
+在 `main` 中，新的陳述式 `fs::read_to_string` 接受 `file_path`，打開該檔案，並回傳一個型別為 `std::io::Result<String>` 的值，其中包含檔案的內容。
 
-之後，我們再次新增一個暫時的 `println!` 宣告，在讀取檔案後列印 `contents` 的值，以便我們可以檢查程式目前是否正常運作。
+之後，我們再次加入一個暫時的 `println!` 陳述式，在檔案被讀取後印出 `contents` 的值，這樣我們就可以檢查程式到目前為止是否運作正常。
 
-讓我們執行這段程式碼，將任何字串作為第一個命令列參數（因為我們尚未實作搜尋部分），並將 _poem.txt_ 檔案作為第二個參數：
+讓我們用任何字串作為第一個命令列引數（因為我們還沒有實作搜尋部分），並用 _poem.txt_ 檔案作為第二個引數來執行這段程式碼：
 
-```
+```bash
 $ cargo run -- the poem.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.0s
@@ -202,40 +202,40 @@ To tell your name the livelong day
 To an admiring bog!
 ```
 
-太棒了！程式碼讀取並列印了檔案內容。但是程式碼有一些缺陷。目前，`main` 函式有多重職責：通常，如果每個函式只負責一個概念，函式會更清晰且更容易維護。另一個問題是我們沒有盡可能地處理錯誤。程式碼仍然很小，所以這些缺陷不是大問題，但隨著程式碼的增長，要乾淨地修復它們會更困難。在開發程式時，儘早開始重構是個好習慣，因為重構少量程式碼會容易得多。我們接下來會這樣做。
+太好了！程式碼讀取並印出了檔案的內容。但這段程式碼有幾個瑕疵。目前，`main` 函式有多個職責：一般來說，如果每個函式只負責一個概念，函式會更清晰且更容易維護。另一個問題是，我們沒有盡可能好地處理錯誤。程式還很小，所以這些瑕疵不是大問題，但隨著程式的成長，要乾淨地修復它們會變得更加困難。在開發程式的早期就開始重構是個好習慣，因為重構較少量的程式碼要容易得多。我們接下來就來做這件事。
 
-## 重構以改善模組化和錯誤處理
+## 重構以改善模組化與錯誤處理
 
-為了改進我們的程式，我們將修正四個與程式結構以及處理潛在錯誤方式相關的問題。首先，我們的 `main` 函式現在執行兩個任務：解析參數和讀取檔案。隨著程式的增長，`main` 函式處理的獨立任務數量將會增加。當一個函式承擔越來越多職責時，它會變得更難理解、更難測試，並且在不破壞其中一部分的情況下更難修改。最好將功能分離，讓每個函式只負責一個任務。
+為了改善我們的程式，我們將修正四個與程式結構以及處理潛在錯誤方式有關的問題。首先，我們的 `main` 函式現在執行兩個任務：它解析引數和讀取檔案。隨著程式的成長，`main` 函式處理的獨立任務數量將會增加。當一個函式承擔的職責越多，就越難以理解、測試和修改，而不破壞其某一部分。最好是將功能分開，讓每個函式只負責一個任務。
 
-這個問題也與第二個問題有關：儘管 `query` 和 `file_path` 是我們程式的配置變數，但像 `contents` 這樣的變數用於執行程式的邏輯。`main` 函式越長，我們需要引入作用域的變數就越多；作用域中的變數越多，追蹤每個變數的用途就越困難。最好將配置變數分組到一個結構中，以使其用途清晰。
+這個問題也與第二個問題有關：雖然 `query` 和 `file_path` 是我們程式的設定變數，但像 `contents` 這樣的變數是用來執行程式邏輯的。`main` 函式越長，我們需要引入作用域的變數就越多；作用域中的變數越多，追蹤每個變數的用途就越困難。最好是將設定變數分組到一個結構中，以使其用途清晰。
 
-第三個問題是，我們在讀取檔案失敗時使用了 `expect` 來列印錯誤訊息，但錯誤訊息只是列印 `Should have been able to read the file`。讀取檔案可能以多種方式失敗：例如，檔案可能遺失，或者我們可能沒有權限開啟它。現在，無論情況如何，我們都會列印相同的錯誤訊息，這不會給使用者任何資訊！
+第三個問題是，當讀取檔案失敗時，我們使用 `expect` 來印出錯誤訊息，但錯誤訊息只是印出 `Should have been able to read the file`。讀取檔案可能因多種原因失敗：例如，檔案可能不存在，或者我們可能沒有權限打開它。目前，無論情況如何，我們都會為所有情況印出相同的錯誤訊息，這不會給使用者任何資訊！
 
-第四，我們使用 `expect` 來處理錯誤，如果使用者在沒有指定足夠參數的情況下執行我們的程式，他們將會收到 Rust 的 `index out of bounds` 錯誤，這沒有清楚地解釋問題。最好將所有錯誤處理程式碼放在一個地方，這樣未來的維護者在需要更改錯誤處理邏輯時，只需查閱一個地方。將所有錯誤處理程式碼放在一個地方也將確保我們列印的訊息對我們的最終使用者有意義。
+第四，我們使用 `expect` 來處理錯誤，如果使用者執行我們的程式時沒有指定足夠的引數，他們會從 Rust 得到一個 `index out of bounds` 的錯誤，這並不能清楚地解釋問題。最好是將所有的錯誤處理程式碼都放在一個地方，這樣未來的維護者如果需要修改錯誤處理邏輯，只需要查閱一個地方。將所有錯誤處理程式碼放在一個地方，也將確保我們印出的訊息對我們的終端使用者是有意義的。
 
-讓我們透過重構專案來解決這四個問題。
+讓我們透過重構我們的專案來解決這四個問題。
 
-### Binary 專案的關注點分離
+### 二進位專案的關注點分離
 
-將多個任務的職責分配給 `main` 函式的組織問題在許多 binary 專案中很常見。因此，當 `main` 函式開始變大時，許多 Rust 開發者發現將 binary 程式的各個關注點分開很有用。此過程包含以下步驟：
+將多個任務的職責分配給 `main` 函式的組織問題在許多二進位專案中很常見。因此，許多 Rust 開發者發現在 `main` 函式開始變大時，將二進位程式的不同關注點分開是很有用的。這個過程有以下步驟：
 
-- 將你的程式分割成 _main.rs_ 檔案和 _lib.rs_ 檔案，並將你的程式邏輯移到 _lib.rs_。
-- 只要你的命令列解析邏輯很小，它就可以保留在 `main` 函式中。
+- 將你的程式分成一個 _main.rs_ 檔案和一個 _lib.rs_ 檔案，並將你的程式邏輯移到 _lib.rs_。
+- 只要你的命令列解析邏輯很小，它可以保留在 `main` 函式中。
 - 當命令列解析邏輯開始變得複雜時，將它從 `main` 函式中提取到其他函式或型別中。
 
-此過程後仍保留在 `main` 函式中的職責應僅限於以下內容：
+這個過程後，留在 `main` 函式中的職責應該限制在以下幾點：
 
-- 使用參數值呼叫命令列解析邏輯
-- 設定任何其他配置
+- 用引數值呼叫命令列解析邏輯
+- 設定任何其他設定
 - 呼叫 _lib.rs_ 中的 `run` 函式
-- 處理 `run` 回傳錯誤的情況
+- 如果 `run` 回傳錯誤，則處理該錯誤
 
-這種模式是關於關注點分離的：_main.rs_ 處理程式的執行，而 _lib.rs_ 處理手頭任務的所有邏輯。由於你無法直接測試 `main` 函式，這種結構可以讓你將所有程式邏輯移出 `main` 函式，從而測試所有程式邏輯。保留在 `main` 函式中的程式碼將足夠小，可以透過閱讀來驗證其正確性。讓我們按照這個過程重新編寫我們的程式。
+這種模式是關於分離關注點：_main.rs_ 處理執行程式，而 _lib.rs_ 處理手邊任務的所有邏輯。因為你無法直接測試 `main` 函式，這種結構讓你能夠透過將所有程式邏輯移出 `main` 函式來測試它們。留在 `main` 函式中的程式碼將足夠小，可以透過閱讀來驗證其正確性。讓我們按照這個過程來重構我們的程式。
 
-#### 提取參數解析器
+#### 提取引數解析器
 
-我們將把解析參數的功能提取到一個函式中，供 `main` 函式呼叫。清單 12-5 顯示了 `main` 函式的新開頭，它呼叫了一個新的函式 `parse_config`，我們將在 _src/main.rs_ 中定義它。
+我們將提取解析引數的功能到一個函式中，`main` 將會呼叫這個函式。列表 12-5 顯示了 `main` 函式的新開頭，它呼叫了一個新的函式 `parse_config`，我們將在 _src/main.rs_ 中定義它。
 
 src/main.rs
 
@@ -256,19 +256,19 @@ fn parse_config(args: &[String]) -> (&str, &str) {
 }
 ```
 
-清單 12-5：從 `main` 函式中提取 `parse_config` 函式
+列表 12-5：從 `main` 中提取一個 `parse_config` 函式
 
-我們仍然將命令列參數收集到一個 vector 中，但我們不再在 `main` 函式中將索引 1 的參數值賦給 `query` 變數，將索引 2 的參數值賦給 `file_path` 變數，而是將整個 vector 傳遞給 `parse_config` 函式。`parse_config` 函式然後會執行邏輯，確定哪個參數歸哪個變數，並將這些值傳回給 `main`。我們仍然在 `main` 中建立 `query` 和 `file_path` 變數，但 `main` 不再負責確定命令列參數和變數如何對應。
+我們仍然將命令列引數收集到一個 vector 中，但我們不再在 `main` 函式內將索引 1 的引數值賦給變數 `query`，索引 2 的引數值賦給變數 `file_path`，而是將整個 vector 傳遞給 `parse_config` 函式。`parse_config` 函式則持有決定哪個引數放入哪個變數的邏輯，並將值傳回給 `main`。我們仍然在 `main` 中建立 `query` 和 `file_path` 變數，但 `main` 不再負責決定命令列引數和變數如何對應。
 
-對於我們的小程式來說，這種重寫可能看起來有點過度，但我們正在以小而漸進的步驟進行重構。完成此更改後，再次執行程式以驗證參數解析是否仍然有效。經常檢查進度是個好習慣，這有助於在出現問題時識別問題原因。
+對於我們的小程式來說，這次重構可能看起來有些小題大作，但我們正在以小的、漸進的步驟進行重構。做出這個改變後，再次執行程式以驗證引數解析仍然有效。經常檢查你的進度是個好習慣，有助於在問題發生時識別其原因。
 
-#### 分組配置值
+#### 群組化設定值
 
-我們可以再邁出一小步，進一步改進 `parse_config` 函式。目前，我們回傳一個 tuple，但隨後我們立即將該 tuple 再次分解為各個部分。這表明我們可能還沒有正確的抽象。
+我們可以再邁出小小的一步，進一步改善 `parse_config` 函式。目前，我們回傳一個 tuple，但接著我們又立即將該 tuple 分解成各個部分。這是一個跡象，表示我們可能還沒有找到正確的抽象。
 
-另一個改進空間的指標是 `parse_config` 中的 `config` 部分，這暗示我們回傳的兩個值是相關的，並且都是一個配置值的一部分。我們目前並沒有在資料結構中傳達這個含義，除了將這兩個值分組到一個 tuple 中；我們將把這兩個值放入一個 struct 中，並為每個 struct 欄位賦予有意義的名稱。這樣做將使這段程式碼未來的維護者更容易理解不同值之間的關係及其用途。
+另一個顯示有改進空間的指標是 `parse_config` 中的 `config` 部分，它暗示我們回傳的兩個值是相關的，並且都是單一設定值的一部分。目前，除了將這兩個值分組到一個 tuple 中之外，我們沒有在資料結構中傳達這個意義；我們將改為將這兩個值放入一個 struct 中，並為每個 struct 欄位賦予一個有意義的名稱。這樣做將使未來維護這段程式碼的人更容易理解不同值之間的關係以及它們的用途。
 
-清單 12-6 顯示了對 `parse_config` 函式的改進。
+列表 12-6 顯示了對 `parse_config` 函式的改進。
 
 src/main.rs
 
@@ -300,25 +300,25 @@ fn parse_config(args: &[String]) -> Config {
 }
 ```
 
-清單 12-6：重構 `parse_config` 以回傳 `Config` struct 的實例
+列表 12-6：重構 `parse_config` 以回傳一個 `Config` struct 的實例
 
-我們新增了一個名為 `Config` 的 struct，定義其包含名為 `query` 和 `file_path` 的欄位。現在 `parse_config` 的簽章表示它會回傳一個 `Config` 值。在 `parse_config` 的函式主體中，我們以前回傳參考 `args` 中 `String` 值的字串 slice，現在我們定義 `Config` 包含擁有型別的 `String` 值。`main` 中的 `args` 變數是參數值的 owner，並且只允許 `parse_config` 函式借用它們，這意味著如果 `Config` 嘗試取得 `args` 中值的所有權，我們將違反 Rust 的 borrowing 規則。
+我們新增了一個名為 `Config` 的 struct，定義了名為 `query` 和 `file_path` 的欄位。`parse_config` 的簽名現在表示它回傳一個 `Config` 值。在 `parse_config` 的主體中，我們過去回傳參考 `args` 中 `String` 值的字串 slice，現在我們定義 `Config` 來包含擁有的 `String` 值。`main` 中的 `args` 變數是引數值的 owner，它只讓 `parse_config` 函式借用它們，這意味著如果 `Config` 試圖取得 `args` 中值的所有權，我們將違反 Rust 的 borrowing 規則。
 
-有許多管理 `String` 資料的方法；最簡單（儘管效率有點低）的方法是呼叫值的 `clone` 方法。這將為 `Config` 實例建立資料的完整複製，這比儲存對字串資料的參考花費更多時間和記憶體。然而，複製資料也使我們的程式碼非常直接，因為我們不必管理參考的 lifetime；在這種情況下，犧牲一點效能以換取簡潔性是值得的權衡。
+我們有很多方法可以管理 `String` 資料；最簡單但效率稍差的方法是在值上呼叫 `clone` 方法。這將為 `Config` 實例建立一個完整的資料副本，使其擁有這些資料，這比儲存字串資料的參考花費更多的時間和記憶體。然而，複製資料也使我們的程式碼非常直接，因為我們不必管理參考的 lifetime；在這種情況下，為了獲得簡單性而犧牲一點效能是值得的。
 
 > ### 使用 `clone` 的權衡
 >
-> 許多 Rust 開發者傾向於避免使用 `clone` 來解決 ownership 問題，因為它有執行時成本。在第 13 章中，你將學習在這種情況下使用更有效率的方法。但就目前而言，複製一些字串以繼續推進是沒問題的，因為你只會複製這些內容一次，而且你的檔案路徑和查詢字串非常小。擁有一個稍微低效但能運作的程式，總比在第一次嘗試時就試圖過度優化程式碼要好。隨著你對 Rust 越來越熟練，從最有效率的解決方案開始會更容易，但目前，呼叫 `clone` 是完全可以接受的。
+> 許多 Rustaceans 傾向於避免使用 `clone` 來解決 ownership 問題，因為它有執行時成本。在第 13 章中，你將學習如何在這種情況下使用更有效率的方法。但就目前而言，複製幾個字串以繼續取得進展是可以的，因為你只會進行一次這些複製，而且你的檔案路徑和查詢字串都非常小。擁有一個稍微效率低下但能運作的程式，比在第一次嘗試時就試圖過度最佳化程式碼要好。隨著你對 Rust 越來越有經驗，從最有效率的解決方案開始會變得更容易，但就目前而言，呼叫 `clone` 是完全可以接受的。
 
-我們已經更新了 `main` 函式，使其呼叫 `Config::new` 而不是 `parse_config`，我們還更新了先前使用獨立 `query` 和 `file_path` 變數的程式碼，使其現在改用 `Config` struct 上的欄位。
+我們更新了 `main`，使其將 `parse_config` 回傳的 `Config` 實例放入一個名為 `config` 的變數中，並更新了之前使用獨立的 `query` 和 `file_path` 變數的程式碼，使其現在改用 `Config` struct 上的欄位。
 
-現在我們的程式碼更清楚地傳達了 `query` 和 `file_path` 是相關的，並且它們的目的是配置程式的運作方式。任何使用這些值的程式碼都知道可以在 `config` 實例中，在以其用途命名的欄位中找到它們。
+現在我們的程式碼更清楚地傳達了 `query` 和 `file_path` 是相關的，並且它們的目的是設定程式如何運作。任何使用這些值的程式碼都知道要在 `config` 實例中以其用途命名的欄位中找到它們。
 
-#### 建立 `Config` 的建構子
+#### 為 Config 建立建構函式
 
-到目前為止，我們已經將負責解析命令列參數的邏輯從 `main` 中提取出來，並將其放入 `parse_config` 函式中。這樣做幫助我們看到 `query` 和 `file_path` 值是相關的，並且這種關係應該在我們的程式碼中傳達。然後，我們新增了一個 `Config` struct 來命名 `query` 和 `file_path` 相關的用途，並能夠從 `parse_config` 函式中以 struct 欄位名稱的形式回傳這些值的名稱。
+到目前為止，我們已經將負責解析命令列引數的邏輯從 `main` 提取出來，並將其放入 `parse_config` 函式中。這樣做幫助我們看到 `query` 和 `file_path` 值是相關的，並且這種關係應該在我們的程式碼中傳達出來。然後我們新增了一個 `Config` struct 來命名 `query` 和 `file_path` 的相關用途，並能夠從 `parse_config` 函式中以 struct 欄位名稱的形式回傳這些值的名稱。
 
-所以現在 `parse_config` 函式的目的是建立一個 `Config` 實例，我們可以將 `parse_config` 從一個普通函式改為一個名為 `new` 的函式，並與 `Config` struct 關聯。進行此更改將使程式碼更具習慣用法。我們可以在標準函式庫中建立 `String` 等型別的實例，透過呼叫 `String::new`。同樣地，透過將 `parse_config` 更改為與 `Config` 關聯的 `new` 函式，我們將能夠透過呼叫 `Config::new` 來建立 `Config` 的實例。清單 12-7 顯示了我們需要進行的更改。
+所以現在 `parse_config` 函式的目的是建立一個 `Config` 實例，我們可以將 `parse_config` 從一個普通函式變成一個名為 `new` 且與 `Config` struct 關聯的函式。進行此變更將使程式碼更符合慣例。我們可以透過呼叫 `String::new` 來建立標準函式庫中的型別實例，例如 `String`。同樣地，透過將 `parse_config` 變成一個與 `Config` 關聯的 `new` 函式，我們將能夠透過呼叫 `Config::new` 來建立 `Config` 的實例。列表 12-7 顯示了我們需要做的變更。
 
 src/main.rs
 
@@ -343,15 +343,15 @@ impl Config {
 }
 ```
 
-清單 12-7：將 `parse_config` 改為 `Config::new`
+列表 12-7：將 `parse_config` 變更為 `Config::new`
 
-我們已經更新了 `main` 函式中呼叫 `parse_config` 的地方，改為呼叫 `Config::new`。我們將 `parse_config` 的名稱更改為 `new`，並將其移入 `impl` 區塊中，這將 `new` 函式與 `Config` 關聯起來。再次嘗試編譯此程式碼以確保它能正常運作。
+我們更新了 `main` 中呼叫 `parse_config` 的地方，改為呼叫 `Config::new`。我們將 `parse_config` 的名稱改為 `new`，並將其移至 `impl` 區塊內，這將 `new` 函式與 `Config` 關聯起來。再次編譯這段程式碼，確保它能正常運作。
 
-### 修正錯誤處理
+### 修復錯誤處理
 
-現在我們將著手修正錯誤處理。回想一下，如果 `args` vector 包含少於三個項目，嘗試存取 `args` vector 中索引 1 或索引 2 的值將導致程式 panic。嘗試不帶任何參數執行程式；它會看起來像這樣：
+現在我們來修復我們的錯誤處理。回想一下，如果 `args` vector 包含少於三個項目，嘗試存取索引 1 或索引 2 的值會導致程式 panic。試著在沒有任何引數的情況下執行程式；它會看起來像這樣：
 
-```
+```bash
 $ cargo run
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.0s
@@ -362,11 +362,11 @@ index out of bounds: the len is 1 but the index is 1
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-`index out of bounds: the len is 1 but the index is 1` 這行是針對程式設計師的錯誤訊息。它不會幫助我們的最終使用者理解他們應該怎麼做。讓我們現在就修正它。
+這行 `index out of bounds: the len is 1 but the index is 1` 是給程式設計師看的錯誤訊息。它無法幫助我們的終端使用者理解他們應該做什麼。讓我們現在來修正這個問題。
 
 #### 改善錯誤訊息
 
-在清單 12-8 中，我們在 `new` 函式中新增了一個檢查，在存取索引 1 和索引 2 之前，它會驗證 slice 的長度是否足夠。如果 slice 不夠長，程式會 panic 並顯示更好的錯誤訊息。
+在列表 12-8 中，我們在 `new` 函式中加入一個檢查，在存取索引 1 和索引 2 之前，會驗證 slice 的長度是否足夠。如果 slice 不夠長，程式會 panic 並顯示一個更好的錯誤訊息。
 
 src/main.rs
 
@@ -379,13 +379,13 @@ fn new(args: &[String]) -> Config {
     // --snip--
 ```
 
-清單 12-8：增加參數數量的檢查
+列表 12-8：加入對引數數量的檢查
 
-這段程式碼類似於我們在清單 9-13 中編寫的 `Guess::new` 函式，其中當 `value` 參數超出有效值範圍時，我們呼叫了 `panic!`。在這裡，我們不是檢查值的範圍，而是檢查 `args` 的長度是否至少為 `3`，函式的其餘部分可以在這個條件已經滿足的假設下運作。如果 `args` 少於三個項目，這個條件將為 `true`，我們呼叫 `panic!` macro 立即終止程式。
+這段程式碼類似於我們在列表 9-13 中寫的 `Guess::new` 函式，當 `value` 引數超出有效值範圍時，我們呼叫了 `panic!`。在這裡，我們不是檢查值的範圍，而是檢查 `args` 的長度至少為 `3`，函式的其餘部分可以在這個條件已滿足的假設下運作。如果 `args` 的項目少于三個，這個條件將為 `true`，我們就呼叫 `panic!` macro 來立即終止程式。
 
-在 `new` 中新增了這幾行程式碼後，讓我們再次不帶任何參數執行程式，看看現在的錯誤是什麼樣子：
+在 `new` 函式中加入這幾行程式碼後，讓我們再次在沒有任何引數的情況下執行程式，看看現在的錯誤是什麼樣子：
 
-```
+```bash
 $ cargo run
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.0s
@@ -396,13 +396,17 @@ not enough arguments
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-這個輸出更好：我們現在有一個合理的錯誤訊息。然而，我們也有一些不希望提供給使用者的額外資訊。或許我們在清單 9-13 中使用的技術在這裡並不是最好的：如第 9 章中討論的，呼叫 `panic!` 更適合於程式設計問題而不是使用問題。相反地，我們將使用你在第 9 章中學到的另一種技術——回傳一個 `Result`，它指示成功或錯誤。
+這個輸出好多了：我們現在有了一個合理的錯誤訊息。然而，我們也有一些不希望給使用者的多餘資訊。也許我們在列表 9-13 中使用的技巧在這裡不是最好的：如第 9 章所討論的，呼叫 `panic!` 更適用於程式設計問題而非使用問題。因此，我們將使用你在第 9 章學到的另一種技巧——回傳一個 `Result` 來表示成功或錯誤。
 
-#### 回傳 `Result` 而不是呼叫 `panic!`
+<!-- Old headings. Do not remove or links may break. -->
 
-我們可以改為回傳一個 `Result` 值，它在成功情況下將包含一個 `Config` 實例，並在錯誤情況下描述問題。我們還將函式名稱從 `new` 更改為 `build`，因為許多程式設計師期望 `new` 函式永不失敗。當 `Config::build` 與 `main` 進行通訊時，我們可以使用 `Result` 型別來表示發生了問題。然後我們可以更改 `main` 以將 `Err` 變體轉換為對使用者更實用的錯誤，而無需 `panic!` 引起的關於 `thread 'main'` 和 `RUST_BACKTRACE` 的周圍文字。
+<a id="returning-a-result-from-new-instead-of-calling-panic"></a>
 
-清單 12-9 顯示了我們需要對我們現在稱為 `Config::build` 的函式的回傳值和函式主體進行的更改，以回傳 `Result`。請注意，在我們也更新 `main` 之前，這段程式碼不會編譯，我們將在下一個清單中進行此操作。
+#### 回傳 Result 而非呼叫 panic!
+
+我們可以改為回傳一個 `Result` 值，在成功的情況下它會包含一個 `Config` 實例，在錯誤的情況下它會描述問題。我們也將函式名稱從 `new` 改為 `build`，因為許多程式設計師期望 `new` 函式永遠不會失敗。當 `Config::build` 與 `main` 溝通時，我們可以使用 `Result` 型別來表示有問題發生。然後我們可以改變 `main`，將 `Err` 變體轉換成對使用者來說更實用的錯誤，而不會有 `panic!` 呼叫所導致的關於 `thread 'main'` 和 `RUST_BACKTRACE` 的周邊文字。
+
+列表 12-9 顯示了我們需要對現在稱為 `Config::build` 的函式的回傳值所做的變更，以及函式主體需要回傳 `Result` 所需的變更。請注意，這在我們更新 `main` 之前無法編譯，我們將在下一個列表中進行更新。
 
 src/main.rs
 
@@ -421,19 +425,123 @@ impl Config {
 }
 ```
 
-清單 12-9：從 `Config::build` 回傳 `Result`
+列表 12-9：從 `Config::build` 回傳一個 `Result`
 
-我們在這裡做了三個重大更改。首先，我們將 `run` 函式的回傳型別更改為 `Result<(), Box<dyn Error>>`。這個函式以前回傳 unit 型別 `()`，我們將它保留為 `Ok` 情況下回傳的值。
+我們的 `build` 函式在成功的情況下回傳一個帶有 `Config` 實例的 `Result`，在錯誤的情況下回傳一個字串字面值。我們的錯誤值將永遠是具有 `'static` lifetime 的字串字面值。
 
-對於錯誤型別，我們使用了 trait object `Box<dyn Error>` (並且我們已在頂部使用 `use` 宣告將 `std::error::Error` 引入作用域)。我們將在第 18 章中介紹 trait object。目前，你只需要知道 `Box<dyn Error>` 表示函式將回傳一個實現 `Error` trait 的型別，但我們不必指定回傳值將是哪種特定型別。這賦予我們靈活性，可以在不同的錯誤情況下回傳不同型別的錯誤值。`dyn` 關鍵字是 _dynamic_ 的縮寫。
+我們在函式主體中做了兩個變更：當使用者未傳遞足夠的引數時，我們不再呼叫 `panic!`，而是回傳一個 `Err` 值；我們也將 `Config` 回傳值包裝在 `Ok` 中。這些變更使函式符合其新的型別簽名。
 
-其次，我們移除了對 `expect` 的呼叫，改用 `?` 運算子，正如我們在第 9 章中所討論的。`?` 不會在發生錯誤時 `panic!`，而是將錯誤值從目前函式中回傳給呼叫者處理。
+從 `Config::build` 回傳 `Err` 值允許 `main` 函式處理從 `build` 函式回傳的 `Result` 值，並在錯誤情況下更乾淨地結束行程。
 
-第三，`run` 函式現在在成功情況下回傳一個 `Ok` 值。我們已在簽章中將 `run` 函式的成功型別宣告為 `()`，這意味著我們需要將 unit 型別值包裝在 `Ok` 值中。這種 `Ok(())` 語法一開始可能看起來有點奇怪，但像這樣使用 `()` 是表示我們僅僅為了其副作用而呼叫 `run` 的習慣用法；它不會回傳我們需要的值。
+<!-- Old headings. Do not remove or links may break. -->
 
-當你執行此程式碼時，它將會編譯，但會顯示一個警告：
+<a id="calling-confignew-and-handling-errors"></a>
 
+#### 呼叫 Config::build 並處理錯誤
+
+為了處理錯誤情況並印出使用者友善的訊息，我們需要更新 `main` 來處理從 `Config::build` 回傳的 `Result`，如列表 12-10 所示。我們也將把以非零錯誤碼結束 command line 工具的責任從 `panic!` 手中接過來，改為手動實作。非零的結束狀態是一種慣例，用來向呼叫我們程式的行程發出訊號，表示程式在錯誤狀態下結束。
+
+src/main.rs
+
+```rust
+use std::process;
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    let config = Config::build(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {err}");
+        process::exit(1);
+    });
+
+    // --snip--
 ```
+
+列表 12-10：如果建立 `Config` 失敗，則以錯誤碼結束
+
+在這個列表中，我們使用了一個我們尚未詳細介紹的方法：`unwrap_or_else`，它由標準函式庫定義在 `Result<T, E>` 上。使用 `unwrap_or_else` 讓我們可以定義一些自訂的、非 `panic!` 的錯誤處理。如果 `Result` 是 `Ok` 值，這個方法的行為類似於 `unwrap`：它回傳 `Ok` 所包裝的內部值。然而，如果值是 `Err` 值，這個方法會呼叫 _closure_ 中的程式碼，closure 是一個我們定義並作為引數傳遞給 `unwrap_or_else` 的匿名函式。我們將在第 13 章更詳細地介紹 closure。目前，你只需要知道 `unwrap_or_else` 會將 `Err` 的內部值，在本例中是我們在列表 12-9 中新增的靜態字串 `"not enough arguments"`，傳遞給我們 closure 中出現在垂直管道之間的引數 `err`。closure 中的程式碼然後可以在執行時使用 `err` 值。
+
+我們新增了一行新的 `use` 陳述式，將標準函式庫中的 `process` 引入作用域。在錯誤情況下將執行的 closure 中的程式碼只有兩行：我們印出 `err` 值，然後呼叫 `process::exit`。`process::exit` 函式將立即停止程式，並回傳作為結束狀態碼傳遞的數字。這與我們在列表 12-8 中使用的基於 `panic!` 的處理方式相似，但我們不再得到所有額外的輸出。讓我們試試看：
+
+```bash
+$ cargo run
+   Compiling minigrep v0.1.0 (file:///projects/minigrep)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.48s
+     Running `target/debug/minigrep`
+Problem parsing arguments: not enough arguments
+```
+
+太好了！這個輸出對我們的使用者來說友善多了。
+
+<!-- Old headings. Do not remove or links may break. -->
+
+<a id="extracting-logic-from-main"></a>
+
+### 從 main 函式提取邏輯
+
+現在我們已經完成了設定解析的重構，讓我們來看看程式的邏輯。正如我們在「二進位專案的關注點分離」中所說的，我們將提取一個名為 `run` 的函式，它將包含目前在 `main` 函式中所有與設定或處理錯誤無關的邏輯。完成後，`main` 函式將變得簡潔且易於透過檢視來驗證，我們也將能夠為所有其他邏輯編寫測試。
+
+列表 12-11 顯示了提取 `run` 函式這個小而漸進的改進。
+
+src/main.rs
+
+```rust
+fn main() {
+    // --snip--
+
+    println!("Searching for {}", config.query);
+    println!("In file {}", config.file_path);
+
+    run(config);
+}
+
+fn run(config: Config) {
+    let contents = fs::read_to_string(config.file_path)
+        .expect("Should have been able to read the file");
+
+    println!("With text:\n{contents}");
+}
+
+// --snip--
+```
+
+列表 12-11：提取一個 `run` 函式，包含程式的其餘邏輯
+
+`run` 函式現在包含了 `main` 中所有剩餘的邏輯，從讀取檔案開始。`run` 函式接受 `Config` 實例作為引數。
+
+#### 從 run 函式回傳錯誤
+
+將剩餘的程式邏輯分離到 `run` 函式後，我們可以像在列表 12-9 中對 `Config::build` 所做的那樣，改善錯誤處理。`run` 函式將不再透過呼叫 `expect` 來讓程式 panic，而是在出錯時回傳一個 `Result<T, E>`。這將讓我們能夠進一步將處理錯誤的邏輯整合到 `main` 中，以一種對使用者友善的方式。列表 12-12 顯示了我們需要對 `run` 的簽名和主體所做的變更。
+
+src/main.rs
+
+```rust
+use std::error::Error;
+
+// --snip--
+
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.file_path)?;
+
+    println!("With text:\n{contents}");
+
+    Ok(())
+}
+```
+
+列表 12-12：將 `run` 函式變更為回傳 `Result`
+
+我們在這裡做了三個重大的改變。首先，我們將 `run` 函式的回傳型別改為 `Result<(), Box<dyn Error>>`。這個函式先前是回傳 unit type，`()`，我們保留它作為 `Ok` 情況下回傳的值。
+
+對於錯誤型別，我們使用了 _trait object_ `Box<dyn Error>`（並且我們在頂部用 `use` 陳述式將 `std::error::Error` 引入作用域）。我們將在第 18 章介紹 trait object。目前，你只需要知道 `Box<dyn Error>` 意味著函式將回傳一個實作 `Error` trait 的型別，但我們不必指定回傳值的具體型別是什麼。這給了我們在不同錯誤情況下回傳不同型別錯誤值的彈性。`dyn` 關鍵字是 _dynamic_ 的縮寫。
+
+第二，我們移除了對 `expect` 的呼叫，改用 `?` 運算子，正如我們在第 9 章討論過的。`?` 不會在錯誤時 `panic!`，而是會從目前函式回傳錯誤值，供呼叫者處理。
+
+第三，`run` 函式現在在成功的情況下回傳一個 `Ok` 值。我們在簽名中將 `run` 函式的成功型別宣告為 `()`，這意味著我們需要將 unit type 的值包裝在 `Ok` 值中。`Ok(())` 這個語法一開始可能看起來有點奇怪，但像這樣使用 `()` 是表示我們呼叫 `run` 只是為了它的副作用的慣用方式；它不回傳我們需要的值。
+
+當你執行這段程式碼時，它會編譯但會顯示一個警告：
+
+```bash
 $ cargo run -- the poem.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
 warning: unused `Result` that must be used
@@ -466,13 +574,13 @@ To tell your name the livelong day
 To an admiring bog!
 ```
 
-Rust 告訴我們程式碼忽略了 `Result` 值，而且 `Result` 值可能表示發生了錯誤。但是我們沒有檢查是否發生錯誤，編譯器提醒我們可能應該在這裡有一些錯誤處理程式碼！讓我們現在就糾正這個問題。
+Rust 告訴我們，我們的程式碼忽略了 `Result` 值，而 `Result` 值可能表示發生了錯誤。但我們沒有檢查是否有錯誤，編譯器提醒我們，我們可能應該在這裡有一些錯誤處理程式碼！讓我們現在來解決這個問題。
 
-#### 在 `main` 中處理從 `run` 回傳的錯誤
+#### 在 main 中處理從 run 回傳的錯誤
 
-我們將檢查錯誤並使用與清單 12-10 中 `Config::build` 類似的技術來處理它們，但略有不同：
+我們將檢查錯誤並使用類似於我們在列表 12-10 中對 `Config::build` 使用的技巧來處理它們，但稍有不同：
 
-Filename: src/main.rs
+檔案名稱：src/main.rs
 
 ```rust
 fn main() {
@@ -482,23 +590,23 @@ fn main() {
     println!("In file {}", config.file_path);
 
     if let Err(e) = run(config) {
-        eprintln!("Application error: {e}");
+        println!("Application error: {e}");
         process::exit(1);
     }
 }
 ```
 
-我們使用 `if let` 而不是 `unwrap_or_else` 來檢查 `run` 是否回傳 `Err` 值，如果回傳則呼叫 `process::exit(1)`。`run` 函式不會回傳我們想要 `unwrap` 的值，不像 `Config::build` 回傳 `Config` 實例那樣。因為 `run` 在成功情況下回傳 `()`，我們只關心偵測錯誤，所以我們不需要 `unwrap_or_else` 回傳被 unwrapped 的值，那只會是 `()`。
+我們使用 `if let` 而不是 `unwrap_or_else` 來檢查 `run` 是否回傳 `Err` 值，如果是，則呼叫 `process::exit(1)`。`run` 函式不像 `Config::build` 回傳 `Config` 實例那樣回傳我們想要 `unwrap` 的值。因為 `run` 在成功的情況下回傳 `()`，我們只關心偵測錯誤，所以我們不需要 `unwrap_or_else` 來回傳解開的值，那只會是 `()`。
 
-`if let` 和 `unwrap_or_else` 函式的主體在兩種情況下都是相同的：我們列印錯誤並退出。
+`if let` 和 `unwrap_or_else` 函式的主體在這兩種情況下是相同的：我們印出錯誤並退出。
 
-### 將程式碼分割成 library crate
+### 將程式碼分割到函式庫 Crate
 
-我們的 `minigrep` 專案到目前為止看起來不錯！現在我們將分割 _src/main.rs_ 檔案，並將一些程式碼放入 _src/lib.rs_ 檔案中。這樣，我們可以測試程式碼，並且擁有一個職責較少的 _src/main.rs_ 檔案。
+我們的 `minigrep` 專案到目前為止看起來不錯！現在我們將分割 _src/main.rs_ 檔案，並將一些程式碼放入 _src/lib.rs_ 檔案中。這樣，我們就可以測試程式碼，並有一個職責更少的 _src/main.rs_ 檔案。
 
-讓我們將負責搜尋文字的程式碼定義在 _src/lib.rs_ 中，而不是 _src/main.rs_ 中，這將允許我們（或任何其他使用我們 `minigrep` 函式庫的人）從比我們的 `minigrep` binary 更多的上下文中呼叫搜尋函式。
+讓我們將負責搜尋文字的程式碼定義在 _src/lib.rs_ 中，而不是在 _src/main.rs_ 中，這將讓我們（或任何其他使用我們 `minigrep` 函式庫的人）可以從比我們的 `minigrep` 二進位檔更多的情境中呼叫搜尋函式。
 
-首先，讓我們如清單 12-13 所示在 _src/lib.rs_ 中定義 `search` 函式的簽章，其主體呼叫 `unimplemented!` macro。我們將在填入實作時更詳細地解釋簽章。
+首先，讓我們在 _src/lib.rs_ 中定義 `search` 函式簽名，如列表 12-13 所示，其主體呼叫 `unimplemented!` macro。我們將在填寫實作時更詳細地解釋這個簽名。
 
 src/lib.rs
 
@@ -508,36 +616,25 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 }
 ```
 
-清單 12-13：在 _src/lib.rs_ 中定義 `search` 函式
+列表 12-13：在 _src/lib.rs_ 中定義 `search` 函式
 
-我們在函式定義上使用了 `pub` 關鍵字，將 `search` 指定為我們 library crate 的公開 API 的一部分。我們現在有一個 library crate，可以從我們的 binary crate 中使用並進行測試！
+我們在函式定義上使用了 `pub` 關鍵字，以將 `search` 指定為我們函式庫 crate 的公共 API 的一部分。我們現在有了一個函式庫 crate，我們可以從我們的二進位 crate 中使用它，並且我們可以對它進行測試！
 
-現在我們需要將 _src/lib.rs_ 中定義的程式碼引入 _src/main.rs_ 中 binary crate 的作用域，並呼叫它，如清單 12-14 所示。
+現在我們需要將 _src/lib.rs_ 中定義的程式碼引入 _src/main.rs_ 中二進位 crate 的作用域，並呼叫它，如列表 12-14 所示。
 
 src/main.rs
 
 ```rust
 // --snip--
 use minigrep::search;
-use minigrep::Config;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-
-    let config = Config::build(&args).unwrap_or_else(|err| {
-        eprintln!("Problem parsing arguments: {err}");
-        std::process::exit(1);
-    });
-
-    if let Err(e) = minigrep::run(config) {
-        eprintln!("Application error: {e}");
-        std::process::exit(1);
-    }
+    // --snip--
 }
 
 // --snip--
-fn run(config: Config) -> Result<(), Box<dyn std::error::Error>> {
-    let contents = std::fs::read_to_string(config.file_path)?;
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.file_path)?;
 
     for line in search(&config.query, &contents) {
         println!("{line}");
@@ -547,34 +644,34 @@ fn run(config: Config) -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-清單 12-14：在 _src/main.rs_ 中使用 `minigrep` library crate 的 `search` 函式
+列表 12-14：在 _src/main.rs_ 中使用 `minigrep` 函式庫 crate 的 `search` 函式
 
-我們新增了 `use minigrep::search` 這行程式碼，將 library crate 中的 `search` 函式引入 binary crate 的作用域。然後，在 `run` 函式中，我們不再列印檔案內容，而是呼叫 `search` 函式並傳遞 `config.query` 值和 `contents` 作為參數。接著，`run` 將使用 `for` 迴圈列印從 `search` 回傳的每一行，這些行都與查詢匹配。現在也是一個好時機，可以移除 `main` 函式中顯示查詢和檔案路徑的 `println!` 呼叫，這樣我們的程式就只會列印搜尋結果（如果沒有發生錯誤的話）。
+我們加入一行 `use minigrep::search`，將 `search` 函式從函式庫 crate 引入二進位 crate 的作用域。然後，在 `run` 函式中，我們不再印出檔案內容，而是呼叫 `search` 函式，並將 `config.query` 值和 `contents` 作為引數傳遞。然後 `run` 將使用 `for` 迴圈來印出從 `search` 回傳的每一行匹配查詢的結果。這也是一個移除 `main` 函式中顯示查詢和檔案路徑的 `println!` 呼叫的好時機，這樣我們的程式只會印出搜尋結果（如果沒有錯誤發生）。
 
-請注意，`search` 函式在列印任何結果之前，會將所有結果收集到它回傳的 vector 中。當搜尋大檔案時，這種實作可能會導致結果顯示緩慢，因為結果不會在找到時立即列印；我們將在第 13 章中討論使用 iterator 解決此問題的可能方法。
+請注意，`search` 函式會在任何列印發生之前，將所有結果收集到它回傳的 vector 中。在搜尋大型檔案時，這種實作方式可能會因為結果不是在找到時立即印出而導致顯示結果緩慢；我們將在第 13 章討論一種可能使用 iterator 來解決這個問題的方法。
 
-哇！這真是一項艱鉅的任務，但我們已經為未來的成功做好了準備。現在處理錯誤變得更加容易，而且我們也讓程式碼更具模組化。從現在開始，我們幾乎所有的工作都將在 _src/lib.rs_ 中完成。
+呼！這是一項大工程，但我們已經為未來的成功奠定了基礎。現在處理錯誤變得容易多了，而且我們也讓程式碼更模組化了。從現在開始，我們幾乎所有的工作都將在 _src/lib.rs_ 中完成。
 
-讓我們利用這種新發現的模組化，做一些以前用舊程式碼會很困難，但現在用新程式碼卻很簡單的事情：我們將編寫一些測試！
+讓我們利用這種新發現的模組化來做一些在舊程式碼中很難做到，但在新程式碼中卻很簡單的事情：我們將寫一些測試！
 
 ## 使用測試驅動開發來開發函式庫功能
 
-現在我們將搜尋邏輯從 `main` 函式中分離出來，放在 _src/lib.rs_ 中，這樣為程式碼的核心功能編寫測試就容易得多了。我們可以直接使用各種參數呼叫函式，並檢查回傳值，而無需從命令列呼叫我們的 binary。
+現在我們的搜尋邏輯位於 _src/lib.rs_ 中，與 `main` 函式分離，為我們程式碼的核心功能編寫測試變得容易多了。我們可以帶各種引數直接呼叫函式，並檢查回傳值，而無需從命令列呼叫我們的二進位檔。
 
-在本節中，我們將使用測試驅動開發 (TDD) 流程向 `minigrep` 程式新增搜尋邏輯，其步驟如下：
+在本節中，我們將使用測試驅動開發（TDD）的流程，將搜尋邏輯新增到 `minigrep` 程式中，步驟如下：
 
-1. 編寫一個會失敗的測試，並執行它以確保它因你預期的原因而失敗。
-2. 編寫或修改剛好足夠的程式碼以使新測試通過。
-3. 重構你剛新增或更改的程式碼，並確保測試持續通過。
+1. 撰寫一個會失敗的測試，並執行它以確保它因你預期的原因而失敗。
+2. 撰寫或修改剛好足夠的程式碼，讓新的測試通過。
+3. 重構你剛才新增或更改的程式碼，並確保測試繼續通過。
 4. 從步驟 1 重複！
 
-儘管 TDD 只是編寫軟體的眾多方法之一，但它可以幫助驅動程式碼設計。在編寫使測試通過的程式碼之前編寫測試有助於在整個過程中保持高測試覆蓋率。
+雖然這只是眾多軟體開發方法之一，但 TDD 可以幫助驅動程式碼設計。在撰寫使測試通過的程式碼之前先撰寫測試，有助於在整個過程中維持高的測試覆蓋率。
 
-我們將測試驅動實作搜尋查詢字串在檔案內容中並產生符合查詢的行列表的功能。我們將在一個名為 `search` 的函式中新增此功能。
+我們將測試驅動實作一個功能，該功能將實際在檔案內容中搜尋查詢字串，並產生一個匹配查詢的行列表。我們將在一個名為 `search` 的函式中新增此功能。
 
-### 編寫一個失敗的測試
+### 撰寫一個會失敗的測試
 
-在 _src/lib.rs_ 中，我們將新增一個 `tests` 模組，其中包含一個測試函式，就像我們在第 11 章中所做的那樣。該測試函式指定了我們希望 `search` 函式具有的行為：它將接受一個查詢和要搜尋的文本，並且它只會從文本中回傳包含查詢的行。清單 12-15 顯示了這個測試。
+在 _src/lib.rs_ 中，我們將新增一個帶有測試函式的 `tests` 模組，就像我們在第 11 章做的那樣。測試函式指定了我們希望 `search` 函式具有的行為：它將接受一個查詢和要搜尋的文本，並且只會回傳文本中包含查詢的行。列表 12-15 顯示了這個測試。
 
 src/lib.rs
 
@@ -598,11 +695,11 @@ Pick three.";
 }
 ```
 
-清單 12-15：為我們期望的 `search` 函式功能建立一個失敗的測試
+列表 12-15：為我們希望擁有的 `search` 函式功能建立一個會失敗的測試
 
-這個測試搜尋字串 `"duct"`。我們搜尋的文本是三行，其中只有一行包含 `"duct"`（請注意，開頭雙引號後面的反斜線告訴 Rust 不要在這個字串字面值的內容開頭放置換行字元）。我們斷言從 `search` 函式回傳的值只包含我們期望的行。
+這個測試搜尋字串 `"duct"`。我們搜尋的文本有三行，其中只有一行包含 `"duct"`（請注意，開頭雙引號後面的反斜線告訴 Rust 不要在這個字串字面值的內容開頭加上換行符）。我們斷言從 `search` 函式回傳的值只包含我們預期的那一行。
 
-如果我們執行這個測試，它目前會失敗，因為 `unimplemented!` macro 會以「not implemented」訊息 panic。根據 TDD 原則，我們將邁出一小步，只新增足夠的程式碼，讓函式在呼叫時不會 panic，方法是將 `search` 函式定義為始終回傳一個空 vector，如清單 12-16 所示。然後測試應該會編譯並失敗，因為空 vector 不符合包含 `"safe, fast, productive."` 這行的 vector。
+如果我們執行這個測試，它目前會失敗，因為 `unimplemented!` macro 會以「not implemented」的訊息 panic。根據 TDD 原則，我們將邁出一小步，只加入足夠的程式碼，讓測試在呼叫函式時不會 panic，方法是將 `search` 函式定義為總是回傳一個空的 vector，如列表 12-16 所示。然後測試應該會編譯並失敗，因為一個空的 vector 不匹配包含 `"safe, fast, productive."` 這一行的 vector。
 
 src/lib.rs
 
@@ -612,15 +709,15 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 }
 ```
 
-清單 12-16：定義足夠的 `search` 函式以確保呼叫它時不會 panic
+列表 12-16：只定義足夠的 `search` 函式，使其呼叫時不會 panic
 
-現在讓我們討論為什麼我們需要在 `search` 的簽章中定義一個明確的 lifetime `'a`，並將該 lifetime 用於 `contents` 參數和回傳值。回想第 10 章，lifetime 參數指定了哪個參數 lifetime 與回傳值的 lifetime 相關聯。在這種情況下，我們指示回傳的 vector 應該包含參考 `contents` 參數的 slice 的字串 slice（而不是 `query` 參數）。
+現在讓我們來討論為什麼我們需要在 `search` 的簽名中定義一個明確的 lifetime `'a`，並將該 lifetime 用於 `contents` 引數和回傳值。回想一下第 10 章，lifetime 參數指定哪個引數的 lifetime 與回傳值的 lifetime 相關聯。在這種情況下，我們指出回傳的 vector 應該包含參考 `contents` 引數 slice 的字串 slice（而不是 `query` 引數）。
 
-換句話說，我們告訴 Rust，`search` 函式回傳的資料將與傳入 `search` 函式中 `contents` 參數的資料一樣長久有效。這很重要！slice 參考的資料必須對參考有效；如果編譯器假設我們正在製作 `query` 的字串 slice 而不是 `contents` 的字串 slice，它將錯誤地執行其安全性檢查。
+換句話說，我們告訴 Rust，`search` 函式回傳的資料將與傳入 `search` 函式 `contents` 引數中的資料一樣長壽。這很重要！slice *所*參考的資料必須是有效的，參考才能有效；如果編譯器假設我們正在製作 `query` 的字串 slice 而不是 `contents` 的，它將會錯誤地進行安全檢查。
 
-如果我們忘記 lifetime 註解並嘗試編譯此函式，我們將收到此錯誤：
+如果我們忘記了 lifetime 標註並試圖編譯這個函式，我們會得到這個錯誤：
 
-```
+```bash
 $ cargo build
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
 error[E0106]: missing lifetime specifier
@@ -639,25 +736,25 @@ For more information about this error, try `rustc --explain E0106`.
 error: could not compile `minigrep` (lib) due to 1 previous error
 ```
 
-Rust 無法知道輸出需要哪兩個參數，所以我們需要明確地告訴它。請注意，幫助文字建議為所有參數和輸出型別指定相同的 lifetime 參數，這是錯誤的！因為 `contents` 是包含我們所有文字的參數，而且我們想要回傳該文字中匹配的部分，所以我們知道 `contents` 是唯一應該使用 lifetime 語法與回傳值連接的參數。
+Rust 不知道我們需要兩個參數中的哪一個來作為輸出，所以我們需要明確地告訴它。請注意，幫助文字建議為所有參數和輸出型別指定相同的 lifetime 參數，這是不正確的！因為 `contents` 是包含我們所有文本的參數，而我們想要回傳該文本中匹配的部分，所以我們知道 `contents` 是唯一應該使用 lifetime 語法與回傳值連接的參數。
 
-其他程式語言不需要你在簽章中將參數與回傳值連接起來，但這種做法會隨著時間變得更容易。你可能希望將此範例與第 10 章中「使用 lifetime 驗證引用」章節中的範例進行比較。
+其他程式語言不要求你在簽名中將引數與回傳值連接起來，但這種做法會隨著時間的推移而變得更容易。你可能想將這個例子與第 10 章「使用 Lifetime 驗證參考」一節中的例子進行比較。
 
-### 編寫程式碼以通過測試
+### 撰寫程式碼來通過測試
 
-目前，我們的測試失敗是因為我們總是回傳一個空 vector。為了解決這個問題並實作 `search`，我們的程式需要遵循這些步驟：
+目前，我們的測試失敗是因為我們總是回傳一個空的 vector。為了修正這個問題並實作 `search`，我們的程式需要遵循以下步驟：
 
-1. 遍歷內容的每一行。
+1. 迭代 `contents` 的每一行。
 2. 檢查該行是否包含我們的查詢字串。
-3. 如果包含，則將其新增到我們回傳的值列表中。
-4. 如果不包含，則不執行任何操作。
+3. 如果是，將其加入我們正在回傳的值列表中。
+4. 如果不是，什麼都不做。
 5. 回傳匹配的結果列表。
 
-讓我們逐步完成每個步驟，從遍歷行開始。
+讓我們逐步完成每一步，從迭代行開始。
 
-#### 使用 `lines` 方法遍歷行
+#### 使用 lines 方法逐行迭代
 
-Rust 有一個方便的方法來處理字串逐行遍歷，它的名稱很方便，叫做 `lines`，如清單 12-17 所示。請注意，這段程式碼目前還無法編譯。
+Rust 有一個方便的方法可以處理字串的逐行迭代，恰當地命名為 `lines`，其運作方式如列表 12-17 所示。請注意，這還不能編譯。
 
 src/lib.rs
 
@@ -666,17 +763,16 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     for line in contents.lines() {
         // do something with line
     }
-    vec![] // temporary return to make it compile
 }
 ```
 
-清單 12-17：遍歷 `contents` 中的每一行
+列表 12-17：迭代 `contents` 中的每一行
 
-`lines` 方法回傳一個 iterator。我們將在第 13 章中深入討論 iterator，但請回想你在清單 3-5 中看到這種使用 iterator 的方式，其中我們使用 `for` 迴圈與 iterator 來對集合中的每個項目執行一些程式碼。
+`lines` 方法回傳一個 iterator。我們將在第 13 章深入探討 iterator，但回想一下，你在列表 3-5 中看到過這種使用 iterator 的方式，我們使用 `for` 迴圈搭配 iterator 來對集合中的每個項目執行一些程式碼。
 
-#### 搜尋每一行中的查詢
+#### 搜尋每一行的查詢字串
 
-接下來，我們將檢查目前行是否包含我們的查詢字串。幸運的是，字串有一個名為 `contains` 的有用方法可以為我們完成這項工作！將對 `contains` 方法的呼叫新增到 `search` 函式中，如清單 12-18 所示。請注意，這段程式碼仍然無法編譯。
+接下來，我們將檢查目前行是否包含我們的查詢字串。幸運的是，字串有一個名為 `contains` 的方便方法可以為我們做這件事！在 `search` 函式中加入對 `contains` 方法的呼叫，如列表 12-18 所示。請注意，這仍然無法編譯。
 
 src/lib.rs
 
@@ -687,17 +783,16 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
             // do something with line
         }
     }
-    vec![] // temporary return to make it compile
 }
 ```
 
-清單 12-18：增加功能以查看行是否包含 `query` 中的字串
+列表 12-18：新增功能以查看該行是否包含 `query` 中的字串
 
-目前，我們正在建立功能。為了讓程式碼編譯，我們需要從函式主體中回傳一個值，就像我們在函式簽章中指出的那樣。
+目前，我們正在逐步建構功能。為了讓程式碼能夠編譯，我們需要從函式主體中回傳一個值，就像我們在函式簽名中指明的那樣。
 
 #### 儲存匹配的行
 
-要完成此函式，我們需要一種方法來儲存我們要回傳的匹配行。為此，我們可以在 `for` 迴圈之前建立一個可變 vector，並呼叫 `push` 方法將 `line` 儲存在 vector 中。在 `for` 迴圈之後，我們回傳 vector，如清單 12-19 所示。
+為了完成這個函式，我們需要一種方法來儲存我們想要回傳的匹配行。為此，我們可以在 `for` 迴圈之前建立一個可變的 vector，並呼叫 `push` 方法來將 `line` 儲存在 vector 中。在 `for` 迴圈之後，我們回傳這個 vector，如列表 12-19 所示。
 
 src/lib.rs
 
@@ -715,11 +810,11 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 }
 ```
 
-清單 12-19：儲存匹配的行以便我們回傳它們
+列表 12-19：儲存匹配的行以便我們可以回傳它們
 
-現在 `search` 函式應該只回傳包含 `query` 的行，並且我們的測試應該通過。讓我們執行測試：
+現在 `search` 函式應該只回傳包含 `query` 的行，我們的測試應該會通過。讓我們執行測試：
 
-```
+```bash
 $ cargo test
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 1.22s
@@ -743,13 +838,13 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-我們的測試通過了，所以我們知道它有效！
+我們的測試通過了，所以我們知道它能運作！
 
-此時，我們可以考慮重構 `search` 函式的實作，同時保持測試通過以維持相同的功能。`search` 函式中的程式碼還不錯，但它沒有利用 iterator 的一些有用功能。我們將在第 13 章中回到這個範例，屆時我們將詳細探索 iterator，並研究如何改進它。
+此時，我們可以考慮在保持測試通過以維持相同功能性的前提下，重構 `search` 函式的實作。`search` 函式中的程式碼不算太差，但它沒有利用 iterator 的一些有用功能。我們將在第 13 章回到這個例子，屆時我們將詳細探討 iterator，並看看如何改進它。
 
-現在整個程式應該可以運作了！讓我們來試試看，首先是一個應該從 Emily Dickinson 詩中回傳恰好一行的單字：_frog_。
+現在整個程式應該可以運作了！讓我們來試試看，首先用一個應該從艾蜜莉・狄金生的詩中只回傳一行的單字：_frog_。
 
-```
+```bash
 $ cargo run -- frog poem.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.38s
@@ -757,9 +852,9 @@ $ cargo run -- frog poem.txt
 How public, like a frog
 ```
 
-太棒了！現在讓我們嘗試一個會匹配多行的單字，例如 _body_：
+酷！現在讓我們試一個會匹配多行的單字，比如 _body_：
 
-```
+```bash
 $ cargo run -- body poem.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.0s
@@ -769,26 +864,26 @@ Are you nobody, too?
 How dreary to be somebody!
 ```
 
-最後，讓我們確保當我們搜尋詩中不存在的單字時（例如 _monomorphization_），我們不會得到任何行：
+最後，讓我們確保當我們搜尋一個在詩中任何地方都不存在的單字時，不會得到任何行，例如 _monomorphization_：
 
-```
+```bash
 $ cargo run -- monomorphization poem.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.0s
      Running `target/debug/minigrep monomorphization poem.txt`
 ```
 
-太好了！我們已經建立了我們自己經典工具的迷你版本，並學到了很多關於如何組織應用程式的知識。我們還學到了一些關於檔案輸入和輸出、lifetime、測試和命令列解析的知識。
+太棒了！我們建立了自己的迷你版經典工具，並學到了很多關於如何架構應用程式的知識。我們也學到了一些關於檔案 I/O、lifetime、測試和命令列解析的知識。
 
-為了完成這個專案，我們將簡要演示如何使用環境變數以及如何列印到標準錯誤，這兩者在編寫命令列程式時都很有用。
+為了完善這個專案，我們將簡要示範如何使用環境變數以及如何印到標準錯誤，這兩者在撰寫 command line 程式時都很有用。
 
 ## 使用環境變數
 
-我們將透過新增額外功能來改進 `minigrep` binary：一個使用者可以透過環境變數開啟的不區分大小寫搜尋選項。我們可以將此功能作為命令列選項，並要求使用者每次想要應用時都輸入它，但透過將其設定為環境變數，我們允許使用者設定一次環境變數，並使其所有搜尋在該終端機會話中都不區分大小寫。
+我們將透過新增一個額外功能來改進 `minigrep` 二進位檔：一個不分大小寫的搜尋選項，使用者可以透過環境變數來開啟。我們可以將這個功能做成一個命令列選項，並要求使用者每次想要它生效時都輸入它，但透過將其設為環境變數，我們允許使用者設定一次環境變數，然後在該終端機 session 中的所有搜尋都將不分大小寫。
 
-### 為不區分大小寫的 `search` 函式編寫一個失敗的測試
+### 為不分大小寫的 search 函式撰寫一個會失敗的測試
 
-我們首先向 `minigrep` 函式庫新增一個新的 `search_case_insensitive` 函式，當環境變數有值時將呼叫它。我們將繼續遵循 TDD 過程，所以第一步又是編寫一個失敗的測試。我們將為新的 `search_case_insensitive` 函式新增一個新測試，並將我們的舊測試從 `one_result` 重命名為 `case_sensitive`，以釐清兩個測試之間的差異，如清單 12-20 所示。
+我們首先在 `minigrep` 函式庫中新增一個 `search_case_insensitive` 函式，當環境變數有值時將會呼叫它。我們將繼續遵循 TDD 流程，所以第一步仍然是撰寫一個會失敗的測試。我們將為新的 `search_case_insensitive` 函式新增一個新測試，並將我們的舊測試從 `one_result` 重新命名為 `case_sensitive`，以釐清兩個測試之間的差異，如列表 12-20 所示。
 
 src/lib.rs
 
@@ -826,15 +921,15 @@ Trust me.";
 }
 ```
 
-清單 12-20：為我們即將增加的不區分大小寫函式增加一個新的失敗測試
+列表 12-20：為我們即將新增的不分大小寫函式新增一個會失敗的新測試
 
-請注意，我們也編輯了舊測試的 `contents`。我們新增了一行包含文本 `"Duct tape."`，其中 _D_ 是大寫，當我們以區分大小寫的方式搜尋時，它不應與查詢 `"duct"` 匹配。以這種方式更改舊測試有助於確保我們不會意外破壞已經實作的區分大小寫搜尋功能。這個測試現在應該會通過，並且在我們處理不區分大小寫搜尋時應該會繼續通過。
+請注意，我們也編輯了舊測試的 `contents`。我們新增了一行文字 `"Duct tape."`，其中使用大寫的 _D_，當我們以區分大小寫的方式搜尋時，不應該匹配查詢 `"duct"`。以這種方式更改舊測試有助於確保我們不會意外地破壞我們已經實作的區分大小寫搜尋功能。這個測試現在應該會通過，並且在我們進行不分大小寫搜尋的工作時應該繼續通過。
 
-不區分大小寫搜尋的新測試使用 `"rUsT"` 作為其查詢。在我們即將新增的 `search_case_insensitive` 函式中，查詢 `"rUsT"` 應該匹配包含大寫 _R_ 的 `"Rust:"` 行，並且匹配 `"Trust me."` 行，即使它們的字母大小寫與查詢不同。這就是我們失敗的測試，它將因我們尚未定義 `search_case_insensitive` 函式而無法編譯。你可以自由地新增一個總是回傳空 vector 的骨架實作，類似於我們在清單 12-16 中為 `search` 函式所做的那樣，以查看測試編譯和失敗。
+不分大小寫搜尋的新測試使用 `"rUsT"` 作為其查詢。在我們即將新增的 `search_case_insensitive` 函式中，查詢 `"rUsT"` 應該匹配包含大寫 _R_ 的 `"Rust:"` 這一行，也應該匹配 `"Trust me."` 這一行，即使它們的大小寫與查詢不同。這是我們會失敗的測試，它將無法編譯，因為我們還沒有定義 `search_case_insensitive` 函式。你可以隨意新增一個總是回傳空 vector 的骨架實作，類似於我們在列表 12-16 中為 `search` 函式所做的那樣，來看看測試編譯並失敗。
 
-### 實作 `search_case_insensitive` 函式
+### 實作 search_case_insensitive 函式
 
-清單 12-21 中所示的 `search_case_insensitive` 函式將與 `search` 函式幾乎相同。唯一的區別是我們將 `query` 和每個 `line` 都轉換為小寫，這樣無論輸入參數的大小寫如何，當我們檢查該行是否包含查詢時，它們都將具有相同的大小寫。
+`search_case_insensitive` 函式，如列表 12-21 所示，將與 `search` 函式幾乎相同。唯一的區別是我們將 `query` 和每一 `line` 都轉換為小寫，這樣無論輸入引數的大小寫如何，當我們檢查該行是否包含查詢時，它們的大小寫都將相同。
 
 src/lib.rs
 
@@ -856,17 +951,17 @@ pub fn search_case_insensitive<'a>(
 }
 ```
 
-清單 12-21：定義 `search_case_insensitive` 函式，在比較之前將查詢和行轉換為小寫
+列表 12-21：定義 `search_case_insensitive` 函式，在比較之前將查詢和行都轉為小寫
 
-首先，我們將 `query` 字串轉換為小寫，並將其儲存在一個與原始 `query` 相同的、新變數中，即 shadowing。對 `query` 呼叫 `to_lowercase` 是必要的，這樣無論使用者的查詢是 `"rust"`、`"RUST"`、`"Rust"` 或 `"rUsT"`，我們都會將查詢視為 `"rust"`，並且不區分大小寫。儘管 `to_lowercase` 會處理基本的 Unicode，但它不會 100% 精確。如果我們正在編寫一個真實的應用程式，我們需要在這裡做更多工作，但本節是關於環境變數而不是 Unicode 的，所以我們就到此為止。
+首先，我們將 `query` 字串轉為小寫，並將其儲存在一個同名的新變數中，遮蔽了原始的 `query`。在查詢上呼叫 `to_lowercase` 是必要的，這樣無論使用者的查詢是 `"rust"`、`"RUST"`、`"Rust"` 還是 `"`rUsT`"`，我們都會將查詢視為 `"rust"`，並且不區分大小寫。雖然 `to_lowercase` 會處理基本的 Unicode，但它不會 100% 準確。如果我們在寫一個真正的應用程式，我們會想在這裡做更多的工作，但本節是關於環境變數，而不是 Unicode，所以我們就到此為止。
 
-請注意，`query` 現在是 `String` 而不是字串 slice，因為呼叫 `to_lowercase` 會建立新資料而不是參考現有資料。例如，假設查詢是 `"rUsT"`：該字串 slice 不包含小寫的 `u` 或 `t` 供我們使用，所以我們必須分配一個新的 `String` 包含 `"rust"`。現在當我們將 `query` 作為參數傳遞給 `contains` 方法時，我們需要新增一個參考符號 (`&`)，因為 `contains` 的簽章定義為接受一個字串 slice。
+請注意，`query` 現在是一個 `String` 而不是字串 slice，因為呼叫 `to_lowercase` 會建立新的資料，而不是參考現有的資料。舉例來說，如果查詢是 `"rUsT"`，那個字串 slice 不包含小寫的 `u` 或 `t` 供我們使用，所以我們必須配置一個新的 `String` 包含 `"rust"`。當我們現在將 `query` 作為引數傳遞給 `contains` 方法時，我們需要加上一個 `&` 符號，因為 `contains` 的簽名被定義為接受一個字串 slice。
 
-接下來，我們在每個 `line` 上新增一個 `to_lowercase` 呼叫，將所有字元轉換為小寫。現在我們已將 `line` 和 `query` 都轉換為小寫，無論查詢的大小寫如何，我們都能找到匹配項。
+接下來，我們在每一 `line` 上加入對 `to_lowercase` 的呼叫，以將所有字元轉為小寫。現在我們已經將 `line` 和 `query` 轉換為小寫，無論查詢的大小寫如何，我們都能找到匹配項。
 
-讓我們看看這個實作是否通過了測試：
+讓我們看看這個實作是否通過測試：
 
-```
+```bash
 $ cargo test
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 1.33s
@@ -891,9 +986,9 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-太棒了！它們通過了。現在，讓我們從 `run` 函式中呼叫新的 `search_case_insensitive` 函式。首先，我們將一個配置選項新增到 `Config` struct 中，以在區分大小寫和不區分大小寫搜尋之間切換。新增此欄位將導致編譯器錯誤，因為我們尚未在任何地方初始化此欄位：
+太好了！它們通過了。現在，讓我們從 `run` 函式中呼叫新的 `search_case_insensitive` 函式。首先，我們將在 `Config` struct 中新增一個設定選項，用於在區分大小寫和不區分大小寫的搜尋之間切換。新增這個欄位會導致編譯錯誤，因為我們還沒有在任何地方初始化這個欄位：
 
-Filename: src/main.rs
+檔案名稱：src/main.rs
 
 ```rust
 pub struct Config {
@@ -903,14 +998,12 @@ pub struct Config {
 }
 ```
 
-我們新增了 `ignore_case` 欄位，它包含一個布林值。接下來，我們需要 `run` 函式檢查 `ignore_case` 欄位的值，並根據該值決定是呼叫 `search` 函式還是 `search_case_insensitive` 函式，如清單 12-22 所示。這段程式碼仍然無法編譯。
+我們新增了 `ignore_case` 欄位，它儲存一個布林值。接下來，我們需要 `run` 函式檢查 `ignore_case` 欄位的值，並用它來決定是呼叫 `search` 函式還是 `search_case_insensitive` 函式，如列表 12-22 所示。這仍然無法編譯。
 
 src/main.rs
 
 ```rust
 use minigrep::{search, search_case_insensitive};
-use std::fs;
-use std::error::Error;
 
 // --snip--
 
@@ -931,20 +1024,13 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 ```
 
-清單 12-22：根據 `config.ignore_case` 中的值呼叫 `search` 或 `search_case_insensitive`
+列表 12-22：根據 `config.ignore_case` 的值呼叫 `search` 或 `search_case_insensitive`
 
-最後，我們需要檢查環境變數。處理環境變數的函式位於標準函式庫的 `env` 模組中，該模組已在 _src/main.rs_ 頂部的作用域中。我們將使用 `env` 模組中的 `var` 函式來檢查名為 `IGNORE_CASE` 的環境變數是否已設定任何值，如清單 12-23 所示。
+最後，我們需要檢查環境變數。用於處理環境變數的函式位於標準函式庫的 `env` 模組中，該模組已經在 _src/main.rs_ 的頂部被引入作用域。我們將使用 `env` 模組中的 `var` 函式來檢查是否有名為 `IGNORE_CASE` 的環境變數被設定了任何值，如列表 12-23 所示。
 
 src/main.rs
 
 ```rust
-use std::env; // Add this line if not already present
-use std::process; // Add this line if not already present
-use std::fs; // Add this line if not already present
-use std::error::Error; // Add this line if not already present
-
-// ... (existing Config struct and main function)
-
 impl Config {
     fn build(args: &[String]) -> Result<Config, &'static str> {
         if args.len() < 3 {
@@ -965,17 +1051,17 @@ impl Config {
 }
 ```
 
-清單 12-23：檢查名為 `IGNORE_CASE` 的環境變數中的任何值
+列表 12-23：檢查名為 `IGNORE_CASE` 的環境變數中是否有任何值
 
-在這裡，我們建立了一個新的變數 `ignore_case`。為了設定它的值，我們呼叫 `env::var` 函式並傳遞 `IGNORE_CASE` 環境變數的名稱。`env::var` 函式回傳一個 `Result`，如果環境變數被設定為任何值，它將是成功的 `Ok` 變體，其中包含環境變數的值。如果環境變數未設定，它將回傳 `Err` 變體。
+在這裡，我們建立了一個新變數 `ignore_case`。為了設定它的值，我們呼叫 `env::var` 函式並傳遞 `IGNORE_CASE` 環境變數的名稱。`env::var` 函式回傳一個 `Result`，如果環境變數被設定為任何值，它將是包含該環境變數值的成功 `Ok` 變體。如果環境變數未被設定，它將回傳 `Err` 變體。
 
-我們使用 `Result` 上的 `is_ok` 方法來檢查環境變數是否已設定，這表示程式應該執行不區分大小寫的搜尋。如果 `IGNORE_CASE` 環境變數未設定任何值，`is_ok` 將回傳 `false`，程式將執行區分大小寫的搜尋。我們不關心環境變數的 _值_，只關心它是否已設定或未設定，因此我們檢查 `is_ok` 而不是使用 `unwrap`、`expect` 或我們在 `Result` 上看到的任何其他方法。
+我們在 `Result` 上使用 `is_ok` 方法來檢查環境變數是否被設定，這意味著程式應該進行不分大小寫的搜尋。如果 `IGNORE_CASE` 環境變數沒有被設定為任何東西，`is_ok` 將回傳 `false`，程式將執行區分大小寫的搜尋。我們不關心環境變數的_值_，只關心它是否被設定，所以我們檢查 `is_ok` 而不是使用 `unwrap`、`expect` 或我們在 `Result` 上見過的任何其他方法。
 
-我們將 `ignore_case` 變數中的值傳遞給 `Config` 實例，以便 `run` 函式可以讀取該值並決定是呼叫 `search_case_insensitive` 還是 `search`，正如我們在清單 12-22 中實作的那樣。
+我們將 `ignore_case` 變數中的值傳遞給 `Config` 實例，這樣 `run` 函式就可以讀取該值並決定是呼叫 `search_case_insensitive` 還是 `search`，就像我們在列表 12-22 中實作的那樣。
 
-讓我們試試看！首先，我們將在未設定環境變數的情況下運行我們的程式，並使用查詢 `to`，它應該匹配包含小寫單字 _to_ 的任何行：
+讓我們來試試吧！首先，我們在未設定環境變數的情況下執行我們的程式，查詢為 `to`，這應該會匹配所有包含全小寫單字 _to_ 的行：
 
-```
+```bash
 $ cargo run -- to poem.txt
    Compiling minigrep v0.1.0 (file:///projects/minigrep)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.0s
@@ -984,25 +1070,31 @@ Are you nobody, too?
 How dreary to be somebody!
 ```
 
-看起來仍然有效！現在，讓我們在將 `IGNORE_CASE` 設定為 `1` 的情況下運行程式，但使用相同的查詢 _to_：
+看起來仍然可以運作！現在讓我們在設定 `IGNORE_CASE` 為 `1` 的情況下執行程式，但查詢同樣是 _to_：
 
-```
+```bash
 $ IGNORE_CASE=1 cargo run -- to poem.txt
 ```
 
-如果你使用的是 PowerShell，你需要將環境變數設定和執行程式作為單獨的命令：
+如果你使用的是 PowerShell，你需要將設定環境變數和執行程式分成兩個獨立的指令：
 
-```
+```powershell
 PS> $Env:IGNORE_CASE=1; cargo run -- to poem.txt
 ```
 
-這將使 `IGNORE_CASE` 在你的 shell 會話的其餘時間內保持不變。它可以使用 `Remove-Item` cmdlet 取消設定：
+這將使 `IGNORE_CASE` 在你的 shell session 剩餘的時間內保持有效。可以使用 `Remove-Item` cmdlet 將其取消設定：
 
-```
+```powershell
 PS> Remove-Item Env:IGNORE_CASE
 ```
 
-我們應該會得到包含 _to_（可能帶有大寫字母）的行：
+我們應該會得到包含 _to_ 的行，這些行可能包含大寫字母：
+
+<!-- manual-regeneration
+cd listings/ch12-an-io-project/listing-12-23
+IGNORE_CASE=1 cargo run -- to poem.txt
+can't extract because of the environment variable
+-->
 
 ```
 Are you nobody, too?
@@ -1011,41 +1103,41 @@ To tell your name the livelong day
 To an admiring bog!
 ```
 
-太棒了，我們也得到了包含 _To_ 的行！我們的 `minigrep` 程式現在可以根據環境變數執行不區分大小寫的搜尋。現在你知道如何管理使用命令列參數或環境變數設定的選項。
+太棒了，我們也得到了包含 _To_ 的行！我們的 `minigrep` 程式現在可以透過環境變數控制，進行不分大小寫的搜尋。現在你知道如何管理使用命令列引數或環境變數設定的選項了。
 
-有些程式允許對相同配置同時使用參數和環境變數。在這些情況下，程式會決定其中一個具有優先權。作為你自己的另一個練習，嘗試透過命令列參數或環境變數來控制大小寫敏感度。決定如果程式在一個設定為區分大小寫，另一個設定為忽略大小寫的情況下執行，命令列參數或環境變數應該優先。
+有些程式允許對同一個設定使用引數*和*環境變數。在這些情況下，程式會決定其中一個優先。作為一個你可以自己做的額外練習，試著透過命令列引數或環境變數來控制大小寫的敏感度。決定如果程式在一個設定為區分大小寫，另一個設定為忽略大小寫的情況下執行時，命令列引數或環境變數應該優先。
 
-`std::env` 模組包含更多處理環境變數的有用功能：查看其文件以了解可用功能。
+`std::env` 模組包含許多處理環境變數的更有用的功能：查看其文件以了解有哪些可用功能。
 
-## 將錯誤訊息寫入標準錯誤而不是標準輸出
+## 將錯誤訊息寫入標準錯誤而非標準輸出
 
-目前，我們使用 `println!` macro 將所有輸出寫入終端機。在大多數終端機中，有兩種輸出：用於一般資訊的_標準輸出_ (`stdout`) 和用於錯誤訊息的_標準錯誤_ (`stderr`)。這種區分讓使用者可以選擇將程式的成功輸出導向到檔案，同時仍將錯誤訊息列印到螢幕上。
+目前，我們使用 `println!` macro 將所有的輸出寫入終端機。在大多數終端機中，有兩種輸出：用於一般資訊的_標準輸出_（`stdout`）和用於錯誤訊息的_標準錯誤_（`stderr`）。這種區分讓使用者可以選擇將程式的成功輸出導向一個檔案，但仍然在螢幕上印出錯誤訊息。
 
-`println!` macro 只能列印到標準輸出，因此我們必須使用其他方法來列印到標準錯誤。
+`println!` macro 只能印到標準輸出，所以我們必須使用其他東西來印到標準錯誤。
 
 ### 檢查錯誤寫入的位置
 
-首先，讓我們觀察 `minigrep` 列印的內容目前是如何寫入標準輸出的，包括我們想要寫入標準錯誤的任何錯誤訊息。我們將透過將標準輸出串流重新導向到檔案來實現這一點，同時故意造成錯誤。我們不會重新導向標準錯誤串流，因此任何傳送給標準錯誤的內容將繼續顯示在螢幕上。
+首先，讓我們觀察一下 `minigrep` 印出的內容目前是如何寫入標準輸出的，包括我們希望改寫到標準錯誤的任何錯誤訊息。我們將透過將標準輸出串流重新導向到一個檔案，同時故意引發一個錯誤來做到這一點。我們不會重新導向標準錯誤串流，所以任何送到標準錯誤的內容將繼續顯示在螢幕上。
 
-命令列程式預期會將錯誤訊息傳送到標準錯誤串流，這樣即使我們將標準輸出串流重新導向到檔案，我們仍然可以在螢幕上看到錯誤訊息。我們的程式目前行為不佳：我們即將看到它將錯誤訊息輸出儲存到檔案中！
+命令列程式被期望將錯誤訊息送到標準錯誤串流，這樣即使我們將標準輸出串流重新導向到一個檔案，我們仍然可以在螢幕上看到錯誤訊息。我們的程式目前行為不佳：我們即將看到它將錯誤訊息輸出儲存到一個檔案中！
 
-為了演示這種行為，我們將使用 `>` 和我們想要將標準輸出串流重新導向的檔案路徑 _output.txt_ 執行程式。我們不會傳遞任何參數，這應該會導致錯誤：
+為了展示這個行為，我們將用 `>` 和我們想要重新導向標準輸出串流的檔案路徑 _output.txt_ 來執行程式。我們不會傳遞任何引數，這應該會導致一個錯誤：
 
-```
+```bash
 $ cargo run > output.txt
 ```
 
-`>` 語法告訴 shell 將標準輸出的內容寫入 _output.txt_ 而不是螢幕。我們沒有看到預期的錯誤訊息列印到螢幕上，這意味著它一定在檔案中。_output.txt_ 的內容如下：
+`>` 語法告訴 shell 將標準輸出的內容寫入 _output.txt_ 而不是螢幕。我們沒有看到我們預期的錯誤訊息印在螢幕上，所以這意味著它一定是被寫入了檔案中。_output.txt_ 的內容是：
 
 ```
 Problem parsing arguments: not enough arguments
 ```
 
-是的，我們的錯誤訊息被列印到標準輸出。對於這類錯誤訊息來說，列印到標準錯誤會更有用，這樣只有成功執行的資料才會出現在檔案中。我們將改變這一點。
+是的，我們的錯誤訊息被印到了標準輸出。像這樣的錯誤訊息印到標準錯誤會更有用，這樣只有成功運行的資料才會最終進入檔案。我們將改變這一點。
 
-### 將錯誤列印到標準錯誤
+### 將錯誤印至標準錯誤
 
-我們將使用清單 12-24 中的程式碼來改變錯誤訊息的列印方式。由於我們在本章稍早進行的重構，所有列印錯誤訊息的程式碼都在一個函式 `main` 中。標準函式庫提供了 `eprintln!` macro，它會列印到標準錯誤串流，所以讓我們將我們之前呼叫 `println!` 列印錯誤的兩個地方改為使用 `eprintln!`。
+我們將使用列表 12-24 中的程式碼來改變錯誤訊息的列印方式。由於我們在本章前面做的重構，所有印出錯誤訊息的程式碼都在一個函式中，即 `main`。標準函式庫提供了 `eprintln!` macro，可以印到標準錯誤串流，所以讓我們將我們呼叫 `println!` 來印出錯誤的兩個地方改為使用 `eprintln!`。
 
 src/main.rs
 
@@ -1065,36 +1157,36 @@ fn main() {
 }
 ```
 
-清單 12-24：使用 `eprintln!` 將錯誤訊息寫入標準錯誤而不是標準輸出
+列表 12-24：使用 `eprintln!` 將錯誤訊息寫入標準錯誤而非標準輸出
 
-現在讓我們再次以相同的方式執行程式，不帶任何參數並使用 `>` 重新導向標準輸出：
+現在讓我們再次以同樣的方式執行程式，不帶任何引數並用 `>` 重新導向標準輸出：
 
-```
+```bash
 $ cargo run > output.txt
 Problem parsing arguments: not enough arguments
 ```
 
-現在我們在螢幕上看到錯誤，而 _output.txt_ 則沒有內容，這就是我們期望命令列程式應有的行為。
+現在我們在螢幕上看到了錯誤，而 _output.txt_ 裡面是空的，這是我們對 command line 程式所期望的行為。
 
-讓我們再次執行程式，使用不會導致錯誤的參數，但仍將標準輸出重新導向到檔案，如下所示：
+讓我們再次用不會導致錯誤的引數來執行程式，但仍然將標準輸出重新導向到一個檔案，像這樣：
 
-```
+```bash
 $ cargo run -- to poem.txt > output.txt
 ```
 
-我們不會在終端機看到任何輸出，而 _output.txt_ 將包含我們的結果：
+我們不會在終端機上看到任何輸出，而 _output.txt_ 將包含我們的結果：
 
-Filename: output.txt
+檔案名稱：output.txt
 
 ```
 Are you nobody, too?
 How dreary to be somebody!
 ```
 
-這證明我們現在正在適當地將標準輸出用於成功輸出，並將標準錯誤用於錯誤輸出。
+這表明我們現在適當地將標準輸出用於成功輸出，將標準錯誤用於錯誤輸出。
 
 ## 總結
 
-本章回顧了你到目前為止所學的一些主要概念，並介紹了如何在 Rust 中執行常見的輸入/輸出操作。透過使用命令列參數、檔案、環境變數和用於列印錯誤的 `eprintln!` macro，你現在已準備好編寫命令列應用程式。結合前面章節中的概念，你的程式碼將組織良好、有效地將資料儲存在適當的資料結構中、妥善處理錯誤，並經過充分測試。
+本章回顧了你目前學到的一些主要概念，並介紹了如何在 Rust 中執行常見的 I/O 操作。透過使用命令列引數、檔案、環境變數以及用於列印錯誤的 `eprintln!` macro，你現在已經準備好編寫 command line 應用程式了。結合前面章節的概念，你的程式碼將組織良好，能有效地將資料儲存在適當的資料結構中，漂亮地處理錯誤，並且經過充分的測試。
 
-接下來，我們將探索受函數式語言影響的一些 Rust 功能：closure 和 iterator。
+接下來，我們將探索一些受函式語言程式設計影響的 Rust 特性：closure 和 iterator。

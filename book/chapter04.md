@@ -6,33 +6,33 @@ directory, so all fixes need to be made in `/src/`.
 
 [TOC]
 
-# 理解 Ownership
+# 了解 Ownership
 
-ownership 是 Rust 最獨特的功能，並對語言的其餘部分產生深遠的影響。它讓 Rust 能夠在不需要 garbage collector 的情況下提供記憶體安全保證，因此理解 ownership 的運作方式非常重要。在本章中，我們將討論 ownership 以及幾個相關的功能：borrowing、slices，以及 Rust 如何在記憶體中配置資料。
+Ownership 是 Rust 最獨特的功能，它對語言的其他部分有著深遠的影響。它讓 Rust 能夠在不需要垃圾回收器的情況下，保證記憶體安全，所以了解 ownership 的運作方式非常重要。在本章中，我們將討論 ownership 以及幾個相關的功能：borrowing、slices，以及 Rust 如何在記憶體中佈局資料。
 
 ## 什麼是 Ownership？
 
-_Ownership_ 是一組規則，用於規範 Rust 程式如何管理記憶體。所有程式都必須在執行時管理它們使用電腦記憶體的方式。有些語言有 garbage collection，會在程式執行時定期尋找不再使用的記憶體；在其他語言中，程式設計師必須明確地分配和釋放記憶體。Rust 採用第三種方法：記憶體透過一套由編譯器檢查的 ownership 系統來管理。如果任何規則被違反，程式將無法編譯。在程式執行時，ownership 的任何功能都不會減慢你的程式。
+_Ownership_ 是一組規則，用來管理 Rust 程式如何運用記憶體。所有程式在執行時都必須管理它們使用電腦記憶體的方式。有些語言有垃圾回收機制，會在程式執行時定期尋找不再使用的記憶體；在其他語言中，程式設計師必須明確地分配和釋放記憶體。Rust 採用第三種方法：記憶體是透過一個帶有一組規則的 ownership 系統來管理的，編譯器會檢查這些規則。如果任何規則被違反，程式將無法編譯。Ownership 的任何功能都不會在程式執行時拖慢你的程式。
 
-由於 ownership 對於許多程式設計師來說是一個新概念，因此需要一些時間來適應。好消息是，你對 Rust 和 ownership 系統的規則越熟悉，你就會發現越容易自然地開發出安全且有效率的程式碼。請堅持下去！
+因為 ownership 對許多程式設計師來說是個新概念，所以需要一些時間來適應。好消息是，你對 Rust 和 ownership 系統的規則越有經驗，就越容易自然而然地開發出安全且高效的程式碼。堅持下去！
 
-當你理解 ownership 時，你將為理解 Rust 獨特的功能打下堅實的基礎。在本章中，你將透過一些以常見資料結構：字串為重點的範例來學習 ownership。
+當你了解 ownership 時，你將為理解 Rust 的獨特功能打下堅實的基礎。在本章中，你將透過一些專注於一個非常常見的資料結構：字串的範例來學習 ownership。
 
-> ### Stack 和 Heap
+> ### Stack 與 Heap
 >
-> 許多程式語言不需要你經常考慮 stack 和 heap。但在像 Rust 這樣的系統程式語言中，一個值是在 stack 上還是在 heap 上，會影響語言的行為以及你為何必須做出某些決定。ownership 的部分內容將在本章稍後結合 stack 和 heap 進行描述，因此這裡提供一個簡要的解釋作為準備。
+> 許多程式語言不常需要你考慮 stack 和 heap。但在像 Rust 這樣的系統程式語言中，一個值是在 stack 上還是在 heap 上，會影響語言的行為以及你為何必須做出某些決定。本章稍後將結合 stack 和 heap 來描述 ownership 的某些部分，因此這裡先做一個簡要的說明。
 >
-> stack 和 heap 都是你的程式碼在執行期可以使用的記憶體部分，但它們的結構不同。stack 按照接收值的順序儲存值，並以相反的順序移除值。這被稱為_後進先出 (last in, first out)_。想像一下一疊盤子：當你增加更多盤子時，你會把它們放在堆疊的頂部，當你需要一個盤子時，你會從頂部取下一個。從中間或底部添加或移除盤子就無法很好地運作！添加資料稱為_推進 stack (pushing onto the stack)_，移除資料稱為_從 stack 彈出 (popping off the stack)_。所有儲存在 stack 上的資料都必須具有已知且固定的大小。在編譯期大小未知或可能更改大小的資料必須儲存在 heap 上。
+> Stack 和 heap 都是你的程式碼在 runtime 可用的記憶體部分，但它們的結構不同。Stack 以它接收值的順序儲存值，並以相反的順序移除這些值。這被稱為_後進先出 (last in, first out)_。想像一疊盤子：當你增加更多盤子時，你會把它們放在疊的最上面，而當你需要一個盤子時，你會從最上面拿一個。從中間或底部增加或移除盤子就行不通了！新增資料稱為 _pushing onto the stack_，移除資料稱為 _popping off the stack_。所有儲存在 stack 上的資料都必須有已知的、固定的大小。在編譯時期大小未知或大小可能改變的資料，必須改為儲存在 heap 上。
 >
-> heap 較不規則：當你將資料放在 heap 上時，你請求一定量的空間。記憶體分配器在 heap 中找到一個足夠大的空位，將其標記為正在使用中，並返回一個_指標 (pointer)_，它是該位置的記憶體位址。這個過程稱為_在 heap 上分配 (allocating on the heap)_，有時簡稱為_分配 (allocating)_（將值推進 stack 不被視為分配）。因為指向 heap 的指標具有已知且固定的大小，你可以將該指標儲存在 stack 上，但當你需要實際資料時，你必須追蹤該指標。想像一下在餐廳就座。當你進去時，你說明你組的人數，然後服務員找到一個適合每個人的空桌並帶你到那裡。如果你組裡有人遲到，他們可以詢問你坐在哪裡來找到你。
+> Heap 比較沒有組織：當你把資料放在 heap 上時，你會請求一定數量的空間。記憶體分配器會在 heap 中找到一個足夠大的空位，將其標記為正在使用，並回傳一個 _pointer_，也就是該位置的位址。這個過程稱為_在 heap 上分配 (allocating on the heap)_，有時簡稱為_分配 (allocating)_（將值推入 stack 不被視為分配）。因為指向 heap 的 pointer 是一個已知的、固定的大小，你可以將 pointer 儲存在 stack 上，但當你想要實際的資料時，你必須跟隨這個 pointer。想像一下在餐廳裡被安排座位。當你進去時，你說明你的團體有多少人，然後服務生會找到一張適合所有人的空桌子，並帶你過去。如果你團體中的某個人遲到了，他們可以問你被安排在哪裡來找到你。
 >
-> 推進 stack 比在 heap 上分配更快，因為分配器永遠不需要搜尋儲存新資料的地方；該位置總是在 stack 的頂部。相比之下，在 heap 上分配空間需要更多工作，因為分配器必須首先找到足夠大的空間來容納資料，然後執行簿記以準備下一次分配。
+> Pushing 到 stack 比在 heap 上分配要快，因為分配器永遠不需要搜尋一個地方來儲存新資料；那個位置總是在 stack 的頂部。相較之下，在 heap 上分配空間需要更多的工作，因為分配器必須先找到一個足夠大的空間來存放資料，然後執行簿記工作，為下一次分配做準備。
 >
-> 存取 heap 中的資料通常比存取 stack 上的資料慢，因為你必須追蹤指標才能到達那裡。如果現代處理器在記憶體中跳躍的次數較少，它們會更快。繼續類比，考慮餐廳的服務員從許多桌子點餐。在移到下一桌之前，先點完一桌的所有訂單是最有效率的。從桌 A 點餐，然後從桌 B 點餐，然後再從 A 點一次，然後再從 B 點一次，這會是一個慢得多過程。同理，處理器通常可以更好地處理靠近其他資料（如在 stack 上）而不是遠離其他資料（如在 heap 上）的資料。
+> 存取 heap 中的資料通常比存取 stack 上的資料慢，因為你必須跟隨一個 pointer 才能到達那裡。如果當代處理器在記憶體中跳轉的次數較少，它們的速度會更快。延續這個比喻，考慮一個餐廳的服務生從許多桌子接訂單。最有效率的方式是在移動到下一桌之前，先完成一桌的所有訂單。從 A 桌接一個訂單，然後從 B 桌接一個訂單，然後再從 A 桌接一個，再從 B 桌接一個，這會是一個慢得多的過程。同樣地，如果處理器處理彼此靠近的資料（如在 stack 上），而不是相距較遠的資料（如可能在 heap 上），它通常能更好地完成工作。
 >
-> 當你的程式碼呼叫一個函式時，傳遞給函式的值（可能包括指向 heap 上資料的指標）和函式的區域變數會被推進 stack。當函式結束時，這些值會從 stack 中彈出。
+> 當你的程式碼呼叫一個函式時，傳遞給函式的值（可能包括指向 heap 上資料的 pointers）和函式的區域變數會被推入 stack。當函式結束時，這些值會從 stack 中被彈出。
 >
-> 追蹤程式碼的哪些部分正在使用 heap 上的哪些資料、最小化 heap 上的重複資料量，以及清理 heap 上未使用的資料以避免空間不足，這些都是 ownership 解決的問題。一旦你理解了 ownership，你就不需要經常考慮 stack 和 heap，但了解 ownership 的主要目的是管理 heap 資料，可以幫助解釋它為何這樣運作。
+> 追蹤程式碼的哪些部分正在使用 heap 上的哪些資料、最小化 heap 上的重複資料量，以及清理 heap 上未使用的資料以免空間耗盡，這些都是 ownership 要解決的問題。一旦你理解了 ownership，你就不需要經常考慮 stack 和 heap，但知道 ownership 的主要目的是管理 heap 資料，可以幫助解釋它為什麼會這樣運作。
 
 ### Ownership 規則
 
@@ -40,140 +40,142 @@ _Ownership_ 是一組規則，用於規範 Rust 程式如何管理記憶體。�
 
 - 在 Rust 中，每個值都有一個_owner_。
 - 同一時間內只能有一個 owner。
-- 當 owner 離開作用域時，該值將被 drop。
+- 當 owner 離開 scope 時，該值將被 dropped。
 
-### 變數作用域
+### 變數作用域 (Scope)
 
-現在我們已經超過基本的 Rust 語法，在範例中我們將不再包含所有的 `fn main() {` 程式碼，所以如果你跟著做，請確保手動將以下範例放在 `main` 函式內部。因此，我們的範例將會更簡潔，讓我們能夠專注於實際細節而不是樣板程式碼。
+現在我們已經過了基本的 Rust 語法，我們將不會在範例中包含所有的 `fn main() {` 程式碼，所以如果你跟著操作，請確保手動將以下範例放在 `main` 函式內部。這樣一來，我們的範例會更簡潔，讓我們能專注於實際的細節而不是樣板程式碼。
 
-作為 ownership 的第一個範例，我們將看看一些變數的_作用域 (scope)_。作用域是程式碼中一個項目有效的範圍。考慮以下變數：
+作為 ownership 的第一個範例，我們將看看一些變數的_scope_。Scope 是一個項目在程式中有效的範圍。看以下這個變數：
 
 ```rust
 let s = "hello";
 ```
 
-變數 `s` 參照一個字串常值，其中字串的值被硬編碼到我們程式碼的文字中。該變數從宣告點開始，直到當前*作用域*結束為止都是有效的。範例 4-1 顯示了一個程式，其中註釋指出了變數 `s` 的有效範圍。
+變數 `s` 參照一個字串字面值，其中字串的值被硬編碼到我們程式的文本中。該變數從它被宣告的那一點開始，直到目前的 _scope_ 結束都是有效的。列表 4-1 顯示了一個程式，其中有註解標示出變數 `s` 在哪裡是有效的。
 
 ```rust
-    {                      // s 在此處無效，因為尚未宣告
-        let s = "hello";   // s 從此點開始有效
+    {                      // s is not valid here, since it's not yet declared
+        let s = "hello";   // s is valid from this point forward
 
-        // 對 s 執行操作
-    }                      // 此作用域現在結束，s 不再有效
+        // do stuff with s
+    }                      // this scope is now over, and s is no longer valid
 ```
 
-範例 4-1：一個變數及其有效作用域
+列表 4-1：一個變數及其有效的 scope
 
 換句話說，這裡有兩個重要的時間點：
 
-- 當 `s` *進入*作用域時，它有效。
-- 它保持有效直到它*離開*作用域。
+- 當 `s` 進入 scope 時，它是有效的。
+- 它一直保持有效，直到它離開 scope。
 
-目前為止，作用域和變數何時有效之間的關係與其他程式語言中的情況相似。現在我們將在此理解的基礎上引入 `String` 型別。
+在這一點上，scopes 和變數有效時間之間的關係與其他程式語言相似。現在我們將在這個理解的基礎上，介紹 `String` 型別。
 
 ### `String` 型別
 
-為了闡明 ownership 的規則，我們需要一種比第 3 章「資料型別」部分中討論的資料型別更複雜的資料型別。之前涵蓋的型別具有已知大小，可以儲存在 stack 上並在其作用域結束時從 stack 中彈出，並且如果程式碼的另一部分需要在不同作用域中使用相同的值，則可以快速且簡單地複製以建立一個新的獨立實例。但是我們想要查看儲存在 heap 上的資料，並探討 Rust 如何知道何時清理該資料，而 `String` 型別是一個很好的範例。
+為了說明 ownership 的規則，我們需要一個比我們在第 3 章「資料型別」一節中介紹的型別更複雜的資料型別。之前介紹的型別大小都是已知的，可以儲存在 stack 上，並在它們的 scope 結束時從 stack 中彈出，如果程式碼的另一部分需要在不同的 scope 中使用相同的值，也可以快速且輕易地複製以建立一個新的、獨立的實例。但我們想看看儲存在 heap 上的資料，並探討 Rust 如何知道何時清理這些資料，而 `String` 型別是一個很好的例子。
 
-我們將專注於 `String` 中與 ownership 相關的部分。這些方面也適用於其他複雜的資料型別，無論它們是由標準函式庫提供的還是由你建立的。我們將在第 8 章中更深入地討論 `String`。
+我們將專注於 `String` 中與 ownership 相關的部分。這些方面也適用於其他複雜的資料型別，無論它們是由標準函式庫提供還是由你建立的。我們將在第 8 章更深入地討論 `String`。
 
-我們已經看過字串常值，其中字串值硬編碼到我們的程式中。字串常值很方便，但它們並不適用於我們可能想要使用文字的所有情況。其中一個原因是它們是不可變的。另一個原因是並非每個字串值都可以在我們編寫程式碼時得知：例如，如果我們想獲取使用者輸入並儲存它呢？對於這些情況，Rust 有第二種字串型別，`String`。這種型別管理分配在 heap 上的資料，因此能夠儲存編譯期我們未知數量的文字。你可以使用 `from` 函式從字串常值建立一個 `String`，如下所示：
+我們已經看過字串字面值，其中字串值被硬編碼到我們的程式中。字串字面值很方便，但它們不適用於我們可能想要使用文本的每種情況。一個原因是它們是不可變的。另一個原因是，並非每個字串值在我們編寫程式碼時都是已知的：例如，如果我們想接收使用者輸入並儲存它呢？對於這些情況，Rust 有第二種字串型別，`String`。這個型別管理在 heap 上分配的資料，因此能夠儲存我們在編譯時期未知的文字量。你可以使用 `from` 函式從字串字面值建立一個 `String`，如下所示：
 
 ```rust
 let s = String::from("hello");
 ```
 
-雙冒號 `::` 運算子允許我們將這個特定的 `from` 函式命名空間在 `String` 型別下，而不是使用像 `string_from` 這樣的名稱。我們將在第 5 章的「方法語法」部分中更深入地討論這個語法，以及在第 7 章的「模組樹中參照項目的路徑」中討論模組的命名空間。
+雙冒號 `::` 運算子讓我們可以將這個特定的 `from` 函式歸入 `String` 型別的命名空間下，而不是使用像 `string_from` 這樣的名稱。我們將在第 5 章的「方法語法」一節中更詳細地討論這種語法，以及在第 7 章的「用路徑參照模組樹中的項目」中討論使用模組進行命名空間管理。
 
-這種字串*可以*是可變的：
+這種字串*可以*被改變：
 
 ```rust
     let mut s = String::from("hello");
 
-    s.push_str(", world!"); // push_str() 函式會將一個常值字串附加到 String
+    s.push_str(", world!"); // push_str() appends a literal to a String
 
-    println!("{s}"); // 這將會印出 `hello, world!`
+    println!("{s}"); // this will print `hello, world!`
 ```
 
-那麼，這裡有什麼區別呢？為什麼 `String` 可以被異變而常值不能？區別在於這兩種型別如何處理記憶體。
+那麼，這裡的區別是什麼？為什麼 `String` 可以被改變而字面值不行？區別在於這兩種型別如何處理記憶體。
 
-### 記憶體與分配
+### 記憶體與分配 (Allocation)
 
-對於字串常值，我們在編譯期知道內容，因此文字會直接硬編碼到最終的可執行檔中。這就是為什麼字串常值快速且高效的原因。但這些屬性僅來自於字串常值的不可變性。不幸的是，對於每個在編譯期大小未知且在程式執行時大小可能改變的文字，我們無法將一塊記憶體放入二進位檔案中。
+在字串字面值的情況下，我們在編譯時期就知道其內容，所以文本被直接硬編碼到最終的可執行檔中。這就是為什麼字串字面值快速且高效的原因。但這些特性只來自於字串字面值的不可變性。不幸的是，對於那些在編譯時期大小未知且在程式執行期間大小可能會改變的文本，我們無法將一塊記憶體放入二進位檔中。
 
-對於 `String` 型別，為了支援可變的、可增長的文字，我們需要在 heap 上分配一定量的記憶體，在編譯期未知，以容納其內容。這意味著：
+對於 `String` 型別，為了支援一塊可變、可增長的文本，我們需要在 heap 上分配一塊在編譯時期未知的記憶體來存放內容。這意味著：
 
-- 記憶體必須在執行期從記憶體分配器請求。
-- 當我們完成使用 `String` 時，我們需要一種方法將這塊記憶體返回給分配器。
+- 記憶體必須在 runtime 時向記憶體分配器請求。
+- 當我們用完 `String` 後，我們需要一種方法將這塊記憶體歸還給分配器。
 
-第一部分由我們完成：當我們呼叫 `String::from` 時，它的實作會請求所需的記憶體。這在程式語言中幾乎是通用的。
+第一部分由我們完成：當我們呼叫 `String::from` 時，它的實作會請求它需要的記憶體。這在程式語言中幾乎是普遍的。
 
-然而，第二部分則不同。在帶有_garbage collector (GC)_ 的語言中，GC 會追蹤並清理不再使用的記憶體，我們不需要去考慮它。在大多數沒有 GC 的語言中，我們有責任識別記憶體何時不再使用，並呼叫程式碼明確地釋放它，就像我們請求它一樣。正確地執行此操作歷來是一個困難的程式設計問題。如果我們忘記了，我們就會浪費記憶體。如果我們做得太早，我們將會有一個無效的變數。如果我們做了兩次，那也是一個錯誤。我們需要將恰好一個 `allocate` 與恰好一個 `free` 配對。
+然而，第二部分是不同的。在有_垃圾回收器 (garbage collector, GC)_ 的語言中，GC 會追蹤並清理不再使用的記憶體，我們不需要考慮它。在大多數沒有 GC 的語言中，我們有責任識別記憶體何時不再被使用，並呼叫程式碼來明確地釋放它，就像我們請求它時一樣。歷史上，正確地做到這一點一直是一個困難的程式設計問題。如果我們忘記了，就會浪費記憶體。如果我們太早釋放，就會有一個無效的變數。如果我們做了兩次，那也是一個 bug。我們需要將每一個 `allocate` 與恰好一個 `free` 配對。
 
-Rust 採用不同的路徑：一旦擁有記憶體的變數離開作用域，記憶體就會自動返回。這是我們在範例 4-1 中使用 `String` 而不是字串常值的範圍範例版本：
+Rust 採取了不同的途徑：一旦擁有它的變數離開 scope，記憶體就會自動歸還。這裡是我們從列表 4-1 的 scope 範例的一個版本，使用 `String` 而不是字串字面值：
 
 ```rust
     {
-        let s = String::from("hello"); // s 從此點開始有效
+        let s = String::from("hello"); // s is valid from this point forward
 
-        // 對 s 執行操作
-    }                                  // 此作用域現在結束，s 不再有效
-                                       // 了
+        // do stuff with s
+    }                                  // this scope is now over, and s is no
+                                       // longer valid
 ```
 
-有一個自然的時機可以將 `String` 所需的記憶體返回給分配器：當 `s` 離開作用域時。當一個變數離開作用域時，Rust 會為我們呼叫一個特殊的函式。這個函式被稱為 `drop`，`String` 的作者可以在這裡放置返回記憶體的程式碼。Rust 會在閉合大括號處自動呼叫 `drop`。
+在 `s` 離開 scope 時，有一個自然的時機可以將我們的 `String` 所需的記憶體歸還給分配器。當一個變數離開 scope 時，Rust 會為我們呼叫一個特殊的函式。這個函式叫做 `drop`，`String` 的作者可以在這裡放入歸還記憶體的程式碼。Rust 會在右大括號 `}` 處自動呼叫 `drop`。
 
-> 注意：在 C++ 中，這種在項目生命週期結束時解除分配資源的模式有時被稱為_資源取得即初始化 (Resource Acquisition Is Initialization, RAII)_。如果你使用過 RAII 模式，那麼 Rust 中的 `drop` 函式將會讓你感到熟悉。
+> 注意：在 C++ 中，這種在一個項目生命週期結束時釋放資源的模式有時被稱為_資源取得即初始化 (Resource Acquisition Is Initialization, RAII)_。如果你用過 RAII 模式，你會對 Rust 中的 `drop` 函式感到熟悉。
 
-這種模式對 Rust 程式碼的寫作方式產生深遠影響。它現在看起來可能很簡單，但在更複雜的情況下，當我們希望有多個變數使用我們在 heap 上分配的資料時，程式碼的行為可能會出乎意料。現在讓我們探討其中一些情況。
+這種模式對 Rust 程式碼的寫作方式有深遠的影響。現在看來可能很簡單，但在更複雜的情況下，當我們希望有多個變數使用我們在 heap 上分配的資料時，程式碼的行為可能會出乎意料。現在讓我們來探討一些這樣的情況。
+
+<!-- Old heading. Do not remove or links may break. -->
 
 <a id="ways-variables-and-data-interact-move"></a>
 
-#### 變數與資料的互動：Move
+#### 變數與資料互動的方式：Move
 
-在 Rust 中，多個變數可以以不同方式與相同的資料互動。讓我們看看範例 4-2 中使用整數的範例。
+在 Rust 中，多個變數可以以不同的方式與相同的資料互動。讓我們來看一個使用整數的例子，如列表 4-2 所示。
 
 ```rust
 let x = 5;
 let y = x;
 ```
 
-範例 4-2：將變數 `x` 的整數值指派給 `y`
+列表 4-2：將變數 `x` 的整數值賦給 `y`
 
-我們大概可以猜到這在做什麼：「將值 `5` 綁定到 `x`；然後複製 `x` 中的值並將其綁定到 `y`。」我們現在有兩個變數 `x` 和 `y`，兩者都等於 `5`。這確實是正在發生的事情，因為整數是具有已知、固定大小的簡單值，並且這兩個 `5` 值被推進 stack。
+我們大概可以猜到這在做什麼：「將值 `5` 綁定到 `x`；然後複製 `x` 中的值並將其綁定到 `y`。」我們現在有兩個變數 `x` 和 `y`，它們都等於 `5`。這確實是發生的情況，因為整數是具有已知、固定大小的簡單值，這兩個 `5` 的值被推送到 stack 上。
 
-現在讓我們看看 `String` 版本：
+現在讓我們看看 `String` 的版本：
 
 ```rust
 let s1 = String::from("hello");
 let s2 = s1;
 ```
 
-這看起來非常相似，所以我們可能會假設它的運作方式也會相同：也就是說，第二行會複製 `s1` 中的值並將其綁定到 `s2`。但這並非完全如此。
+這看起來非常相似，所以我們可能會假設它的運作方式會是相同的：也就是說，第二行會複製 `s1` 中的值並將其綁定到 `s2`。但情況並非完全如此。
 
-請查看圖 4-1 以了解 `String` 在底層的運作方式。一個 `String` 由三部分組成，如左側所示：一個指向儲存字串內容的記憶體指標、一個長度 (length) 和一個容量 (capacity)。這組資料儲存在 stack 上。右側是儲存內容的 heap 記憶體。
+看看圖 4-1，了解 `String` 在底層發生了什麼。一個 `String` 由三個部分組成，顯示在左側：一個指向存放字串內容的記憶體的 pointer、一個 length 和一個 capacity。這組資料儲存在 stack 上。右側是 heap 上存放內容的記憶體。
 
-![兩個表格：第一個表格包含 s1 在 stack 上的表示，由其長度 (5)、容量 (5) 和指向第二個表格中第一個值的指標組成。第二個表格包含字串資料在 heap 上的表示，逐位元組。](https://doc.rust-lang.org/book/img/trpl04-01.svg)
+<img alt="兩個表格：第一個表格包含 s1 在 stack 上的表示，由其長度 (5)、容量 (5) 和一個指向第二個表格中第一個值的指標組成。第二個表格包含字串資料在 heap 上的表示，逐個 byte 顯示。" src="https://doc.rust-lang.org/book/img/trpl04-01.svg" class="center" style="width: 50%;" />
 
-圖 4-1：String 儲存值 `"hello"` 並綁定到 `s1` 的記憶體表示
+圖 4-1：一個綁定到 `s1` 並持有 `"hello"` 值的 `String` 在記憶體中的表示
 
-長度是指 `String` 內容目前使用的記憶體量（以位元組為單位）。容量是 `String` 從分配器接收到的總記憶體量（以位元組為單位）。長度和容量之間的差異很重要，但在此上下文中不重要，因此目前可以忽略容量。
+length 是 `String` 的內容目前使用的記憶體大小，以 byte 為單位。capacity 是 `String` 從分配器那裡收到的總記憶體大小，以 byte 為單位。length 和 capacity 之間的差異很重要，但在這個情境下不重要，所以現在可以忽略 capacity。
 
-當我們將 `s1` 指派給 `s2` 時，`String` 資料會被複製，這意味著我們複製 stack 上的指標、長度和容量。我們不會複製指標所指向的 heap 上的資料。換句話說，記憶體中的資料表示看起來像圖 4-2。
+當我們將 `s1` 賦值給 `s2` 時，`String` 的資料被複製了，這意味著我們複製了 stack 上的 pointer、length 和 capacity。我們沒有複製 pointer 所指向的 heap 上的資料。換句話說，記憶體中的資料表示看起來像圖 4-2。
 
-![三個表格：表格 s1 和 s2 分別代表這些字串在 stack 上，並且都指向 heap 上相同的字串資料。](https://doc.rust-lang.org/book/img/trpl04-02.svg)
+<img alt="三個表格：s1 和 s2 表格分別代表 stack 上的字串，兩者都指向 heap 上相同的字串資料。" src="https://doc.rust-lang.org/book/img/trpl04-02.svg" class="center" style="width: 50%;" />
 
-圖 4-2：變數 `s2` 的記憶體表示，它複製了 `s1` 的指標、長度和容量
+圖 4-2：變數 `s2` 在記憶體中的表示，它複製了 `s1` 的 pointer、length 和 capacity
 
-這種表示*不*像圖 4-3，如果 Rust 也複製 heap 資料，記憶體就會像這樣。如果 Rust 這樣做，如果 heap 上的資料很大，操作 `s2 = s1` 在執行期效能方面可能會非常昂貴。
+這個表示並*不*像圖 4-3，如果 Rust 也複製了 heap 資料，記憶體會是那樣的。如果 Rust 這樣做，`s2 = s1` 操作在 runtime 效能上可能會非常昂貴，如果 heap 上的資料很大的話。
 
-![四個表格：兩個表格代表 s1 和 s2 的 stack 資料，並且每個表格都指向自己在 heap 上的字串資料副本。](https://doc.rust-lang.org/book/img/trpl04-03.svg)
+<img alt="四個表格：兩個表格代表 s1 和 s2 的 stack 資料，每個都指向自己在 heap 上的字串資料副本。" src="https://doc.rust-lang.org/book/img/trpl04-03.svg" class="center" style="width: 50%;" />
 
-圖 4-3：如果 Rust 也複製 heap 資料，`s2 = s1` 可能會執行的另一種情況
+圖 4-3：如果 Rust 也複製了 heap 資料，`s2 = s1` 可能會做的另一種可能性
 
-前面我們提到，當一個變數離開作用域時，Rust 會自動呼叫 `drop` 函式並清理該變數的 heap 記憶體。但圖 4-2 顯示兩個資料指標指向相同的位置。這是一個問題：當 `s2` 和 `s1` 離開作用域時，它們都會嘗試釋放相同的記憶體。這被稱為_double free_ 錯誤，也是我們之前提到的一個記憶體安全錯誤。兩次釋放記憶體會導致記憶體損毀，這可能會導致安全漏洞。
+早些時候我們說過，當一個變數離開 scope 時，Rust 會自動呼叫 `drop` 函式並清理該變數的 heap 記憶體。但圖 4-2 顯示兩個資料指標都指向同一個位置。這是一個問題：當 `s2` 和 `s1` 離開 scope 時，它們都會嘗試釋放相同的記憶體。這被稱為_雙重釋放 (double free)_ 錯誤，是我們先前提到的記憶體安全 bug 之一。釋放記憶體兩次可能導致記憶體損壞，這可能潛在地導致安全漏洞。
 
-為確保記憶體安全，在 `let s2 = s1;` 這行之後，Rust 認為 `s1` 不再有效。因此，當 `s1` 離開作用域時，Rust 無需釋放任何東西。請查看在 `s2` 建立後嘗試使用 `s1` 時會發生什麼；它將無法運作：
+為了確保記憶體安全，在 `let s2 = s1;` 這行之後，Rust 認為 `s1` 不再有效。因此，當 `s1` 離開 scope 時，Rust 不需要釋放任何東西。看看在你建立 `s2` 之後嘗試使用 `s1` 會發生什麼；它不會工作：
 
 ```rust
     let s1 = String::from("hello");
@@ -182,7 +184,7 @@ let s2 = s1;
     println!("{s1}, world!");
 ```
 
-你將會收到類似這樣的錯誤，因為 Rust 會阻止你使用無效的 reference：
+你會得到像這樣的錯誤，因為 Rust 阻止你使用無效的參照：
 
 ```
 $ cargo run
@@ -208,19 +210,20 @@ For more information about this error, try `rustc --explain E0382`.
 error: could not compile `ownership` (bin "ownership") due to 1 previous error
 ```
 
-如果你在其他語言中聽過_shallow copy_ 和_deep copy_ 這些術語，那麼複製指標、長度和容量而不複製資料的概念聽起來可能就像是在進行 shallow copy。但由於 Rust 也會使第一個變數無效，因此它不被稱為 shallow copy，而是被稱為_move_。在這個範例中，我們會說 `s1` 被_moved_ 到 `s2`。所以，實際發生的情況如圖 4-4 所示。
+如果你在學習其他語言時聽過_淺拷貝 (shallow copy)_ 和_深拷貝 (deep copy)_ 這兩個詞，那麼複製 pointer、length 和 capacity 而不複製資料的概念可能聽起來像是在做淺拷貝。但因為 Rust 同時也將第一個變數作廢，所以它不被稱為淺拷貝，而是被稱為_move_。在這個例子中，我們會說 `s1` 被*moved*到 `s2` 中。所以，實際發生的情況如圖 4-4 所示。
 
-![三個表格：表格 s1 和 s2 分別代表這些字串在 stack 上，並且都指向 heap 上相同的字串資料。表格 s1 已變灰，因為 s1 不再有效；只有 s2 可以用來存取 heap 資料。](https://doc.rust-lang.org/book/img/trpl04-04.svg)
+<img alt="三個表格：s1 和 s2 表格分別代表 stack 上的字串，兩者都指向 heap 上相同的字串資料。s1 表格是灰色的，因為 s1 不再有效；只有 s2 可以用來存取 heap 資料。" src="https://doc.rust-lang.org/book/img/trpl04-04.svg" class="center" style="width:
+50%;" />
 
-圖 4-4：`s1` 無效後的記憶體表示
+圖 4-4：`s1` 被作廢後在記憶體中的表示
 
-這解決了我們的問題！由於只有 `s2` 有效，當它離開作用域時，它將獨自釋放記憶體，我們就完成了。
+這就解決了我們的問題！只有 `s2` 有效，當它離開 scope 時，只有它會釋放記憶體，這樣我們就完成了。
 
-此外，這也暗示了一個設計選擇：Rust 永遠不會自動建立資料的「deep」副本。因此，任何*自動的*複製都可以假定在執行期效能方面是不昂貴的。
+此外，這也暗示了一個設計選擇：Rust 永遠不會自動建立你資料的「深」拷貝。因此，任何*自動*的複製都可以被假設在 runtime 效能方面是廉價的。
 
-#### 作用域與指派
+#### Scope 與賦值
 
-對於作用域、ownership 和透過 `drop` 函式釋放記憶體之間的關係，情況也是如此。當你將一個全新的值指派給現有變數時，Rust 會立即呼叫 `drop` 並釋放原始值的記憶體。例如，考慮這段程式碼：
+對於 scope、ownership 和透過 `drop` 函式釋放記憶體之間的關係，反之亦然。當你將一個全新的值賦給一個現有變數時，Rust 會立即呼叫 `drop` 並釋放原始值的記憶體。例如，考慮這段程式碼：
 
 ```rust
     let mut s = String::from("hello");
@@ -229,21 +232,27 @@ error: could not compile `ownership` (bin "ownership") due to 1 previous error
     println!("{s}, world!");
 ```
 
-我們最初宣告了一個變數 `s` 並將其綁定到一個值為 `"hello"` 的 `String`。然後我們立即建立一個值為 `"ahoy"` 的新 `String` 並將其指派給 `s`。此時，沒有任何東西指向 heap 上的原始值。
+我們首先宣告一個變數 `s` 並將其綁定到一個值為 `"hello"` 的 `String`。然後我們立即建立一個值為 `"ahoy"` 的新 `String` 並將其賦給 `s`。此時，已經沒有任何東西參照到 heap 上的原始值了。
 
-![一個表格 s 代表 stack 上的字串值，指向 heap 上第二塊字串資料（ahoy），原始字串資料（hello）已變灰，因為它無法再被存取。](https://doc.rust-lang.org/book/img/trpl04-05.svg)
+<img alt="一個 s 表格代表 stack 上的字串值，指向 heap 上的第二塊字串資料 (ahoy)，而原始的字串資料 (hello) 則呈現灰色，因為它再也無法被存取。"
+src="https://doc.rust-lang.org/book/img/trpl04-05.svg"
+class="center"
+style="width: 50%;"
+/>
 
-圖 4-5：初始值完全被取代後的記憶體表示。
+圖 4-5：初始值被完全取代後在記憶體中的表示。
 
-因此，原始字串會立即離開作用域。Rust 將在其上執行 `drop` 函式，其記憶體將立即被釋放。當我們在結尾列印該值時，它將是 `"ahoy, world!"`。
+因此，原始的字串立即離開 scope。Rust 會對它執行 `drop` 函式，其記憶體會立刻被釋放。當我們在最後印出值時，它將會是 `"ahoy, world!"`。
+
+<!-- Old heading. Do not remove or links may break. -->
 
 <a id="ways-variables-and-data-interact-clone"></a>
 
-#### 變數與資料的互動：Clone
+#### 變數與資料互動的方式：Clone
 
-如果我們*確實*想要 deep copy `String` 的 heap 資料，而不僅僅是 stack 資料，我們可以使用一個常見的方法 `clone`。我們將在第 5 章討論方法語法，但由於方法在許多程式語言中是常見的功能，你可能之前已經見過它們。
+如果我們*確實*想要深度複製 `String` 的 heap 資料，而不僅僅是 stack 資料，我們可以使用一個稱為 `clone` 的常用方法。我們將在第 5 章討論方法語法，但因為方法在許多程式語言中是常見的功能，你可能以前見過它們。
 
-這是一個 `clone` 方法的實際範例：
+以下是 `clone` 方法的一個範例：
 
 ```rust
     let s1 = String::from("hello");
@@ -252,13 +261,13 @@ error: could not compile `ownership` (bin "ownership") due to 1 previous error
     println!("s1 = {s1}, s2 = {s2}");
 ```
 
-這運作得很好，並且明確地產生圖 4-3 中所示的行為，其中 heap 資料*確實*被複製了。
+這段程式碼可以正常運作，並明確地產生了如圖 4-3 所示的行為，即 heap 資料*確實*被複製了。
 
-當你看到 `clone` 的呼叫時，你就會知道有一些任意的程式碼正在執行，而且這些程式碼可能很昂貴。這是一個視覺指標，表示有不同的事情正在發生。
+當你看到對 `clone` 的呼叫時，你知道一些任意的程式碼正在被執行，而且這些程式碼可能會很昂貴。這是一個視覺上的指標，表明正在發生一些不同的事情。
 
-#### 僅 Stack 資料：Copy
+#### 只在 Stack 上的資料：Copy
 
-還有一個我們尚未談到的細節。這段使用整數的程式碼（部分在範例 4-2 中展示）可以正常運作且有效：
+還有一個我們尚未討論的細節。這段使用整數的程式碼——其中一部分顯示在列表 4-2 中——是有效的且可以運作：
 
 ```rust
     let x = 5;
@@ -267,102 +276,104 @@ error: could not compile `ownership` (bin "ownership") due to 1 previous error
     println!("x = {x}, y = {y}");
 ```
 
-但這段程式碼似乎與我們剛才學到的知識相矛盾：我們沒有呼叫 `clone`，但 `x` 仍然有效並且沒有被 move 到 `y`。
+但這段程式碼似乎與我們剛學到的相矛盾：我們沒有呼叫 `clone`，但 `x` 仍然有效，並沒有被 moved 到 `y`。
 
-原因是像整數這類在編譯期大小已知的型別完全儲存在 stack 上，所以實際值的複製速度很快。這表示我們沒有理由阻止 `x` 在我們建立變數 `y` 後保持有效。換句話說，這裡的 deep copy 和 shallow copy 沒有區別，所以呼叫 `clone` 不會與通常的 shallow copy 做任何不同的事情，我們可以省略它。
+原因是像整數這樣的型別，在編譯時期大小是已知的，它們完全儲存在 stack 上，所以實際值的複製是很快的。這意味著我們沒有理由在建立變數 `y` 之後，要讓 `x` 變得無效。換句話說，這裡深拷貝和淺拷貝沒有區別，所以呼叫 `clone` 不會比通常的淺拷貝做任何不同的事情，我們可以省略它。
 
-Rust 有一個特殊的註解，稱為 `Copy` trait，我們可以將其放在儲存在 stack 上的型別上，就像整數一樣（我們將在第 10 章更深入地討論 trait）。如果一個型別實作了 `Copy` trait，則使用它的變數不會 move，而是簡單地複製，使其在指派給另一個變數後仍然有效。
+Rust 有一個特殊的註釋叫做 `Copy` trait，我們可以把它放在像整數這樣儲存在 stack 上的型別上（我們將在第 10 章更多地討論 traits）。如果一個型別實作了 `Copy` trait，使用它的變數不會 move，而是會被輕易地複製，使它們在賦值給另一個變數後仍然有效。
 
-如果型別或其任何部分實作了 `Drop` trait，Rust 不會讓我們用 `Copy` 註解該型別。如果該型別在值離開作用域時需要發生特殊的事情，而我們又為該型別添加了 `Copy` 註解，那麼我們將會收到一個編譯期錯誤。要了解如何為你的型別添加 `Copy` 註解以實作 trait，請參閱附錄 C 中的「可衍生 Trait」。
+如果一個型別或它的任何部分實作了 `Drop` trait，Rust 不會讓我們用 `Copy` 來註釋這個型別。如果這個型別在值離開 scope 時需要做一些特別的事情，而我們又給這個型別加上 `Copy` 註釋，我們會得到一個編譯時期錯誤。要學習如何為你的型別添加 `Copy` 註釋以實作該 trait，請參閱附錄 C 的「可衍生的 Traits」。
 
-那麼，哪些型別實作了 `Copy` trait 呢？你可以檢查給定型別的文件以確定，但一般來說，任何簡單的純量值組都可以實作 `Copy`，並且任何需要分配或某種資源的形式都不能實作 `Copy`。以下是一些實作 `Copy` 的型別：
+那麼，哪些型別實作了 `Copy` trait 呢？你可以查看給定型別的文件以確定，但作為一個通用規則，任何一組簡單的純量值都可以實作 `Copy`，而任何需要分配記憶體或是某種形式的資源的型別都不能實作 `Copy`。以下是一些實作 `Copy` 的型別：
 
-- 所有整數型別，例如 `u32`。
+- 所有整數型別，如 `u32`。
 - 布林型別 `bool`，其值為 `true` 和 `false`。
-- 所有浮點型別，例如 `f64`。
+- 所有浮點數型別，如 `f64`。
 - 字元型別 `char`。
-- Tuple，如果它們只包含也實作了 `Copy` 的型別。例如，`(i32, i32)` 實作 `Copy`，但 `(i32, String)` 則不實作。
+- 元組 (Tuples)，如果它們只包含也實作 `Copy` 的型別。例如，`(i32, i32)` 實作 `Copy`，但 `(i32, String)` 不行。
 
 ### Ownership 與函式
 
-將值傳遞給函式的機制與將值指派給變數時類似。將變數傳遞給函式會 move 或 copy，就像指派一樣。範例 4-3 有一個範例，帶有一些註釋，顯示變數何時進入和離開作用域。
+將值傳遞給函式與將值賦給變數的機制是相似的。將變數傳遞給函式會進行 move 或 copy，就像賦值一樣。列表 4-3 有一個帶有一些註解的範例，顯示了變數進入和離開 scope 的地方。
 
 src/main.rs
 
 ```rust
 fn main() {
-    let s = String::from("hello");  // s 進入作用域
+    let s = String::from("hello");  // s comes into scope
 
-    takes_ownership(s);             // s 的值 move 到函式中...
-                                    // ... 因此在這裡不再有效
+    takes_ownership(s);             // s's value moves into the function...
+                                    // ... and so is no longer valid here
 
-    let x = 5;                      // x 進入作用域
+    let x = 5;                      // x comes into scope
 
-    makes_copy(x);                  // 因為 i32 實作了 Copy trait，
-                                    // x 不會 move 到函式中，
-                                    // 因此之後使用 x 是可以的。
+    makes_copy(x);                  // Because i32 implements the Copy trait,
+                                    // x does NOT move into the function,
+                                    // so it's okay to use x afterward.
 
-} // 在這裡，x 離開作用域，然後 s。但是，由於 s 的值已被 move，
-  // 所以沒有什麼特別的事情發生。
+} // Here, x goes out of scope, then s. However, because s's value was moved,
+  // nothing special happens.
 
-fn takes_ownership(some_string: String) { // some_string 進入作用域
+fn takes_ownership(some_string: String) { // some_string comes into scope
     println!("{some_string}");
-} // 在這裡，some_string 離開作用域並呼叫 `drop`。支援記憶體被釋放。
+} // Here, some_string goes out of scope and `drop` is called. The backing
+  // memory is freed.
 
-fn makes_copy(some_integer: i32) { // some_integer 進入作用域
+fn makes_copy(some_integer: i32) { // some_integer comes into scope
     println!("{some_integer}");
-} // 在這裡，some_integer 離開作用域。沒有什麼特別的事情發生。
+} // Here, some_integer goes out of scope. Nothing special happens.
 ```
 
-範例 4-3：帶有 ownership 和作用域註釋的函式
+列表 4-3：帶有 ownership 和 scope 註解的函式
 
-如果我們在呼叫 `takes_ownership` 之後嘗試使用 `s`，Rust 將會拋出編譯期錯誤。這些靜態檢查保護我們免於犯錯。嘗試在 `main` 中添加使用 `s` 和 `x` 的程式碼，看看你可以在哪裡使用它們，以及 ownership 規則阻止你在哪裡使用它們。
+如果我們試圖在呼叫 `takes_ownership` 之後使用 `s`，Rust 會拋出一個編譯時期錯誤。這些靜態檢查保護我們免於犯錯。試著在 `main` 中加入使用 `s` 和 `x` 的程式碼，看看你可以在哪裡使用它們，以及 ownership 規則在哪裡阻止你這麼做。
 
-### 回傳值與作用域
+### 回傳值與 Scope
 
-回傳值也可以轉移 ownership。範例 4-4 顯示了一個函式回傳一些值的範例，帶有與範例 4-3 類似的註釋。
+回傳值也可以轉移 ownership。列表 4-4 顯示了一個函式回傳某個值的範例，註解與列表 4-3 相似。
 
 src/main.rs
 
 ```rust
 fn main() {
-    let s1 = gives_ownership();        // gives_ownership 將其回傳值
-                                       // move 到 s1
+    let s1 = gives_ownership();        // gives_ownership moves its return
+                                       // value into s1
 
-    let s2 = String::from("hello");    // s2 進入作用域
+    let s2 = String::from("hello");    // s2 comes into scope
 
-    let s3 = takes_and_gives_back(s2); // s2 被 move 到
-                                       // takes_and_gives_back，它也
-                                       // 將其回傳值 move 到 s3
-} // 在這裡，s3 離開作用域並被 drop。s2 已經被 move，所以沒有
-  // 任何事情發生。s1 離開作用域並被 drop。
+    let s3 = takes_and_gives_back(s2); // s2 is moved into
+                                       // takes_and_gives_back, which also
+                                       // moves its return value into s3
+} // Here, s3 goes out of scope and is dropped. s2 was moved, so nothing
+  // happens. s1 goes out of scope and is dropped.
 
-fn gives_ownership() -> String {       // gives_ownership 將會將其
-                                       // 回傳值 move 到呼叫它的
-                                       // 函式中
+fn gives_ownership() -> String {       // gives_ownership will move its
+                                       // return value into the function
+                                       // that calls it
 
-    let some_string = String::from("yours"); // some_string 進入作用域
+    let some_string = String::from("yours"); // some_string comes into scope
 
-    some_string                        // some_string 被回傳並
-                                       // move 到呼叫函式
+    some_string                        // some_string is returned and
+                                       // moves out to the calling
+                                       // function
 }
 
-// 這個函式接收一個 String 並回傳一個 String。
+// This function takes a String and returns a String.
 fn takes_and_gives_back(a_string: String) -> String {
-    // a_string 進入
-    // 作用域
+    // a_string comes into
+    // scope
 
-    a_string  // a_string 被回傳並 move 到呼叫函式
+    a_string  // a_string is returned and moves out to the calling function
 }
 ```
 
-範例 4-4：回傳值的 ownership 轉移
+列表 4-4：轉移回傳值的 ownership
 
-變數的 ownership 每次都遵循相同的模式：將一個值指派給另一個變數會將其 move。當一個包含 heap 上資料的變數離開作用域時，除非資料的 ownership 已被 move 到另一個變數，否則該值將由 `drop` 清理。
+變數的 ownership 遵循著相同的模式：將一個值賦給另一個變數會移動它。當一個包含 heap 上資料的變數離開 scope 時，除非資料的 ownership 已經被 move 到另一個變數，否則該值將被 `drop` 清理。
 
-雖然這有效，但每次函式都接收 ownership 然後又回傳 ownership 有點繁瑣。如果我們想讓一個函式使用一個值但又不取得 ownership 呢？如果我們想要再次使用傳入的任何東西，除了函式主體中可能想要回傳的任何資料之外，傳入的任何東西也需要傳回，這會非常惱人。
+雖然這樣可行，但每個函式都取得 ownership 然後再歸還 ownership 有點繁瑣。如果我們想讓一個函式使用一個值但不取得 ownership 怎麼辦？我們傳入的任何東西，如果我們想再次使用它，就必須再傳回來，這實在很煩人，此外還有我們可能想從函式主體回傳的任何資料。
 
-Rust 確實允許我們使用 tuple 回傳多個值，如範例 4-5 所示。
+Rust 確實讓我們可以使用元組 (tuple) 來回傳多個值，如列表 4-5 所示。
 
 src/main.rs
 
@@ -376,21 +387,21 @@ fn main() {
 }
 
 fn calculate_length(s: String) -> (String, usize) {
-    let length = s.len(); // len() 回傳 String 的長度
+    let length = s.len(); // len() returns the length of a String
 
     (s, length)
 }
 ```
 
-範例 4-5：回傳參數的 ownership
+列表 4-5：歸還參數的 ownership
 
-但這對一個應該很常見的概念來說，儀式感太多且工作量大。幸運的是，Rust 有一個無需轉移 ownership 即可使用值的功能，稱為_references_。
+但對於一個應該很常見的概念來說，這樣太繁瑣且工作量太大了。幸運的是，Rust 有一個功能可以用來使用一個值而不轉移 ownership，稱為_references_。
 
 ## References 與 Borrowing
 
-範例 4-5 中 tuple 程式碼的問題在於我們必須將 `String` 回傳給呼叫函式，以便在呼叫 `calculate_length` 之後我們仍然可以使用 `String`，因為 `String` 已經被 move 到 `calculate_length` 中了。作為替代，我們可以提供 `String` 值的 reference。一個_reference_ 就像一個指標，它是一個我們可以遵循的位址，以存取儲存在該位址的資料；該資料由其他變數擁有。與指標不同的是，reference 保證在該 reference 的生命週期內指向特定型別的有效值。
+列表 4-5 中元組程式碼的問題在於，我們必須將 `String` 回傳給呼叫函式，這樣我們才能在呼叫 `calculate_length` 之後繼續使用 `String`，因為 `String` 被 moved 到了 `calculate_length` 中。相對地，我們可以提供一個對 `String` 值的 reference。_Reference_ 就像一個 pointer，它是一個我們可以跟隨以存取儲存在該位址的資料的位址；該資料由其他變數所擁有。與 pointer 不同的是，reference 保證在其生命週期內指向一個特定型別的有效值。
 
-以下是你如何定義和使用一個 `calculate_length` 函式，該函式將物件的 reference 作為參數，而不是取得值的 ownership：
+以下是如何定義和使用一個 `calculate_length` 函式，它以一個物件的 reference 作為參數，而不是取得該值的所有權：
 
 src/main.rs
 
@@ -408,13 +419,13 @@ fn calculate_length(s: &String) -> usize {
 }
 ```
 
-首先，請注意，變數宣告和函式回傳值中的所有 tuple 程式碼都消失了。其次，請注意我們將 `&s1` 傳遞給 `calculate_length`，並且在其定義中，我們接收的是 `&String` 而不是 `String`。這些邏輯與號 `&` 表示_references_，它們允許你參照某些值而無需取得其 ownership。圖 4-6 描繪了這個概念。
+首先，請注意變數宣告和函式回傳值中的所有元組程式碼都不見了。其次，請注意我們將 `&s1` 傳入 `calculate_length`，並且在其定義中，我們接受 `&String` 而不是 `String`。這些 & 符號代表 _references_，它們讓你可以參照某個值而不取得它的 ownership。圖 4-6 描繪了這個概念。
 
-![三個表格：s 的表格只包含一個指向 s1 表格的指標。s1 的表格包含 s1 的 stack 資料，並指向 heap 上的字串資料。](https://doc.rust-lang.org/book/img/trpl04-06.svg)
+<img alt="三個表格：s 的表格只包含一個指向 s1 表格的指標。s1 的表格包含 s1 的堆疊資料，並指向堆積上的字串資料。" src="https://doc.rust-lang.org/book/img/trpl04-06.svg" class="center" />
 
-圖 4-6：`&String s` 指向 `String s1` 的圖示
+圖 4-6：`&String s` 指向 `String s1` 的示意圖
 
-> 注意：使用 `&` 進行 reference 的反向操作是_解參照 (dereferencing)_，這透過解參照運算子 `*` 完成。我們將在第 8 章看到解參照運算子的一些用法，並在第 15 章討論解參照的細節。
+> 注意：使用 `&` 進行 referencing 的相反操作是 _dereferencing_，這是透過 dereference 運算子 `*` 來完成的。我們將在第 8 章看到一些 dereference 運算子的用法，並在第 15 章討論 dereferencing 的細節。
 
 讓我們仔細看看這裡的函式呼叫：
 
@@ -424,22 +435,22 @@ fn calculate_length(s: &String) -> usize {
     let len = calculate_length(&s1);
 ```
 
-`&s1` 語法讓我們可以建立一個_參照_ `s1` 值但不擁有它的 reference。因為這個 reference 不擁有它，所以當這個 reference 停止使用時，它所指向的值不會被 drop。
+`&s1` 語法讓我們建立一個_參照_ `s1` 值的 reference，但它不擁有它。因為 reference 不擁有它，所以它指向的值在 reference 停止使用時不會被 dropped。
 
-同樣地，函式的簽章使用 `&` 來表示參數 `s` 的型別是一個 reference。讓我們添加一些解釋性註釋：
+同樣地，函式的簽名使用 `&` 來表示參數 `s` 的型別是一個 reference。讓我們添加一些解釋性的註解：
 
 ```rust
-fn calculate_length(s: &String) -> usize { // s 是一個 String 的 reference
+fn calculate_length(s: &String) -> usize { // s is a reference to a String
     s.len()
-} // 在這裡，s 離開作用域。但因為 s 不擁有它所參照的內容，
-  // 所以 String 不會被 drop。
+} // Here, s goes out of scope. But because s does not have ownership of what
+  // it refers to, the String is not dropped.
 ```
 
-變數 `s` 有效的作用域與任何函式參數的作用域相同，但當 `s` 停止使用時，reference 所指向的值不會被 drop，因為 `s` 沒有 ownership。當函式將 reference 作為參數而不是實際值時，我們不需要回傳值來回傳 ownership，因為我們從未擁有 ownership。
+變數 `s` 有效的 scope 與任何函式參數的 scope 相同，但當 `s` 停止使用時，由 reference 指向的值不會被 dropped，因為 `s` 沒有 ownership。當函式以 references 作為參數而不是實際值時，我們就不需要為了歸還 ownership 而回傳值，因為我們從未擁有過 ownership。
 
-我們將建立 reference 的動作稱為_borrowing_。就像現實生活中一樣，如果一個人擁有某樣東西，你可以向他們借用。當你完成後，你必須歸還它。你不擁有它。
+我們稱建立 reference 的行為為_borrowing_。就像在現實生活中一樣，如果一個人擁有某樣東西，你可以向他借用。當你用完後，你必須歸還它。你並不擁有它。
 
-那麼，如果我們嘗試修改我們正在 borrowing 的東西會發生什麼？試試範例 4-6 中的程式碼。劇透警告：它不起作用！
+那麼，如果我們試圖修改我們正在 borrow 的東西會發生什麼事？試試列表 4-6 的程式碼。劇透一下：它不會成功！
 
 src/main.rs
 
@@ -455,9 +466,9 @@ fn change(some_string: &String) {
 }
 ```
 
-範例 4-6：嘗試修改一個 borrowed 的值
+列表 4-6：嘗試修改一個被 borrow 的值
 
-這是錯誤：
+這是錯誤訊息：
 
 ```
 $ cargo run
@@ -477,11 +488,11 @@ For more information about this error, try `rustc --explain E0596`.
 error: could not compile `ownership` (bin "ownership") due to 1 previous error
 ```
 
-就像變數預設是不可變的一樣，reference 也是。我們不允許修改我們擁有 reference 的東西。
+就像變數預設是不可變的一樣，references 也是。我們不被允許修改我們所參照的東西。
 
-### 可變 References
+### 可變的 References
 
-我們可以修改範例 4-6 中的程式碼，允許我們透過使用_可變 reference (mutable reference)_ 的一些小調整來修改 borrowed 的值：
+我們可以修正列表 4-6 中的程式碼，允許我們修改一個被 borrow 的值，只需做一些小小的調整，改用_可變的 reference_：
 
 src/main.rs
 
@@ -497,9 +508,9 @@ fn change(some_string: &mut String) {
 }
 ```
 
-首先，我們將 `s` 變為 `mut`。然後我們在呼叫 `change` 函式時使用 `&mut s` 建立一個可變 reference，並更新函式簽章以接受一個 `some_string: &mut String` 的可變 reference。這使得 `change` 函式將會異變它所 borrowed 的值變得非常明確。
+首先，我們將 `s` 改為 `mut`。然後，在呼叫 `change` 函式的地方，我們用 `&mut s` 建立一個可變的 reference，並更新函式簽名以接受一個可變的 reference `some_string: &mut String`。這非常清楚地表明 `change` 函式將會改變它所 borrow 的值。
 
-可變 reference 有一個很大的限制：如果你擁有一個值的可變 reference，你就不能擁有該值的任何其他 reference。以下程式碼嘗試為 `s` 建立兩個可變 reference，這將會失敗：
+可變的 references 有一個很大的限制：如果你有一個對某個值的可變 reference，你就不能有對該值的其他任何 references。這段試圖為 `s` 建立兩個可變 references 的程式碼將會失敗：
 
 src/main.rs
 
@@ -512,7 +523,7 @@ src/main.rs
     println!("{r1}, {r2}");
 ```
 
-這是錯誤：
+這是錯誤訊息：
 
 ```
 $ cargo run
@@ -532,41 +543,41 @@ For more information about this error, try `rustc --explain E0499`.
 error: could not compile `ownership` (bin "ownership") due to 1 previous error
 ```
 
-此錯誤表示此程式碼無效，因為我們不能同時多次將 `s` borrow 為可變的。第一個可變 borrow 在 `r1` 中，並且必須持續到它在 `println!` 中使用為止，但在該可變 reference 建立及其使用之間，我們嘗試在 `r2` 中建立另一個可變 reference，該 reference borrow 了與 `r1` 相同的資料。
+這個錯誤說這段程式碼是無效的，因為我們不能一次性地將 `s` borrow 為可變的超過一次。第一次可變的 borrow 發生在 `r1`，並且必須持續到它在 `println!` 中被使用，但在那個可變 reference 建立和使用之間，我們試圖在 `r2` 中建立另一個可變 reference，它 borrow 了與 `r1` 相同的資料。
 
-阻止同時對相同資料有多個可變 reference 的限制允許異變，但以一種非常受控制的方式。這是新的 Rustacean 會遇到的困難，因為大多數語言允許你隨時進行異變。擁有此限制的好處是 Rust 可以在編譯期預防 data race。_Data race_ 類似於 race condition，並且在發生以下三種行為時發生：
+這個限制——在同一時間內防止對同一資料有多個可變的 references——允許了可變性，但卻是以一種非常受控的方式。這是新的 Rustaceans 會遇到的困難，因為大多數語言都允許你隨時進行修改。擁有這個限制的好處是 Rust 可以在編譯時期防止資料競爭 (data races)。_Data race_ 類似於競爭條件 (race condition)，它在以下三種行為發生時出現：
 
-- 兩個或更多個指標同時存取相同的資料。
-- 至少有一個指標用於寫入資料。
+- 兩個或更多的 pointers 同時存取相同的資料。
+- 至少有一個 pointers 被用來寫入資料。
 - 沒有使用任何機制來同步對資料的存取。
 
-Data race 會導致未定義的行為，並且在執行期追蹤它們時可能難以診斷和修復；Rust 透過拒絕編譯包含 data race 的程式碼來預防這個問題！
+Data races 會導致未定義的行為，並且在 runtime 追蹤它們時很難診斷和修復；Rust 透過拒絕編譯有 data races 的程式碼來防止這個問題！
 
-一如既往，我們可以使用大括號來建立一個新的作用域，允許有多個可變 reference，但不是*同時*的：
+一如既往，我們可以使用大括號來建立一個新的 scope，從而允許多個可變的 references，只是不能是*同時*的：
 
 ```rust
     let mut s = String::from("hello");
 
     {
         let r1 = &mut s;
-    } // r1 在這裡離開作用域，所以我們可以毫無問題地建立一個新的 reference。
+    } // r1 goes out of scope here, so we can make a new reference with no problems.
 
     let r2 = &mut s;
 ```
 
-Rust 對於組合可變和不可變 reference 也實施了類似的規則。這段程式碼會導致錯誤：
+Rust 對於結合可變與不可變 references 也實施了類似的規則。這段程式碼會導致一個錯誤：
 
 ```rust
     let mut s = String::from("hello");
 
-    let r1 = &s; // 沒問題
-    let r2 = &s; // 沒問題
-    let r3 = &mut s; // 大問題
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
+    let r3 = &mut s; // BIG PROBLEM
 
     println!("{r1}, {r2}, and {r3}");
 ```
 
-這是錯誤：
+這是錯誤訊息：
 
 ```
 $ cargo run
@@ -587,33 +598,33 @@ For more information about this error, try `rustc --explain E0502`.
 error: could not compile `ownership` (bin "ownership") due to 1 previous error
 ```
 
-呼！當我們有一個不可變 reference 指向同一個值時，我們*也*不能有一個可變 reference。
+哇！我們*也*不能在擁有一個對相同值的不可變 reference 的同時，擁有一個可變的 reference。
 
-不可變 reference 的使用者不希望該值突然在他們不知情的情況下發生改變！然而，允許多個不可變 reference 是因為沒有人僅僅是讀取資料就擁有影響其他人讀取資料的能力。
+使用不可變 reference 的人不會預期值會突然在他們底下改變！然而，多個不可變的 references 是允許的，因為只讀取資料的人沒有能力影響其他人對資料的讀取。
 
-請注意，reference 的作用域從其引入處開始，並持續到該 reference 最後一次被使用。例如，這段程式碼將會編譯，因為不可變 reference 的最後一次使用是在 `println!` 中，發生在可變 reference 引入之前：
+請注意，一個 reference 的 scope 從它被引入的地方開始，並持續到該 reference 最後一次被使用。例如，這段程式碼會編譯通過，因為不可變 references 的最後一次使用是在 `println!` 中，這是在可變 reference 被引入之前：
 
 ```rust
     let mut s = String::from("hello");
 
-    let r1 = &s; // 沒問題
-    let r2 = &s; // 沒問題
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
     println!("{r1} and {r2}");
-    // 變數 r1 和 r2 在此之後將不再使用。
+    // Variables r1 and r2 will not be used after this point.
 
-    let r3 = &mut s; // 沒問題
+    let r3 = &mut s; // no problem
     println!("{r3}");
 ```
 
-不可變 reference `r1` 和 `r2` 的作用域在它們最後一次使用的 `println!` 之後結束，這發生在可變 reference `r3` 建立之前。這些作用域不重疊，所以這段程式碼是允許的：編譯器可以判斷 reference 在作用域結束之前不再被使用。
+不可變 references `r1` 和 `r2` 的 scope 在它們最後一次被使用的 `println!` 之後結束，這是在可變 reference `r3` 被建立之前。這些 scopes 沒有重疊，所以這段程式碼是允許的：編譯器可以判斷出 reference 在 scope 結束前的某個點就不再被使用了。
 
-儘管 borrowing 錯誤有時可能令人沮喪，但請記住，這是 Rust 編譯器提早（在編譯期而不是執行期）指出潛在錯誤，並準確地告訴你問題所在。這樣你就不必追蹤為什麼你的資料與你想像的不同。
+儘管 borrowing 錯誤有時可能會令人沮喪，但請記住，這是 Rust 編譯器在早期（編譯時期而非 runtime）指出一個潛在的 bug，並準確地告訴你問題出在哪裡。這樣你就不必去追查為什麼你的資料不是你所想的那樣了。
 
-### Dangling References
+### 懸掛參照 (Dangling References)
 
-在具有指標的語言中，很容易錯誤地建立一個_dangling pointer_——一個參照到記憶體中可能已經被分配給其他人的位置的指標——透過釋放一些記憶體同時保留一個指向該記憶體的指標。相比之下，在 Rust 中，編譯器保證 references 永遠不會是 dangling references：如果你擁有某些資料的 reference，編譯器將確保該資料在該資料的 reference 離開作用域之前不會離開作用域。
+在有 pointers 的語言中，很容易錯誤地建立一個_懸掛指標 (dangling pointer)_——一個參照到可能已經被分配給其他人的記憶體位置的 pointer——這是透過在保留指向該記憶體的 pointer 的同時釋放一些記憶體來實現的。相比之下，在 Rust 中，編譯器保證 references 永遠不會是懸掛參照：如果你有一個對某些資料的 reference，編譯器將確保該資料在對該資料的 reference 之前不會離開 scope。
 
-讓我們嘗試建立一個 dangling reference，看看 Rust 如何透過編譯期錯誤來阻止它們：
+讓我們試著建立一個懸掛參照，看看 Rust 如何用一個編譯時期錯誤來防止它們：
 
 src/main.rs
 
@@ -629,7 +640,7 @@ fn dangle() -> &String {
 }
 ```
 
-這是錯誤：
+這是錯誤訊息：
 
 ```
 $ cargo run
@@ -641,7 +652,7 @@ error[E0106]: missing lifetime specifier
   |                ^ expected named lifetime parameter
   |
   = help: this function's return type contains a borrowed value, but there is no value for it to be borrowed from
-help: consider using the `'static` lifetime, but this uncommon unless you're returning a borrowed value from a `const` or a `static`
+help: consider using the `'static` lifetime, but this is uncommon unless you're returning a borrowed value from a `const` or a `static`
   |
 5 | fn dangle() -> &'static String {
   |                 +++++++
@@ -662,27 +673,28 @@ For more information about an error, try `rustc --explain E0106`.
 error: could not compile `ownership` (bin "ownership") due to 2 previous errors
 ```
 
-此錯誤訊息參照了我們尚未涵蓋的功能：lifetime。我們將在第 10 章詳細討論 lifetime。但是，如果你忽略有關 lifetime 的部分，該訊息確實包含了為什麼這段程式碼會出現問題的關鍵：
+這個錯誤訊息提到了一個我們還沒有講到的功能：lifetimes。我們將在第 10 章詳細討論 lifetimes。但是，如果你忽略關於 lifetimes 的部分，這個訊息確實包含了這段程式碼為什麼有問題的關鍵：
 
 ```
-此函式的回傳型別包含一個 borrowed 的值，但沒有可以借用它的值
+this function's return type contains a borrowed value, but there is no value
+for it to be borrowed from
 ```
 
-讓我們仔細看看 `dangle` 程式碼的每個階段究竟發生了什麼：
+讓我們仔細看看在我們的 `dangle` 程式碼的每個階段究竟發生了什麼：
 
 src/main.rs
 
 ```rust
-fn dangle() -> &String { // dangle 回傳一個 String 的 reference
+fn dangle() -> &String { // dangle returns a reference to a String
 
-    let s = String::from("hello"); // s 是一個新的 String
+    let s = String::from("hello"); // s is a new String
 
-    &s // 我們回傳 String s 的 reference
-} // 在這裡，s 離開作用域並被 drop，所以它的記憶體消失了。
-  // 危險！
+    &s // we return a reference to the String, s
+} // Here, s goes out of scope and is dropped, so its memory goes away.
+  // Danger!
 ```
 
-因為 `s` 是在 `dangle` 內部建立的，所以當 `dangle` 的程式碼執行完畢時，`s` 將會被解分配。但我們嘗試回傳一個指向它的 reference。這意味著這個 reference 將會指向一個無效的 `String`。這可不行！Rust 不會讓我們這樣做。
+因為 `s` 是在 `dangle` 內部建立的，所以當 `dangle` 的程式碼結束時，`s` 將被釋放。但我們試圖回傳一個對它的 reference。這意味著這個 reference 將指向一個無效的 `String`。這是不行的！Rust 不會讓我們這樣做。
 
 這裡的解決方案是直接回傳 `String`：
 
@@ -694,32 +706,32 @@ fn no_dangle() -> String {
 }
 ```
 
-這運作得很順利。ownership 被 move 出去，沒有任何東西被解分配。
+這樣做就沒有任何問題了。Ownership 被 move 出去，沒有任何東西被釋放。
 
 ### References 的規則
 
-讓我們回顧一下我們討論過的關於 references 的內容：
+讓我們總結一下我們討論過的關於 references 的內容：
 
-- 在任何給定時間，你只能擁有一*個*可變 reference *或*任意數量的不可變 reference。
-- References 必須始終有效。
+- 在任何給定時間，你只能有*一個*可變的 reference *或*任意數量的不可變 references。
+- References 必須總是有效的。
 
-接下來，我們將看看另一種 reference：slices。
+接下來，我們將看一種不同種類的 reference：slices。
 
 ## Slice 型別
 
-_Slices_ 允許你參照集合中連續的元素序列。Slice 是一種 reference，因此它沒有 ownership。
+_Slices_ 讓你參照一個 collection 中連續的元素序列。Slice 是一種 reference，所以它沒有 ownership。
 
-這裡有一個小程式設計問題：編寫一個函式，該函式接收一個由空格分隔的單字字串，並回傳它在該字串中找到的第一個單字。如果函式在字串中找不到空格，則整個字串必須是一個單字，因此應該回傳整個字串。
+這裡有一個小的程式設計問題：寫一個函式，它接受一個由空格分隔的單詞字串，並回傳它在該字串中找到的第一個單詞。如果函式在字串中找不到空格，整個字串必定是一個單詞，所以應該回傳整個字串。
 
-> 注意：為了介紹 string slices，我們在本節中假設只處理 ASCII 字元；有關 UTF-8 處理的更深入討論，請參閱第 8 章的「使用 String 儲存 UTF-8 編碼文字」部分。
+> 注意：為了介紹 string slices，我們在本節中假設只處理 ASCII；關於 UTF-8 處理的更詳盡討論在第 8 章的「用字串儲存 UTF-8 編碼的文本」一節中。
 
-讓我們來看看如何不使用 slices 來編寫這個函式的簽章，以理解 slices 將解決的問題：
+讓我們來看看如果不使用 slices，我們會如何寫這個函式的簽名，以理解 slices 將解決的問題：
 
 ```rust
 fn first_word(s: &String) -> ?
 ```
 
-`first_word` 函式有一個 `&String` 型別的參數。我們不需要 ownership，所以這沒問題。（在慣用的 Rust 中，函式除非需要，否則不會取得其參數的 ownership，其原因將在我們繼續學習時變得清楚。）但是我們應該回傳什麼呢？我們真的沒有辦法談論字串的_部分_。但是，我們可以回傳單字結尾的索引，由一個空格表示。讓我們嘗試一下，如範例 4-7 所示。
+`first_word` 函式有一個型別為 `&String` 的參數。我們不需要 ownership，所以這沒問題。（在慣用的 Rust 中，函式除非需要，否則不取得其參數的 ownership，其原因隨著我們的進展將會變得清晰。）但我們應該回傳什麼？我們並沒有一種方式來談論字串的_一部分_。然而，我們可以回傳由空格指示的單詞結尾的索引。讓我們試試看，如列表 4-7 所示。
 
 src/main.rs
 
@@ -737,25 +749,25 @@ fn first_word(s: &String) -> usize {
 }
 ```
 
-範例 4-7：`first_word` 函式，回傳 `String` 參數中的位元組索引值
+列表 4-7：`first_word` 函式回傳一個指向 `String` 參數的 byte 索引值
 
-因為我們需要逐個元素地遍歷 `String` 並檢查一個值是否為空格，所以我們將使用 `as_bytes` 方法將我們的 `String` 轉換為位元組陣列。
+因為我們需要逐個元素地遍歷 `String` 並檢查一個值是否為空格，我們將使用 `as_bytes` 方法將我們的 `String` 轉換為一個 byte 陣列。
 
 ```rust
 let bytes = s.as_bytes();
 ```
 
-接下來，我們使用 `iter` 方法在位元組陣列上建立一個 iterator：
+接下來，我們使用 `iter` 方法在 byte 陣列上建立一個迭代器：
 
 ```rust
 for (i, &item) in bytes.iter().enumerate() {
 ```
 
-我們將在第 13 章更詳細地討論 iterators。目前，請知道 `iter` 是一個回傳集合中每個元素的方法，而 `enumerate` 則包裝了 `iter` 的結果並將每個元素作為 tuple 的一部分回傳。從 `enumerate` 回傳的 tuple 的第一個元素是索引，第二個元素是對元素的 reference。這比我們自己計算索引更方便一些。
+我們將在第 13 章更詳細地討論迭代器。目前，只要知道 `iter` 是一個回傳 collection 中每個元素的方法，而 `enumerate` 會包裝 `iter` 的結果，並將每個元素作為元組的一部分回傳。從 `enumerate` 回傳的元組的第一個元素是索引，第二個元素是對該元素的 reference。這比我們自己計算索引要方便一些。
 
-由於 `enumerate` 方法回傳一個 tuple，我們可以使用模式來解構該 tuple。我們將在第 6 章更詳細地討論模式。在 `for` 迴圈中，我們指定了一個模式，其中 `i` 代表 tuple 中的索引，`&item` 代表 tuple 中的單一位元組。因為我們從 `.iter().enumerate()` 獲得了一個對元素的 reference，所以我們在模式中使用 `&`。
+因為 `enumerate` 方法回傳一個元組，我們可以使用模式來解構那個元組。我們將在第 6 章更多地討論模式。在 `for` 迴圈中，我們指定一個模式，其中 `i` 代表元組中的索引，`&item` 代表元組中的單個 byte。因為我們從 `.iter().enumerate()` 得到的是對元素的 reference，所以我們在模式中使用 `&`。
 
-在 `for` 迴圈內部，我們透過使用位元組常值語法來搜尋代表空格的位元組。如果我們找到一個空格，我們就回傳該位置。否則，我們使用 `s.len()` 回傳字串的長度。
+在 `for` 迴圈內部，我們使用 byte 字面值語法來搜尋代表空格的 byte。如果我們找到一個空格，我們就回傳位置。否則，我們使用 `s.len()` 回傳字串的長度。
 
 ```rust
         if item == b' ' {
@@ -766,7 +778,7 @@ for (i, &item) in bytes.iter().enumerate() {
     s.len()
 ```
 
-我們現在有辦法找出字串中第一個單字結尾的索引，但有個問題。我們回傳的 `usize` 值本身，只有在 `&String` 的上下文中才有意義。換句話說，因為它是一個獨立於 `String` 的值，所以無法保證它將來仍然有效。考慮範例 4-8 中的程式，該程式使用了範例 4-7 中的 `first_word` 函式。
+我們現在有辦法找出字串中第一個單詞結尾的索引，但有一個問題。我們單獨回傳一個 `usize`，但它只有在 `&String` 的上下文中才是一個有意義的數字。換句話說，因為它是一個與 `String` 分開的值，所以沒有保證它在未來仍然有效。考慮列表 4-8 中的程式，它使用了列表 4-7 中的 `first_word` 函式。
 
 src/main.rs
 
@@ -774,32 +786,32 @@ src/main.rs
 fn main() {
     let mut s = String::from("hello world");
 
-    let word = first_word(&s); // word 將取得值 5
+    let word = first_word(&s); // word will get the value 5
 
-    s.clear(); // 這會清空 String，使其等於 ""
+    s.clear(); // this empties the String, making it equal to ""
 
-    // 此處 word 仍然有值 5，但 s 不再有任何我們可以有意義地與值 5
-    // 一起使用的內容，所以 word 現在完全無效了！
+    // word still has the value 5 here, but s no longer has any content that we
+    // could meaningfully use with the value 5, so word is now totally invalid!
 }
 ```
 
-範例 4-8：儲存呼叫 `first_word` 函式的結果，然後改變 `String` 的內容
+列表 4-8：儲存呼叫 `first_word` 函式的結果，然後改變 `String` 的內容
 
-這個程式碼在沒有任何錯誤的情況下編譯，即使我們在呼叫 `s.clear()` 之後使用 `word`，它也會這樣做。因為 `word` 與 `s` 的狀態完全無關，所以 `word` 仍然包含值 `5`。我們可以使用值 `5` 和變數 `s` 來嘗試提取第一個單字，但這將是一個錯誤，因為 `s` 的內容自我們將 `5` 儲存在 `word` 中以來已經改變了。
+這個程式編譯時沒有任何錯誤，如果我們在呼叫 `s.clear()` 之後使用 `word`，它也會這樣。因為 `word` 與 `s` 的狀態完全沒有關聯，`word` 仍然包含值 `5`。我們可以使用那個值 `5` 和變數 `s` 來嘗試提取第一個單詞，但這會是一個 bug，因為自從我們將 `5` 儲存在 `word` 中以來，`s` 的內容已經改變了。
 
-必須擔心 `word` 中的索引與 `s` 中的資料不同步是繁瑣且容易出錯的！如果我們編寫一個 `second_word` 函式，管理這些索引將會更加脆弱。它的簽章必須看起來像這樣：
+擔心 `word` 中的索引與 `s` 中的資料不同步是繁瑣且容易出錯的！如果我們寫一個 `second_word` 函式，管理這些索引會變得更加脆弱。它的簽名必須看起來像這樣：
 
 ```rust
 fn second_word(s: &String) -> (usize, usize) {
 ```
 
-現在我們要追蹤一個起始*和*一個結束索引，而且我們有更多從特定狀態的資料計算出來但與該狀態完全無關的值。我們有三個不相關的變數在周圍浮動，需要保持同步。
+現在我們正在追蹤一個開始*和*一個結束索引，而且我們有更多的值是從特定狀態的資料中計算出來的，但卻與該狀態完全無關。我們有三個無關的變數四處漂浮，需要保持同步。
 
-幸運的是，Rust 提供了這個問題的解決方案：string slices。
+幸運的是，Rust 對這個問題有一個解決方案：string slices。
 
 ### String Slices
 
-_String slice_ 是對 `String` 元素連續序列的 reference，它看起來像這樣：
+_String slice_ 是對 `String` 元素連續序列的參照，它看起來像這樣：
 
 ```rust
     let s = String::from("hello world");
@@ -808,15 +820,15 @@ _String slice_ 是對 `String` 元素連續序列的 reference，它看起來像
     let world = &s[6..11];
 ```
 
-`hello` 不是指向整個 `String` 的 reference，而是指向 `String` 一部分的 reference，由額外的 `[0..5]` 指定。我們使用括號內的範圍來建立 slices，方法是指定 `[starting_index..ending_index]`，其中 _`starting_index`_ 是 slice 中的第一個位置，而 _`ending_index`_ 是 slice 中最後一個位置加一。在內部，slice 資料結構儲存 slice 的起始位置和長度，這對應於 _`ending_index`_ 減去 _`starting_index`_。因此，在 `let world = &s[6..11];` 的情況下，`world` 將是一個 slice，其中包含一個指向 `s` 中索引 6 的位元組的指標，長度值為 `5`。
+`hello` 不是對整個 `String` 的參照，而是對 `String` 一部分的參照，這在額外的 `[0..5]` 位元中指定。我們使用方括號內的範圍來建立 slices，指定 `[starting_index..ending_index]`，其中 _`starting_index`_ 是 slice 中的第一個位置，而 _`ending_index`_ 是 slice 中最後一個位置的後一位。在內部，slice 資料結構儲存了 slice 的起始位置和長度，這對應於 _`ending_index`_ 減去 _`starting_index`_。所以，在 `let world = &s[6..11];` 的情況下，`world` 會是一個 slice，它包含一個指向 `s` 索引 6 的 byte 的 pointer，長度值為 `5`。
 
-圖 4-7 以圖表形式顯示了這一點。
+圖 4-7 在一個圖表中顯示了這一點。
 
-![三個表格：代表 s 的 stack 資料的表格，指向 heap 上字串資料「hello world」的表格中索引 0 的位元組。第三個表格代表 slice world 的 stack 資料，其長度值為 5，並指向 heap 資料表格的位元組 6。](https://doc.rust-lang.org/book/img/trpl04-07.svg)
+<img alt="三個表格：一個代表 s 的堆疊資料的表格，它指向堆積上字串資料 &quot;hello world&quot; 中索引 0 的 byte。第三個表格代表 slice world 的堆疊資料，其長度值為 5，並指向堆積資料表格的 byte 6。" src="https://doc.rust-lang.org/book/img/trpl04-07.svg" class="center" style="width: 50%;" />
 
-圖 4-7：String slice 參照 `String` 的一部分
+圖 4-7：參照 `String` 一部分的 string slice
 
-使用 Rust 的 `..` 範圍語法，如果你想從索引 0 開始，你可以省略兩個點之前的值。換句話說，這些是等價的：
+使用 Rust 的 `..` 範圍語法，如果你想從索引 0 開始，你可以省略兩個句點前的值。換句話說，這些是相等的：
 
 ```rust
 let s = String::from("hello");
@@ -825,7 +837,7 @@ let slice = &s[0..2];
 let slice = &s[..2];
 ```
 
-同理，如果你的 slice 包含 `String` 的最後一個位元組，你可以省略尾隨數字。這表示這些是等價的：
+同樣地，如果你的 slice 包含了 `String` 的最後一個 byte，你可以省略後面的數字。這意味著這些是相等的：
 
 ```rust
 let s = String::from("hello");
@@ -836,7 +848,7 @@ let slice = &s[3..len];
 let slice = &s[3..];
 ```
 
-你也可以省略兩個值來取得整個字串的 slice。所以這些是等價的：
+你也可以省略兩個值來取整個字串的 slice。所以這些是相等的：
 
 ```rust
 let s = String::from("hello");
@@ -847,9 +859,9 @@ let slice = &s[0..len];
 let slice = &s[..];
 ```
 
-> 注意：String slice 的範圍索引必須位於有效的 UTF-8 字元邊界上。如果你嘗試在多位元組字元的 middle 建立一個 string slice，你的程式將會因錯誤而退出。
+> 注意：String slice 的範圍索引必須位於有效的 UTF-8 字元邊界上。如果你試圖在一個多位元組字元的 बीच中建立一個 string slice，你的程式將會因錯誤而退出。
 
-考慮到所有這些資訊，讓我們重新編寫 `first_word` 以回傳一個 slice。表示「string slice」的型別寫作 `&str`：
+有了這些資訊，讓我們重寫 `first_word` 來回傳一個 slice。表示「string slice」的型別寫作 `&str`：
 
 src/main.rs
 
@@ -867,17 +879,17 @@ fn first_word(s: &String) -> &str {
 }
 ```
 
-我們像在範例 4-7 中一樣，透過尋找空格的第一次出現來獲取單字結尾的索引。當我們找到一個空格時，我們使用字串的開頭和空格的索引作為起始和結束索引，回傳一個 string slice。
+我們得到單詞結尾索引的方式與列表 4-7 中相同，即尋找第一個出現的空格。當我們找到一個空格時，我們使用字串的開頭和空格的索引作為開始和結束索引來回傳一個 string slice。
 
-現在當我們呼叫 `first_word` 時，我們回傳一個與基礎資料綁定在一起的單一值。該值由一個指向 slice 起始點的 reference 和 slice 中元素的數量組成。
+現在當我們呼叫 `first_word` 時，我們得到一個與底層資料相關聯的單一值。該值由一個指向 slice 起始點的 reference 和 slice 中的元素數量組成。
 
-回傳 slice 也適用於 `second_word` 函式：
+回傳 slice 對於 `second_word` 函式也同樣適用：
 
 ```rust
 fn second_word(s: &String) -> &str {
 ```
 
-我們現在有一個簡單的 API，它更難出錯，因為編譯器將確保指向 `String` 的 reference 保持有效。還記得範例 4-8 中的程式碼錯誤嗎？當時我們取得了第一個單字結尾的索引，但隨後清空了字串，導致我們的索引無效。那段程式碼在邏輯上是不正確的，但沒有立即顯示任何錯誤。問題會在我們繼續嘗試將第一個單字索引與已清空的字串一起使用時才出現。Slices 使得這個錯誤不可能發生，並讓我們更早地知道程式碼中存在問題。使用 `first_word` 的 slice 版本將會拋出編譯期錯誤：
+我們現在有一個直接的 API，更難出錯，因為編譯器會確保對 `String` 的 references 保持有效。還記得列表 4-8 中程式的 bug 嗎？當時我們取得了第一個單詞結尾的索引，但隨後清空了字串，導致我們的索引無效。那段程式碼在邏輯上是錯誤的，但沒有立即顯示任何錯誤。如果我們繼續嘗試用一個已清空的字串來使用第一個單詞的索引，問題就會在稍後出現。Slices 使這個 bug 不可能發生，並讓我們更早地知道我們的程式碼有問題。使用 slice 版本的 `first_word` 會拋出一個編譯時期錯誤：
 
 src/main.rs
 
@@ -887,7 +899,7 @@ fn main() {
 
     let word = first_word(&s);
 
-    s.clear(); // 錯誤！
+    s.clear(); // error!
 
     println!("the first word is: {word}");
 }
@@ -914,39 +926,41 @@ For more information about this error, try `rustc --explain E0502`.
 error: could not compile `ownership` (bin "ownership") due to 1 previous error
 ```
 
-呼！回想一下 borrowing 規則，如果我們有一個東西的不可變 reference，我們就不能同時擁有一個可變 reference。因為 `clear` 需要截斷 `String`，所以它需要取得一個可變 reference。在呼叫 `clear` 之後的 `println!` 使用了 `word` 中的 reference，所以不可變 reference 在那個時間點必須仍然活躍。Rust 不允許 `clear` 中的可變 reference 和 `word` 中的不可變 reference 同時存在，因此編譯失敗。Rust 不僅讓我們的 API 更易於使用，而且還在編譯期消除了整類錯誤！
+回想一下 borrowing 的規則，如果我們有一個對某物的不可變 reference，我們就不能同時取得一個可變的 reference。因為 `clear` 需要截斷 `String`，它需要取得一個可變的 reference。`clear` 呼叫之後的 `println!` 使用了 `word` 中的 reference，所以不可變的 reference 在那時必須仍然是活躍的。Rust 不允許 `clear` 中的可變 reference 和 `word` 中的不可變 reference 同時存在，編譯失敗。Rust 不僅讓我們的 API 更容易使用，而且還在編譯時期消除了一整類的錯誤！
+
+<!-- Old heading. Do not remove or links may break. -->
 
 <a id="string-literals-are-slices"></a>
 
-#### 字串常值作為 Slices
+#### 字串字面值即 Slice
 
-回想一下我們討論過字串常值儲存在二進位檔案中。現在我們了解了 slices，我們可以正確理解字串常值：
+回想一下我們談到字串字面值儲存在二進位檔內部。現在我們知道了 slices，我們可以正確地理解字串字面值：
 
 ```rust
 let s = "Hello, world!";
 ```
 
-這裡 `s` 的型別是 `&str`：它是一個指向二進位檔案中該特定位置的 slice。這也是為什麼字串常值是不可變的；`&str` 是一個不可變 reference。
+這裡 `s` 的型別是 `&str`：它是一個指向二進位檔特定點的 slice。這也是為什麼字串字面值是不可變的；`&str` 是一個不可變的 reference。
 
 #### String Slices 作為參數
 
-知道你可以從常值和 `String` 值中取得 slices，這讓我們的 `first_word` 函式還有一個改進空間，那就是它的簽章：
+知道你可以對字面值和 `String` 值取 slices，引導我們對 `first_word` 做進一步的改進，那就是它的簽名：
 
 ```rust
 fn first_word(s: &String) -> &str {
 ```
 
-經驗豐富的 Rustacean 會編寫範例 4-9 中所示的簽章，因為它允許我們對 `&String` 值和 `&str` 值使用相同的函式。
+一個更有經驗的 Rustacean 會寫出列表 4-9 中所示的簽名，因為它允許我們在 `&String` 值和 `&str` 值上使用相同的函式。
 
 ```rust
 fn first_word(s: &str) -> &str {
 ```
 
-範例 4-9：透過使用 string slice 作為 `s` 參數的型別來改進 `first_word` 函式
+列表 4-9：透過使用 string slice 作為 `s` 參數的型別來改進 `first_word` 函式
 
-如果我們有一個 string slice，我們可以直接傳遞它。如果我們有一個 `String`，我們可以傳遞 `String` 的 slice 或 `String` 的 reference。這種靈活性利用了 _deref coercions_，我們將在第 15 章的「函式與方法中的隱式 Deref 強制轉型」部分中涵蓋此功能。
+如果我們有一個 string slice，我們可以將它直接傳遞。如果我們有一個 `String`，我們可以傳遞 `String` 的一個 slice 或對 `String` 的一個 reference。這種靈活性利用了 _deref coercions_，我們將在第 15 章的「[函式與方法中的隱性 Deref Coercions](https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods)」一節中介紹這個功能。
 
-將函式定義為接收 string slice 而不是 `String` 的 reference，使得我們的 API 更通用且更有用，同時不損失任何功能：
+定義一個函式來接受 string slice 而不是對 `String` 的 reference，使我們的 API 更通用、更有用，而不會損失任何功能：
 
 src/main.rs
 
@@ -954,35 +968,35 @@ src/main.rs
 fn main() {
     let my_string = String::from("hello world");
 
-    // `first_word` 適用於 `String` 的 slices，無論是部分還是整體。
+    // `first_word` works on slices of `String`s, whether partial or whole.
     let word = first_word(&my_string[0..6]);
     let word = first_word(&my_string[..]);
-    // `first_word` 也適用於 `String` 的 references，這等同於
-    // `String` 的完整 slices。
+    // `first_word` also works on references to `String`s, which are equivalent
+    // to whole slices of `String`s.
     let word = first_word(&my_string);
 
     let my_string_literal = "hello world";
 
-    // `first_word` 適用於字串常值的 slices，無論是部分還是
-    // 整體。
+    // `first_word` works on slices of string literals, whether partial or
+    // whole.
     let word = first_word(&my_string_literal[0..6]);
     let word = first_word(&my_string_literal[..]);
 
-    // 因為字串常值 *本身就是* string slices，
-    // 這也有效，不需要 slice 語法！
+    // Because string literals *are* string slices already,
+    // this works too, without the slice syntax!
     let word = first_word(my_string_literal);
 }
 ```
 
 ### 其他 Slices
 
-顧名思義，String slices 專用於字串。但還有一種更通用的 slice 型別。考慮這個陣列：
+String slices，如你所想，是專門針對字串的。但還有一個更通用的 slice 型別。考慮這個陣列：
 
 ```rust
 let a = [1, 2, 3, 4, 5];
 ```
 
-就像我們可能想要參照字串的一部分一樣，我們可能想要參照陣列的一部分。我們會這樣做：
+就像我們可能想要參照字串的一部分一樣，我們也可能想要參照陣列的一部分。我們會這樣做：
 
 ```rust
 let a = [1, 2, 3, 4, 5];
@@ -992,10 +1006,10 @@ let slice = &a[1..3];
 assert_eq!(slice, &[2, 3]);
 ```
 
-這個 slice 的型別是 `&[i32]`。它的運作方式與 string slices 相同，透過儲存對第一個元素的 reference 和一個長度。你會將這種 slice 用於各種其他集合。我們將在第 8 章討論 vector 時詳細討論這些集合。
+這個 slice 的型別是 `&[i32]`。它的運作方式與 string slices 相同，透過儲存一個指向第一個元素的 reference 和一個長度。你將會對各種其他 collections 使用這種 slice。我們將在第 8 章討論 vectors 時詳細討論這些 collections。
 
 ## 總結
 
-ownership、borrowing 和 slices 的概念在編譯期確保了 Rust 程式的記憶體安全。Rust 語言讓你能夠像其他系統程式語言一樣控制記憶體使用，但當資料的 owner 離開作用域時自動清理該資料，這意味著你無需編寫和調試額外的程式碼即可獲得這種控制。
+Ownership、borrowing 和 slices 的概念在編譯時期確保了 Rust 程式的記憶體安全。Rust 語言讓你能夠像其他系統程式語言一樣控制你的記憶體使用，但擁有資料的 owner 在 owner 離開 scope 時自動清理該資料，意味著你不需要編寫和偵錯額外的程式碼來獲得這種控制。
 
-ownership 影響著 Rust 許多其他部分的運作方式，因此我們將在本書的其餘部分進一步討論這些概念。讓我們繼續進入第 5 章，看看如何在 `struct` 中將資料片段組合在一起。
+Ownership 影響著 Rust 許多其他部分的運作方式，所以我們將在本書的其餘部分進一步討論這些概念。讓我們進入第 5 章，看看如何將資料片段組合在一個 `struct` 中。

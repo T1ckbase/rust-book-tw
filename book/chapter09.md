@@ -8,28 +8,28 @@ directory, so all fixes need to be made in `/src/`.
 
 # 錯誤處理
 
-錯誤在軟體中是無可避免的，因此 Rust 提供了許多功能來處理發生錯誤的情況。在許多情況下，Rust 會要求你在程式碼編譯之前，確認錯誤的可能性並採取一些措施。這個要求讓你的程式更加健壯，確保你能在部署程式碼到 production 之前發現並適當地處理錯誤！
+錯誤是軟體開發中無法避免的事實，因此 Rust 提供了許多功能來處理發生問題的情況。在許多情況下，Rust 會要求你意識到錯誤的可能性，並在程式碼編譯前採取一些行動。這個要求透過確保你在將程式碼部署到生產環境之前發現並適當地處理錯誤，讓你的程式更加強健！
 
-Rust 將錯誤分為兩大類：_可復原 (recoverable)_ 錯誤和 _不可復原 (unrecoverable)_ 錯誤。對於可復原的錯誤，例如「_找不到檔案 (file not found)_」錯誤，我們很可能只是想向使用者報告問題並重試操作。不可復原的錯誤總是程式碼 bug 的徵兆，例如試圖存取超出陣列末端的位置，因此我們想立即停止程式。
+Rust 將錯誤分為兩大類：_可復原_（recoverable）和_不可復原_（unrecoverable）的錯誤。對於可復原的錯誤，例如*找不到檔案*的錯誤，我們通常只想向使用者回報問題並重試操作。不可復原的錯誤則總是 bug 的徵兆，例如試圖存取超出陣列結尾的位置，因此我們希望立即停止程式。
 
-大多數語言不區分這兩種錯誤，並使用例外 (exceptions) 等機制以相同的方式處理它們。Rust 沒有 exceptions。相反地，它為可復原的錯誤提供了 `Result<T, E>` 型別，以及當程式遇到不可復原的錯誤時會停止執行的 `panic!` macro。本章首先會介紹呼叫 `panic!`，然後討論回傳 `Result<T, E>` 值。此外，我們還會探討在決定是嘗試從錯誤中復原還是停止執行時的考量因素。
+大多數語言不區分這兩種類型的錯誤，並以相同的方式處理它們，例如使用例外（exceptions）機制。Rust 沒有例外。取而代之的是，它有 `Result<T, E>` 型別用於可復原的錯誤，以及 `panic!` macro，當程式遇到不可復原的錯誤時會停止執行。本章將首先介紹呼叫 `panic!`，然後再討論回傳 `Result<T, E>` 值。此外，我們將探討在決定是嘗試從錯誤中復原還是停止執行時的考量。
 
-## 使用 panic! 處理不可復原的錯誤
+## 使用 `panic!` 處理不可復原的錯誤
 
-有時你的程式碼會發生一些糟糕的事情，而且你無能為力。在這些情況下，Rust 有 `panic!` macro。在實務上有兩種方式可以導致 panic：採取會導致程式碼 panic 的動作（例如存取超出陣列末端的位置），或明確地呼叫 `panic!` macro。在這兩種情況下，我們都會讓程式發生 panic。預設情況下，這些 panic 會列印失敗訊息，unwind、清理 stack，然後退出。透過一個 environment variable，你還可以讓 Rust 在 panic 發生時顯示 call stack，以便更容易追蹤 panic 的來源。
+有時你的程式碼中會發生糟糕的事情，而你對此無能為力。在這些情況下，Rust 提供了 `panic!` macro。實務上有兩種方式會引發 panic：執行會導致程式碼 panic 的動作（例如存取超出陣列結尾的位置），或是明確呼叫 `panic!` macro。在這兩種情況下，我們都會在程式中引發 panic。預設情況下，這些 panic 會印出失敗訊息、unwind、清理 stack，然後退出。你也可以透過環境變數，讓 Rust 在發生 panic 時顯示呼叫堆疊（call stack），以便更容易追蹤 panic 的來源。
 
-> ### 應對 Panic 時 unwind stack 或 abort
+> ### 回應 Panic 時 Unwind Stack 或 Abort
 >
-> 預設情況下，當 panic 發生時，程式會開始 _unwinding_，這表示 Rust 會回溯 stack 並清理它遇到的每個 function 的資料。然而，回溯並清理是非常耗費工作的。因此，Rust 允許你選擇立即 _abort_ 的替代方案，這會在不清理的情況下結束程式。
+> 預設情況下，當 panic 發生時，程式會開始 _unwinding_，這意味著 Rust 會回溯 stack 並清理它遇到的每個函式的資料。然而，回溯並清理是一項繁重的工作。因此，Rust 允許你選擇另一種方式，即立即 _aborting_，這會結束程式而不進行清理。
 >
-> 程式使用的記憶體之後會由 operating system 清理。如果你的專案需要讓產生的 binary 盡可能小，你可以透過在 _Cargo.toml_ 檔案中相應的 `[profile]` 部分加入 `panic = 'abort'`，將 panic 時的行為從 unwinding 切換到 aborting。例如，如果你想在 release mode 下發生 panic 時 abort，請加入以下內容：
+> 程式所使用的記憶體將需要由作業系統來清理。如果在你的專案中需要讓最終的二進位檔盡可能小，你可以透過在 _Cargo.toml_ 檔案中對應的 `[profile]` 區塊加入 `panic = 'abort'`，來將 panic 時的行為從 unwinding 切換為 aborting。例如，如果你想在 release 模式下於 panic 時 abort，可以加入這段：
 >
 > ```toml
 > [profile.release]
 > panic = 'abort'
 > ```
 
-讓我們試著在一個簡單的程式中呼叫 `panic!`：
+讓我們在一個簡單的程式中嘗試呼叫 `panic!`：
 
 src/main.rs
 
@@ -39,7 +39,7 @@ fn main() {
 }
 ```
 
-當你執行程式時，會看到類似這樣的內容：
+當你執行這個程式時，你會看到類似以下的輸出：
 
 ```
 $ cargo run
@@ -52,13 +52,15 @@ crash and burn
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-`panic!` 的呼叫導致了最後兩行中包含的錯誤訊息。第一行顯示了我們的 panic 訊息以及 panic 發生在原始碼中的位置：_src/main.rs:2:5_ 表示它位於我們 _src/main.rs_ 檔案的第二行第五個字元。
+對 `panic!` 的呼叫導致了最後兩行的錯誤訊息。第一行顯示了我們的 panic 訊息以及 panic 發生在原始碼中的位置：_src/main.rs:2:5_ 指出這是在我們 _src/main.rs_ 檔案的第二行第五個字元。
 
-在這個例子中，指示的行是我們程式碼的一部分，如果我們到那一行，會看到 `panic!` macro 的呼叫。在其他情況下，`panic!` 的呼叫可能是在我們程式碼呼叫的程式碼中，錯誤訊息報告的檔案名稱和行號會是別人的程式碼中呼叫 `panic!` macro 的位置，而不是最終導致 `panic!` 呼叫的我們的程式碼行。
+在這種情況下，所指出的那一行是我們程式碼的一部分，如果我們去看那一行，會看到 `panic!` macro 的呼叫。在其他情況下，`panic!` 的呼叫可能是在我們程式碼所呼叫的程式碼中，而錯誤訊息所回報的檔案名稱和行號將會是其他人程式碼中呼叫 `panic!` macro 的地方，而不是我們最終導致 `panic!` 呼叫的那一行程式碼。
 
 <!-- Old heading. Do not remove or links may break. -->
 
-我們可以利用 `panic!` 呼叫來源的 function 的 backtrace 來找出造成問題的程式碼部分。要了解如何使用 `panic!` backtrace，讓我們看另一個範例，看看當 `panic!` 呼叫是因為我們程式碼中的 bug 而來自 library，而不是我們的程式碼直接呼叫 macro 時會是什麼樣子。Listing 9-1 有一段程式碼，試圖存取 vector 中超出有效索引範圍的索引。
+<a id="using-a-panic-backtrace"></a>
+
+我們可以利用 `panic!` 呼叫來源函式的 backtrace 來找出我們程式碼中導致問題的部分。為了理解如何使用 `panic!` backtrace，讓我們看另一個例子，看看當 `panic!` 的呼叫來自於一個函式庫，原因是我們程式碼中的 bug，而不是我們直接呼叫 macro 時會是什麼樣子。列表 9-1 的程式碼試圖存取一個 vector 中超出有效索引範圍的索引。
 
 src/main.rs
 
@@ -70,13 +72,13 @@ fn main() {
 }
 ```
 
-Listing 9-1: 試圖存取超出 vector 尾端的元素，這會導致呼叫 `panic!`
+列表 9-1：試圖存取 vector 結尾之外的元素，這將導致 `panic!` 呼叫
 
-在這裡，我們試圖存取 vector 的第 100 個元素（因為索引從零開始，所以是 index 99），但 vector 只有三個元素。在這種情況下，Rust 會 panic。使用 `[]` 應該會回傳一個元素，但如果你傳遞了一個無效的索引，Rust 在這裡沒有任何正確的元素可以回傳。
+在這裡，我們試圖存取 vector 的第 100 個元素（索引為 99，因為索引從零開始），但這個 vector 只有三個元素。在這種情況下，Rust 會 panic。使用 `[]` 應該要回傳一個元素，但如果你傳入一個無效的索引，Rust 在這裡沒有任何可以回傳的正確元素。
 
-在 C 語言中，試圖讀取超出 data structure 尾端的位置是 undefined behavior。你可能會得到 memory 中對應於該 data structure 中該元素的位置的任何值，即使該 memory 不屬於該 structure。這被稱為 _buffer overread_，如果攻擊者能夠以某種方式操作索引來讀取不應該被允許的、儲存在 data structure 之後的資料，這可能會導致 security vulnerabilities。
+在 C 語言中，試圖讀取超出資料結構結尾的行為是未定義行為（undefined behavior）。你可能會得到記憶體中對應於該資料結構中那個元素位置的任何東西，即使那塊記憶體不屬於該結構。這被稱為_緩衝區溢讀_（buffer overread），如果攻擊者能夠以某種方式操縱索引來讀取他們不應該被允許讀取的、儲存在該資料結構之後的資料，這可能會導致安全漏洞。
 
-為了保護你的程式免受這類 vulnerability 的影響，如果你嘗試讀取一個不存在的索引上的元素，Rust 將停止執行並拒絕繼續。讓我們試試看：
+為了保護你的程式免於此類漏洞，如果你試圖讀取一個不存在的索引處的元素，Rust 將會停止執行並拒絕繼續。讓我們試試看：
 
 ```
 $ cargo run
@@ -89,9 +91,9 @@ index out of bounds: the len is 3 but the index is 99
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-這個錯誤指向我們的 _main.rs_ 第 4 行，我們試圖存取 `v` 中 vector 的索引 `99`。
+這個錯誤指向我們 _main.rs_ 檔案的第 4 行，我們在那裡試圖存取 `v` 這個 vector 的索引 `99`。
 
-`note:` 行告訴我們可以設定 `RUST_BACKTRACE` environment variable 來獲取導致錯誤發生的確切 backtrace。_backtrace_ 是所有已呼叫的 function 的列表，用於到達這一點。Rust 中的 backtrace 與其他語言中相同：閱讀 backtrace 的關鍵是從頂部開始閱讀，直到你看到你寫的檔案。那就是問題的起源點。該點上方的行是你程式碼呼叫的程式碼；下方的行是呼叫你程式碼的程式碼。這些前後的行可能包括 Rust core 程式碼、standard library 程式碼，或你正在使用的 crates。讓我們試著將 `RUST_BACKTRACE` environment variable 設定為除了 `0` 以外的任何值來獲取 backtrace。Listing 9-2 顯示了你將看到的類似輸出。
+`note:` 這一行告訴我們，可以設定 `RUST_BACKTRACE` 環境變數來取得一個 backtrace，確切地了解是什麼導致了這個錯誤。_backtrace_ 是到達這一點之前所有被呼叫的函式列表。Rust 中的 backtrace 的運作方式與其他語言相同：閱讀 backtrace 的關鍵是從頂部開始讀，直到你看到自己寫的檔案。那裡就是問題的起源。在那之上的行是你程式碼呼叫的程式碼；在那之下的行是呼叫你程式碼的程式碼。這些之前和之後的行可能包括 Rust 核心程式碼、標準函式庫程式碼，或是你正在使用的 crate。讓我們試著設定 `RUST_BACKTRACE` 環境變數為除了 `0` 以外的任何值來取得 backtrace。列表 9-2 顯示了你將會看到的類似輸出。
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/listing-09-01
@@ -124,19 +126,19 @@ stack backtrace:
 note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
 ```
 
-Listing 9-2: 當 environment variable `RUST_BACKTRACE` 設定時，由呼叫 `panic!` 產生的 backtrace 顯示
+列表 9-2：當設定 `RUST_BACKTRACE` 環境變數時，由 `panic!` 呼叫所產生的 backtrace
 
-這有很多輸出！你看到的確切輸出可能會因你的 operating system 和 Rust 版本而異。為了獲得包含此資訊的 backtrace，必須啟用 debug symbols。預設情況下，當我們像這裡一樣使用 `cargo build` 或 `cargo run` 而不帶 `--release` flag 時，debug symbols 是啟用的。
+輸出內容很多！你看到的確切輸出可能會因你的作業系統和 Rust 版本而有所不同。為了取得包含這些資訊的 backtrace，必須啟用除錯符號（debug symbols）。當我們使用 `cargo build` 或 `cargo run` 而不帶 `--release` 旗標時，除錯符號是預設啟用的，就像我們這裡所做的一樣。
 
-在 Listing 9-2 的輸出中，backtrace 的第 6 行指向我們專案中導致問題的行：_src/main.rs_ 的第 4 行。如果我們不想讓程式 panic，我們應該從第一行提到我們寫的檔案的位置開始調查。在 Listing 9-1 中，我們刻意寫了會 panic 的程式碼，修復 panic 的方法是不請求超出 vector 索引範圍的元素。當你的程式未來發生 panic 時，你需要找出程式正在用什麼值執行什麼動作導致 panic，以及程式應該做什麼來替代。
+在列表 9-2 的輸出中，backtrace 的第 6 行指向了我們專案中導致問題的那一行：_src/main.rs_ 的第 4 行。如果我們不希望程式 panic，我們應該從第一個提到我們所寫檔案的那一行所指向的位置開始調查。在列表 9-1 中，我們故意寫了會 panic 的程式碼，修復這個 panic 的方法就是不要請求超出 vector 索引範圍的元素。當你的程式碼未來發生 panic 時，你需要弄清楚程式碼是用什麼值執行了什麼動作導致了 panic，以及程式碼應該做些什麼來取代。
 
-我們稍後會在「[要 `panic!` 還是不要 `panic!`](https://doc.rust-lang.org/book/ch09-00-error-handling.html#to-panic-or-not-to-panic)」一節中再次討論 `panic!` 以及何時應該和不應該使用 `panic!` 來處理錯誤狀況。接下來，我們將看看如何使用 `Result` 從錯誤中復原。
+我們稍後在本章的「要 `panic!` 還是不要 `panic!`？」一節中，會再回頭討論 `panic!` 以及我們應該和不應該使用 `panic!` 來處理錯誤情況的時機。接下來，我們將看看如何使用 `Result` 從錯誤中復原。
 
-## 使用 Result 處理可復原的錯誤
+## 使用 `Result` 處理可復原的錯誤
 
-大多數錯誤都不嚴重到需要程式完全停止。有時 function 失敗的原因是你很容易理解並回應的。例如，如果你試圖開啟一個檔案，而該操作因檔案不存在而失敗，你可能會想建立該檔案而不是終止程序。
+大多數錯誤並不嚴重到需要程式完全停止。有時候函式失敗的原因是可以輕易解讀並回應的。例如，如果你試圖開啟一個檔案而該操作失敗，因為檔案不存在，你可能會想要建立這個檔案，而不是終止整個程序。
 
-回想一下 Chapter 2 中的「[處理可能失敗的 `Result`](https://doc.rust-lang.org/book/ch02-00-guessing-game.html#handling-potential-failure-with-result)」，`Result` enum 被定義為有兩個 variants，`Ok` 和 `Err`，如下所示：
+回想一下第 2 章的「使用 `Result` 處理潛在的失敗」，`Result` enum 被定義為有兩個變體，`Ok` 和 `Err`，如下所示：
 
 ```rust
 enum Result<T, E> {
@@ -145,9 +147,9 @@ enum Result<T, E> {
 }
 ```
 
-`T` 和 `E` 是 generic type parameters：我們將在 Chapter 10 中更詳細地討論 generics。你現在需要知道的是，`T` 代表在 `Ok` variant 中成功情況下將回傳的值的型別，而 `E` 代表在 `Err` variant 中失敗情況下將回傳的錯誤的型別。因為 `Result` 具有這些 generic type parameters，我們可以在許多不同的情況下使用 `Result` 型別和其上定義的 functions，其中我們想要回傳的成功值和錯誤值可能不同。
+`T` 和 `E` 是泛型型別參數：我們將在第 10 章更詳細地討論泛型。你現在需要知道的是，`T` 代表在成功情況下 `Ok` 變體中將回傳的值的型別，而 `E` 代表在失敗情況下 `Err` 變體中將回傳的錯誤的型別。因為 `Result` 有這些泛型型別參數，我們可以在許多不同的情況下使用 `Result` 型別以及在其上定義的函式，即使我們想要回傳的成功值和錯誤值可能不同。
 
-讓我們呼叫一個回傳 `Result` 值的 function，因為該 function 可能會失敗。在 Listing 9-3 中，我們試圖開啟一個檔案。
+讓我們呼叫一個回傳 `Result` 值的函式，因為這個函式可能會失敗。在列表 9-3 中，我們試圖開啟一個檔案。
 
 src/main.rs
 
@@ -159,13 +161,13 @@ fn main() {
 }
 ```
 
-Listing 9-3: 開啟檔案
+列表 9-3：開啟一個檔案
 
-`File::open` 的回傳型別是 `Result<T, E>`。generic parameter `T` 已被 `File::open` 的實作填入成功值的型別 `std::fs::File`，它是一個 file handle。錯誤值中使用的 `E` 型別是 `std::io::Error`。這個回傳型別表示呼叫 `File::open` 可能會成功並回傳一個我們可以讀取或寫入的 file handle。該 function 呼叫也可能會失敗：例如，檔案可能不存在，或者我們可能沒有權限存取該檔案。`File::open` function 需要有一種方式告訴我們它是成功還是失敗，同時提供我們 file handle 或錯誤資訊。這些資訊正是 `Result` enum 所傳達的。
+`File::open` 的回傳型別是 `Result<T, E>`。泛型參數 `T` 已經被 `File::open` 的實作填入了成功值的型別 `std::fs::File`，這是一個檔案控制代碼（file handle）。用於錯誤值的 `E` 型別是 `std::io::Error`。這個回傳型別意味著 `File::open` 的呼叫可能會成功並回傳一個我們可以讀取或寫入的檔案控制代碼。這個函式呼叫也可能失敗：例如，檔案可能不存在，或者我們可能沒有權限存取該檔案。`File::open` 函式需要有一種方式告訴我們它是成功還是失敗，同時給我們檔案控制代碼或錯誤資訊。這些資訊正是 `Result` enum 所傳達的。
 
-在 `File::open` 成功的情況下，變數 `greeting_file_result` 中的值將是一個包含 file handle 的 `Ok` 實例。在失敗的情況下，`greeting_file_result` 中的值將是一個包含有關發生錯誤型別的更多資訊的 `Err` 實例。
+在 `File::open` 成功的情況下，變數 `greeting_file_result` 中的值將會是一個包含檔案控制代碼的 `Ok` 實例。在它失敗的情況下，`greeting_file_result` 中的值將會是一個 `Err` 實例，其中包含有關發生錯誤種類的更多資訊。
 
-我們需要擴充 Listing 9-3 中的程式碼，根據 `File::open` 回傳的值採取不同的動作。Listing 9-4 顯示了使用基本工具 `match` expression 處理 `Result` 的一種方式，我們已在 Chapter 6 中討論過 `match` expression。
+我們需要對列表 9-3 的程式碼進行補充，根據 `File::open` 回傳的值採取不同的行動。列表 9-4 展示了一種使用基礎工具 `match` 表達式來處理 `Result` 的方法，我們在第 6 章討論過 `match`。
 
 src/main.rs
 
@@ -182,13 +184,13 @@ fn main() {
 }
 ```
 
-Listing 9-4: 使用 `match` expression 來處理可能回傳的 `Result` variants
+列表 9-4：使用 `match` 表達式來處理可能回傳的 `Result` 變體
 
-請注意，與 `Option` enum 一樣，`Result` enum 及其 variants 已由 prelude 引入 scope，因此我們在 `match` arms 中的 `Ok` 和 `Err` variants 之前不需要指定 `Result::`。
+請注意，就像 `Option` enum 一樣，`Result` enum 及其變體已經被 prelude 帶入作用域，所以我們不需要在 `match` 的分支中 `Ok` 和 `Err` 變體前指定 `Result::`。
 
-當結果是 `Ok` 時，這段程式碼會從 `Ok` variant 中回傳內部的 `file` 值，然後我們將該 file handle 值賦給變數 `greeting_file`。在 `match` 之後，我們可以將 file handle 用於讀取或寫入。
+當結果是 `Ok` 時，這段程式碼會從 `Ok` 變體中回傳內部的 `file` 值，然後我們將該檔案控制代碼值賦予變數 `greeting_file`。在 `match` 之後，我們就可以使用這個檔案控制代碼進行讀取或寫入。
 
-`match` 的另一個 arm 處理我們從 `File::open` 得到 `Err` 值的情況。在這個範例中，我們選擇呼叫 `panic!` macro。如果我們目前的目錄中沒有名為 _hello.txt_ 的檔案，並且我們執行這段程式碼，我們將會看到來自 `panic!` macro 的以下輸出：
+`match` 的另一分支處理從 `File::open` 得到 `Err` 值的情況。在這個例子中，我們選擇呼叫 `panic!` macro。如果我們目前的目錄中沒有名為 _hello.txt_ 的檔案，並且我們執行這段程式碼，我們將會看到 `panic!` macro 的以下輸出：
 
 ```
 $ cargo run
@@ -201,11 +203,11 @@ Problem opening the file: Os { code: 2, kind: NotFound, message: "No such file o
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-一如往常，這個輸出確切地告訴我們發生了什麼問題。
+和往常一樣，這個輸出告訴我們確切地出了什麼問題。
 
-### 根據不同的錯誤進行 match
+### 針對不同錯誤進行匹配
 
-Listing 9-4 中的程式碼無論 `File::open` 失敗的原因是什麼，都會 `panic!`。然而，我們希望針對不同的失敗原因採取不同的動作。如果 `File::open` 因為檔案不存在而失敗，我們希望建立檔案並回傳新檔案的 handle。如果 `File::open` 因為任何其他原因失敗——例如，因為我們沒有權限開啟檔案——我們仍然希望程式碼以與 Listing 9-4 相同的方式 `panic!`。為此，我們加入了一個內部 `match` expression，如 Listing 9-5 所示。
+列表 9-4 中的程式碼不論 `File::open` 為何失敗都會 `panic!`。然而，我們希望針對不同的失敗原因採取不同的行動。如果 `File::open` 失敗是因為檔案不存在，我們想要建立這個檔案並回傳新檔案的控制代碼。如果 `File::open` 因任何其他原因失敗——例如，因為我們沒有權限開啟檔案——我們仍然希望程式碼像列表 9-4 中那樣 `panic!`。為此，我們加入一個內層的 `match` 表達式，如列表 9-5 所示。
 
 src/main.rs
 
@@ -234,17 +236,17 @@ fn main() {
 }
 ```
 
-Listing 9-5: 以不同方式處理不同種類的錯誤
+列表 9-5：以不同方式處理不同種類的錯誤
 
-`File::open` 在 `Err` variant 內部回傳的值的型別是 `io::Error`，它是一個 standard library 提供的 struct。這個 struct 有一個 `kind` method，我們可以呼叫它來取得 `io::ErrorKind` 值。`io::ErrorKind` enum 由 standard library 提供，並具有代表可能由 `io` 操作導致的不同種類錯誤的 variants。我們想要使用的 variant 是 `ErrorKind::NotFound`，它表示我們試圖開啟的檔案尚不存在。因此，我們對 `greeting_file_result` 進行 match，但我們也對 `error.kind()` 進行了一個內部 match。
+`File::open` 在 `Err` 變體中回傳的值的型別是 `io::Error`，這是標準函式庫提供的一個 struct。這個 struct 有一個 `kind` 方法，我們可以呼叫它來取得一個 `io::ErrorKind` 值。`io::ErrorKind` enum 由標準函式庫提供，其變體代表了 `io` 操作可能產生的不同種類的錯誤。我們想要使用的變體是 `ErrorKind::NotFound`，它表示我們試圖開啟的檔案還不存在。所以我們對 `greeting_file_result` 進行 match，但我們還有一個內層的 match 針對 `error.kind()`。
 
-我們在內部 `match` 中想要檢查的條件是，`error.kind()` 回傳的值是否為 `ErrorKind` enum 的 `NotFound` variant。如果是，我們就嘗試用 `File::create` 建立檔案。然而，由於 `File::create` 也可能失敗，我們需要在內部 `match` expression 中有第二個 arm。當檔案無法建立時，會列印不同的錯誤訊息。外部 `match` 的第二個 arm 保持不變，因此程式會因為除檔案遺失錯誤以外的任何錯誤而 panic。
+我們想在內層 match 中檢查的條件是 `error.kind()` 回傳的值是否為 `ErrorKind` enum 的 `NotFound` 變體。如果是，我們就試圖用 `File::create` 來建立檔案。然而，因為 `File::create` 也可能失敗，所以我們需要在內層的 `match` 表達式中有第二個分支。當檔案無法建立時，會印出不同的錯誤訊息。外層 `match` 的第二個分支保持不變，所以程式會在除了檔案不存在之外的任何錯誤上 panic。
 
-> #### 使用 match 處理 Result<T, E> 的替代方案
+> #### 使用 `match` 處理 `Result<T, E>` 的替代方案
 >
-> 這有很多 `match`！`match` expression 非常有用，但也非常原始。在 Chapter 13 中，你將學習 closures，它們與 `Result<T, E>` 上定義的許多 methods 一起使用。這些 methods 在處理程式碼中的 `Result<T, E>` 值時，可以比使用 `match` 更簡潔。
+> `match` 用得真多！`match` 表達式非常有用，但同時也非常基礎。在第 13 章，你將學習到閉包（closures），它們被用於許多定義在 `Result<T, E>` 上的方法。在處理程式碼中的 `Result<T, E>` 值時，這些方法可以比使用 `match` 更簡潔。
 >
-> 例如，這裡有另一種方式來編寫與 Listing 9-5 中相同的邏輯，這次使用 closures 和 `unwrap_or_else` method：
+> 例如，這裡有另一種寫法，與列表 9-5 的邏輯相同，但這次使用了閉包和 `unwrap_or_else` 方法：
 >
 > <!-- CAN'T EXTRACT SEE https://github.com/rust-lang/mdBook/issues/1127 -->
 >
@@ -265,11 +267,11 @@ Listing 9-5: 以不同方式處理不同種類的錯誤
 > }
 > ```
 >
-> 儘管這段程式碼與 Listing 9-5 具有相同的行為，但它不包含任何 `match` expressions，並且更易於閱讀。讀完 Chapter 13 後，請回頭看這個範例，並在 standard library documentation 中查找 `unwrap_or_else` method。還有許多這些 methods 可以在處理錯誤時清理大量的巢狀 `match` expressions。
+> 雖然這段程式碼的行為與列表 9-5 相同，但它不包含任何 `match` 表達式，並且閱讀起來更清晰。在你讀完第 13 章後，再回來看這個例子，並在標準函式庫文件中查詢 `unwrap_or_else` 方法。還有更多這類方法可以在你處理錯誤時，清理掉龐大的巢狀 `match` 表達式。
 
-#### 錯誤時 Panic 的捷徑：unwrap 和 expect
+#### 發生錯誤時 Panic 的捷徑：`unwrap` 與 `expect`
 
-使用 `match` 效果不錯，但它可能有點冗長，並且不總能很好地傳達意圖。`Result<T, E>` 型別上定義了許多 helper methods，用於執行各種更具體的任務。`unwrap` method 是一個捷徑 method，其實作方式就像我們在 Listing 9-4 中編寫的 `match` expression。如果 `Result` 值是 `Ok` variant，`unwrap` 將回傳 `Ok` 內部的值。如果 `Result` 是 `Err` variant，`unwrap` 將會為我們呼叫 `panic!` macro。以下是 `unwrap` 的實際範例：
+使用 `match` 效果不錯，但可能有點囉嗦，而且不一定能很好地傳達意圖。`Result<T, E>` 型別上定義了許多輔助方法來執行各種更特定的任務。`unwrap` 方法是一個捷徑方法，其實作方式就像我們在列表 9-4 中寫的 `match` 表達式一樣。如果 `Result` 值是 `Ok` 變體，`unwrap` 會回傳 `Ok` 裡面的值。如果 `Result` 是 `Err` 變體，`unwrap` 會為我們呼叫 `panic!` macro。這裡是一個 `unwrap` 實際運作的例子：
 
 src/main.rs
 
@@ -281,7 +283,7 @@ fn main() {
 }
 ```
 
-如果我們在沒有 _hello.txt_ 檔案的情況下執行這段程式碼，我們將會看到 `unwrap` method 所發出的 `panic!` 呼叫產生的錯誤訊息：
+如果我們在沒有 _hello.txt_ 檔案的情況下執行這段程式碼，我們將會看到 `unwrap` 方法所做的 `panic!` 呼叫所產生的錯誤訊息：
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/no-listing-04-unwrap
@@ -294,7 +296,7 @@ thread 'main' panicked at src/main.rs:4:49:
 called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
 ```
 
-同樣地，`expect` method 也讓我們可以選擇 `panic!` 錯誤訊息。使用 `expect` 而不是 `unwrap`，並提供良好的錯誤訊息，可以傳達你的意圖，並使追蹤 panic 的來源更容易。`expect` 的語法如下所示：
+同樣地，`expect` 方法也讓我們可以選擇 `panic!` 的錯誤訊息。使用 `expect` 而不是 `unwrap` 並提供好的錯誤訊息，可以傳達你的意圖，並讓追蹤 panic 的來源變得更容易。`expect` 的語法如下：
 
 src/main.rs
 
@@ -307,7 +309,7 @@ fn main() {
 }
 ```
 
-我們使用 `expect` 的方式與 `unwrap` 相同：回傳 file handle 或呼叫 `panic!` macro。`expect` 在其呼叫 `panic!` 中使用的錯誤訊息將是我們傳遞給 `expect` 的參數，而不是 `unwrap` 使用的預設 `panic!` 訊息。它的樣子如下所示：
+我們使用 `expect` 的方式和 `unwrap` 相同：回傳檔案控制代碼或呼叫 `panic!` macro。`expect` 在呼叫 `panic!` 時使用的錯誤訊息將是我們傳遞給 `expect` 的參數，而不是 `unwrap` 使用的預設 `panic!` 訊息。它的樣子是這樣：
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/no-listing-05-expect
@@ -320,13 +322,13 @@ thread 'main' panicked at src/main.rs:5:10:
 hello.txt should be included in this project: Os { code: 2, kind: NotFound, message: "No such file or directory" }
 ```
 
-在 production 等級的程式碼中，大多數 Rustaceans 會選擇 `expect` 而不是 `unwrap`，並提供更多關於為什麼操作預期總是會成功的上下文資訊。這樣一來，如果你的假設被證明是錯誤的，你就有更多資訊可以用於 debugging。
+在生產品質的程式碼中，大多數 Rust 開發者會選擇 `expect` 而不是 `unwrap`，並提供更多關於為什麼該操作預期總是會成功的上下文。這樣一來，如果你的假設有朝一日被證明是錯的，你就有更多資訊可以用於除錯。
 
-### 錯誤傳播
+### 傳播錯誤
 
-當 function 的實作呼叫某個可能失敗的操作時，你可以將錯誤回傳給呼叫端程式碼，而不是在 function 本身內處理錯誤，這樣呼叫端程式碼就可以決定如何處理。這稱為錯誤的 _傳播 (propagating)_，並賦予呼叫端程式碼更多的控制權，因為在呼叫端可能會有更多資訊或邏輯來決定如何處理錯誤，而不是在你程式碼的上下文中所能取得的資訊。
+當一個函式的實作呼叫了可能會失敗的東西時，與其在函式內部處理錯誤，你可以將錯誤回傳給呼叫端程式碼，讓它來決定該怎麼做。這被稱為_傳播_（propagating）錯誤，並給予呼叫端程式碼更多的控制權，因為呼叫端可能有更多的資訊或邏輯來決定該如何處理錯誤，這是在你的程式碼上下文中可能沒有的。
 
-例如，Listing 9-6 顯示了一個從檔案讀取 username 的 function。如果檔案不存在或無法讀取，此 function 將把這些錯誤回傳給呼叫該 function 的程式碼。
+例如，列表 9-6 展示了一個從檔案讀取使用者名稱的函式。如果檔案不存在或無法讀取，這個函式會將這些錯誤回傳給呼叫它的程式碼。
 
 src/main.rs
 
@@ -355,23 +357,23 @@ fn read_username_from_file() -> Result<String, io::Error> {
 }
 ```
 
-Listing 9-6: 使用 `match` 將錯誤回傳給呼叫端程式碼的 function
+列表 9-6：一個使用 `match` 將錯誤回傳給呼叫端程式碼的函式
 
-這個 function 可以用更短的方式編寫，但我們將從手動執行許多部分開始，以探索錯誤處理；最後，我們將展示更短的方式。讓我們先看看 function 的回傳型別：`Result<String, io::Error>`。這表示該 function 回傳的型別是 `Result<T, E>`，其中 generic parameter `T` 已被具體型別 `String` 填入，而 generic type `E` 已被具體型別 `io::Error` 填入。
+這個函式可以用更簡短的方式來寫，但我們將從手動做很多事情開始，以便探索錯誤處理；最後，我們會展示更簡短的方式。讓我們先看看函式的回傳型別：`Result<String, io::Error>`。這表示函式回傳一個 `Result<T, E>` 型別的值，其中泛型參數 `T` 被具體型別 `String` 填入，而泛型型別 `E` 被具體型別 `io::Error` 填入。
 
-如果這個 function 成功且沒有任何問題，呼叫這個 function 的程式碼將會收到一個包含 `String` 的 `Ok` 值——這個 `String` 就是這個 function 從檔案中讀取的 `username`。如果這個 function 遇到任何問題，呼叫端程式碼將會收到一個包含 `io::Error` 實例的 `Err` 值，其中包含更多關於問題的資訊。我們選擇 `io::Error` 作為這個 function 的回傳型別，因為這恰好是這個 function 主體中我們呼叫的兩個可能失敗的操作所回傳的錯誤值的型別：`File::open` function 和 `read_to_string` method。
+如果這個函式順利成功，呼叫這個函式的程式碼將會收到一個 `Ok` 值，裡面包含一個 `String`——也就是這個函式從檔案中讀取的使用者名稱。如果這個函式遇到任何問題，呼叫端程式碼將會收到一個 `Err` 值，裡面包含一個 `io::Error` 的實例，其中有更多關於問題是什麼的資訊。我們選擇 `io::Error` 作為這個函式的回傳型別，因為這剛好是我們在這個函式主體中呼叫的兩個可能失敗的操作所回傳的錯誤值的型別：`File::open` 函式和 `read_to_string` 方法。
 
-function 的主體從呼叫 `File::open` function 開始。然後我們使用與 Listing 9-4 中類似的 `match` 來處理 `Result` 值。如果 `File::open` 成功，pattern variable `file` 中的 file handle 將成為 mutable variable `username_file` 中的值，並且 function 繼續執行。在 `Err` 的情況下，我們不是呼叫 `panic!`，而是使用 `return` 關鍵字從 function 中提早回傳，並將來自 `File::open` 的錯誤值（現在在 pattern variable `e` 中）傳回給呼叫端程式碼作為此 function 的錯誤值。
+函式的主體從呼叫 `File::open` 函式開始。然後我們用一個 `match` 來處理 `Result` 值，類似於列表 9-4 中的 `match`。如果 `File::open` 成功，模式變數 `file` 中的檔案控制代碼會成為可變變數 `username_file` 的值，函式繼續執行。在 `Err` 的情況下，我們不呼叫 `panic!`，而是使用 `return` 關鍵字提早從函式中完全返回，並將 `File::open` 的錯誤值（現在在模式變數 `e` 中）作為此函式的錯誤值傳回給呼叫端程式碼。
 
-因此，如果我們在 `username_file` 中有一個 file handle，該 function 會在變數 `username` 中建立一個新的 `String`，並呼叫 `username_file` 中 file handle 的 `read_to_string` method，將檔案內容讀取到 `username` 中。`read_to_string` method 也回傳一個 `Result`，因為它可能會失敗，即使 `File::open` 成功了。所以我們需要另一個 `match` 來處理那個 `Result`：如果 `read_to_string` 成功，那麼我們的 function 就成功了，我們將檔案中現在位於 `username` 中的 username 包裹在 `Ok` 中回傳。如果 `read_to_string` 失敗，我們以與處理 `File::open` 回傳值的 `match` 相同的方式回傳錯誤值。然而，我們不需要明確地說 `return`，因為這是 function 中的最後一個 expression。
+所以，如果我們在 `username_file` 中有了一個檔案控制代碼，函式接著會在變數 `username` 中建立一個新的 `String`，並在 `username_file` 的檔案控制代碼上呼叫 `read_to_string` 方法，將檔案內容讀入 `username`。`read_to_string` 方法也回傳一個 `Result`，因為即使 `File::open` 成功了，它也可能失敗。所以我們需要另一個 `match` 來處理那個 `Result`：如果 `read_to_string` 成功，那麼我們的函式就成功了，我們回傳一個包裝在 `Ok` 中的、現在位於 `username` 裡的使用者名稱。如果 `read_to_string` 失敗，我們以處理 `File::open` 回傳值的那種 `match` 中回傳錯誤值的方式來回傳錯誤值。不過，我們不需要明確地說 `return`，因為這是函式中的最後一個表達式。
 
-呼叫此程式碼的程式碼隨後將處理接收一個包含 username 的 `Ok` 值，或一個包含 `io::Error` 的 `Err` 值。由呼叫端程式碼決定如何處理這些值。如果呼叫端程式碼收到 `Err` 值，它可能會呼叫 `panic!` 並使程式崩潰、使用預設 username，或者從檔案以外的地方查找 username 等。我們沒有足夠的資訊來了解呼叫端程式碼實際嘗試做什麼，因此我們將所有成功或錯誤資訊向上傳播，讓它適當地處理。
+呼叫這段程式碼的程式碼接下來將會處理取得一個包含使用者名稱的 `Ok` 值，或是一個包含 `io::Error` 的 `Err` 值。由呼叫端程式碼來決定如何處理這些值。如果呼叫端程式碼得到一個 `Err` 值，它可以呼叫 `panic!` 並讓程式崩潰，使用一個預設的使用者名稱，或者從檔案以外的其他地方查找使用者名稱，例如。我們沒有足夠的資訊知道呼叫端程式碼實際上想做什麼，所以我們將所有的成功或錯誤資訊向上傳播，讓它來適當地處理。
 
-這種傳播錯誤的模式在 Rust 中非常常見，因此 Rust 提供了問號 operator `?` 來簡化這個過程。
+這種傳播錯誤的模式在 Rust 中非常普遍，因此 Rust 提供了問號運算子 `?` 來簡化這個過程。
 
-#### 錯誤傳播的捷徑：問號 ? operator
+#### 傳播錯誤的捷徑：`?` 運算子
 
-Listing 9-7 顯示了 `read_username_from_file` 的實作，它具有與 Listing 9-6 相同的功能，但此實作使用了 `?` operator。
+列表 9-7 展示了 `read_username_from_file` 的一個實作，其功能與列表 9-6 相同，但這個實作使用了 `?` 運算子。
 
 src/main.rs
 
@@ -391,17 +393,17 @@ fn read_username_from_file() -> Result<String, io::Error> {
 }
 ```
 
-Listing 9-7: 使用 `?` operator 將錯誤回傳給呼叫端程式碼的 function
+列表 9-7：一個使用 `?` 運算子將錯誤回傳給呼叫端程式碼的函式
 
-放在 `Result` 值之後的 `?` 被定義為幾乎與我們在 Listing 9-6 中定義的用於處理 `Result` 值的 `match` expressions 相同。如果 `Result` 的值是 `Ok`，那麼 `Ok` 內部的值將從這個 expression 回傳，程式將繼續執行。如果值是 `Err`，那麼 `Err` 將從整個 function 回傳，就像我們使用了 `return` 關鍵字一樣，這樣錯誤值就會傳播到呼叫端程式碼。
+放在 `Result` 值後面的 `?` 的作用幾乎與我們在列表 9-6 中定義來處理 `Result` 值的 `match` 表達式完全相同。如果 `Result` 的值是 `Ok`，`Ok` 裡面的值將會從這個表達式回傳，程式將會繼續。如果值是 `Err`，`Err` 將會從整個函式中回傳，就像我們使用了 `return` 關鍵字一樣，所以錯誤值會被傳播到呼叫端程式碼。
 
-`match` expression 從 Listing 9-6 所做的事情與 `?` operator 所做的事情之間存在一個差異：被呼叫 `?` operator 的錯誤值會通過在 standard library 中的 `From` trait 中定義的 `from` function，該 function 用於將值從一種型別轉換為另一種型別。當 `?` operator 呼叫 `from` function 時，收到的錯誤型別會被轉換為目前 function 的回傳型別中定義的錯誤型別。當 function 回傳一個錯誤型別來表示 function 可能失敗的所有方式時，這很有用，即使部分原因可能是由於許多不同的原因而失敗。
+列表 9-6 的 `match` 表達式所做的事和 `?` 運算子所做的事之間有一個區別：被 `?` 運算子呼叫的錯誤值會經過 `from` 函式，該函式定義在標準函式庫的 `From` trait 中，用於將值從一種型別轉換為另一種。當 `?` 運算子呼叫 `from` 函式時，接收到的錯誤型別會被轉換為目前函式回傳型別中定義的錯誤型別。這在函式回傳一種錯誤型別來代表所有可能失敗的方式時很有用，即使其中某些部分可能因許多不同原因而失敗。
 
-例如，我們可以更改 Listing 9-7 中的 `read_username_from_file` function，使其回傳我們定義的自訂錯誤型別 `OurError`。如果我們還定義 `impl From<io::Error> for OurError` 以從 `io::Error` 建構 `OurError` 的實例，那麼 `read_username_from_file` 主體中的 `?` operator 呼叫將會呼叫 `from` 並轉換錯誤型別，而無需向 function 添加任何額外的程式碼。
+例如，我們可以修改列表 9-7 中的 `read_username_from_file` 函式，讓它回傳一個我們定義的自訂錯誤型別 `OurError`。如果我們也定義 `impl From<io::Error> for OurError` 來從 `io::Error` 建構一個 `OurError` 的實例，那麼 `read_username_from_file` 主體中的 `?` 運算子呼叫將會呼叫 `from` 並轉換錯誤型別，而不需要在函式中加入任何額外的程式碼。
 
-在 Listing 9-7 的上下文中，`File::open` 呼叫末尾的 `?` 將 `Ok` 內部的值回傳給變數 `username_file`。如果發生錯誤，`?` operator 將從整個 function 中提早回傳，並將任何 `Err` 值傳遞給呼叫端程式碼。同樣的道理也適用於 `read_to_string` 呼叫末尾的 `?`。
+在列表 9-7 的情境中，`File::open` 呼叫結尾的 `?` 會將 `Ok` 裡面的值回傳給變數 `username_file`。如果發生錯誤，`?` 運算子將會提早從整個函式中返回，並將任何 `Err` 值交給呼叫端程式碼。同樣的規則也適用於 `read_to_string` 呼叫結尾的 `?`。
 
-`?` operator 消除了大量的 boilerplate，並使這個 function 的實作更簡單。我們甚至可以透過在 `?` 之後立即鏈接 method 呼叫來進一步縮短這段程式碼，如 Listing 9-8 所示。
+`?` 運算子消除了大量的樣板程式碼，讓這個函式的實作更簡單。我們甚至可以透過在 `?` 之後立即串連方法呼叫來進一步縮短這段程式碼，如列表 9-8 所示。
 
 src/main.rs
 
@@ -422,11 +424,11 @@ fn read_username_from_file() -> Result<String, io::Error> {
 }
 ```
 
-Listing 9-8: 在 `?` operator 之後鏈接 method 呼叫
+列表 9-8：在 `?` 運算子之後串連方法呼叫
 
-我們將 `username` 中新 `String` 的建立移到了 function 的開頭；那部分沒有改變。我們沒有建立變數 `username_file`，而是將 `read_to_string` 的呼叫直接鏈接到 `File::open("hello.txt")?` 的結果上。在 `read_to_string` 呼叫的末尾我們仍然有一個 `?`，並且當 `File::open` 和 `read_to_string` 都成功而不是回傳錯誤時，我們仍然回傳包含 `username` 的 `Ok` 值。功能性再次與 Listing 9-6 和 Listing 9-7 相同；這只是一種不同、更符合人體工學的寫法。
+我們將建立新 `String` 到 `username` 的動作移到了函式的開頭；這部分沒有改變。我們沒有建立一個 `username_file` 變數，而是將 `read_to_string` 的呼叫直接串連在 `File::open("hello.txt")?` 的結果上。我們在 `read_to_string` 呼叫的結尾仍然有一個 `?`，並且當 `File::open` 和 `read_to_string` 都成功時，我們仍然回傳一個包含 `username` 的 `Ok` 值，而不是回傳錯誤。功能與列表 9-6 和列表 9-7 再次相同；這只是一種不同、更符合人體工學的寫法。
 
-Listing 9-9 顯示了一種使用 `fs::read_to_string` 來使其更短的方式。
+列表 9-9 展示了一種使用 `fs::read_to_string` 讓程式碼更短的方法。
 
 src/main.rs
 
@@ -443,15 +445,15 @@ fn read_username_from_file() -> Result<String, io::Error> {
 }
 ```
 
-Listing 9-9: 使用 `fs::read_to_string` 取代開啟然後讀取檔案
+列表 9-9：使用 `fs::read_to_string` 而不是先開啟再讀取檔案
 
-將檔案讀入 string 是一種相當常見的操作，因此 standard library 提供了方便的 `fs::read_to_string` function，它會開啟檔案、建立一個新的 `String`、讀取檔案內容、將內容放入該 `String`，然後回傳。當然，使用 `fs::read_to_string` 不會給我們機會解釋所有的錯誤處理，所以我們首先使用了更長的方式。
+將檔案讀入字串是一個相當常見的操作，所以標準函式庫提供了方便的 `fs::read_to_string` 函式，它會開啟檔案、建立一個新的 `String`、讀取檔案內容、將內容放入該 `String`，然後回傳它。當然，使用 `fs::read_to_string` 就沒有機會讓我們解釋所有的錯誤處理，所以我們一開始用了比較長的方式。
 
-#### `?` operator 的使用時機
+#### `?` 運算子可以在哪裡使用
 
-`?` operator 只能在回傳型別與其所使用的值相容的 functions 中使用。這是因為 `?` operator 被定義為在 function 中執行值的提早回傳，其方式與我們在 Listing 9-6 中定義的 `match` expression 相同。在 Listing 9-6 中，`match` 使用了一個 `Result` 值，並且提早回傳的 arm 回傳了一個 `Err(e)` 值。function 的回傳型別必須是 `Result`，以便與此 `return` 相容。
+`?` 運算子只能用在回傳型別與 `?` 所作用的值相容的函式中。這是因為 `?` 運算子被定義為執行從函式中提早回傳一個值的操作，方式與我們在列表 9-6 中定義的 `match` 表達式相同。在列表 9-6 中，`match` 使用的是一個 `Result` 值，而提早回傳的分支回傳了一個 `Err(e)` 值。函式的回傳型別必須是 `Result`，才能與這個 `return` 相容。
 
-在 Listing 9-10 中，讓我們看看如果我們在 `main` function 中使用 `?` operator，而其回傳型別與我們使用 `?` 的值的型別不相容時，會得到什麼錯誤。
+在列表 9-10 中，讓我們看看如果我們在一個回傳型別與我們使用 `?` 的值的型別不相容的 `main` 函式中使用 `?` 運算子，會得到什麼錯誤。
 
 src/main.rs
 
@@ -463,9 +465,9 @@ fn main() {
 }
 ```
 
-Listing 9-10: 試圖在回傳 `()` 的 `main` function 中使用 `?` 將無法編譯。
+列表 9-10：試圖在回傳 `()` 的 `main` 函式中使用 `?` 將無法編譯。
 
-這個程式碼開啟一個檔案，這可能會失敗。`?` operator 跟隨在 `File::open` 回傳的 `Result` 值之後，但這個 `main` function 的回傳型別是 `()`，而不是 `Result`。當我們編譯這段程式碼時，我們得到以下錯誤訊息：
+這段程式碼開啟一個檔案，這可能會失敗。`?` 運算子跟在 `File::open` 回傳的 `Result` 值後面，但這個 `main` 函式的回傳型別是 `()`，而不是 `Result`。當我們編譯這段程式碼時，會得到以下的錯誤訊息：
 
 ```
 $ cargo run
@@ -490,11 +492,11 @@ For more information about this error, try `rustc --explain E0277`.
 error: could not compile `error-handling` (bin "error-handling") due to 1 previous error
 ```
 
-這個錯誤指出我們只能在回傳 `Result`、`Option` 或其他實作了 `FromResidual` trait 的 function 中使用 `?` operator。
+這個錯誤指出我們只能在回傳 `Result`、`Option` 或其他實作了 `FromResidual` 的型別的函式中使用 `?` 運算子。
 
-要修復這個錯誤，你有兩個選擇。一個選擇是，只要你沒有任何限制阻止，就更改 function 的回傳型別，使其與你使用 `?` operator 的值相容。另一個選擇是使用 `match` 或 `Result<T, E>` 的其中一個 method，以適當的方式處理 `Result<T, E>`。
+要修正這個錯誤，你有兩個選擇。一個選擇是，只要沒有限制阻止你這麼做，就改變函式的回傳型別，使其與你使用 `?` 運算子的值相容。另一個選擇是使用 `match` 或 `Result<T, E>` 的其中一個方法來以任何適當的方式處理 `Result<T, E>`。
 
-錯誤訊息還提到 `?` 也可以與 `Option<T>` 值一起使用。與在 `Result` 上使用 `?` 一樣，你只能在回傳 `Option` 的 function 中對 `Option` 使用 `?`。`?` operator 在呼叫 `Option<T>` 時的行為類似於其在呼叫 `Result<T, E>` 時的行為：如果值是 `None`，則 `None` 將在該點從 function 中提早回傳。如果值是 `Some`，則 `Some` 內的值是 expression 的結果值，並且 function 繼續執行。Listing 9-11 有一個 function 的範例，它會找出給定 text 中第一行的最後一個字元。
+錯誤訊息也提到 `?` 也可以用在 `Option<T>` 值上。就像在 `Result` 上使用 `?` 一樣，你只能在回傳 `Option` 的函式中對 `Option` 使用 `?`。`?` 運算子在 `Option<T>` 上被呼叫時的行為與在 `Result<T, E>` 上被呼叫時的行為相似：如果值是 `None`，`None` 會在那個點提早從函式中回傳。如果值是 `Some`，`Some` 裡面的值就是該表達式的結果值，函式繼續執行。列表 9-11 有一個函式的例子，它會找到給定文字中第一行的最後一個字元。
 
 ```rust
 fn last_char_of_first_line(text: &str) -> Option<char> {
@@ -502,17 +504,17 @@ fn last_char_of_first_line(text: &str) -> Option<char> {
 }
 ```
 
-Listing 9-11: 在 `Option<T>` 值上使用 `?` operator
+列表 9-11：在 `Option<T>` 值上使用 `?` 運算子
 
-這個 function 回傳 `Option<char>`，因為那裡可能有一個字元，但也可能沒有。這段程式碼接受 `text` string slice 參數，並呼叫其 `lines` method，該 method 回傳一個關於字串中行的 iterator。由於這個 function 想要檢查第一行，它會呼叫 iterator 的 `next` 來獲取 iterator 中的第一個值。如果 `text` 是空字串，這個 `next` 呼叫將回傳 `None`，在這種情況下我們使用 `?` 停止並從 `last_char_of_first_line` 回傳 `None`。如果 `text` 不是空字串，`next` 將回傳一個 `Some` 值，其中包含 `text` 中第一行的 string slice。
+這個函式回傳 `Option<char>`，因為那裡可能有一個字元，但也可能沒有。這段程式碼接收 `text` 字串切片參數，並在其上呼叫 `lines` 方法，該方法會回傳一個字串中各行的迭代器。因為這個函式想要檢查第一行，它在迭代器上呼叫 `next` 來取得迭代器的第一個值。如果 `text` 是空字串，這次 `next` 的呼叫將回傳 `None`，在這種情況下我們使用 `?` 來停止並從 `last_char_of_first_line` 回傳 `None`。如果 `text` 不是空字串，`next` 將回傳一個 `Some` 值，其中包含 `text` 中第一行的字串切片。
 
-`?` 提取 string slice，我們可以對該 string slice 呼叫 `chars` 以獲取其字元的 iterator。我們對第一行中的最後一個字元感興趣，所以我們呼叫 `last` 來回傳 iterator 中的最後一個項目。這是一個 `Option`，因為第一行可能是空字串；例如，如果 `text` 以一個空行開頭，但在其他行有字元，如 `"\nhi"`。然而，如果第一行有最後一個字元，它將在 `Some` variant 中回傳。中間的 `?` operator 提供了一種簡潔的方式來表達這種邏輯，讓我們可以用一行實作 function。如果我們不能在 `Option` 上使用 `?` operator，我們將不得不使用更多的 method 呼叫或 `match` expression 來實作這個邏輯。
+`?` 提取出字串切片，我們可以在該字串切片上呼叫 `chars` 來取得其字元的迭代器。我們感興趣的是這第一行的最後一個字元，所以我們呼叫 `last` 來回傳迭代器的最後一項。這是一個 `Option`，因為第一行可能是空字串；例如，如果 `text` 以一個空行開始，但在其他行有字元，像是 `"\nhi"`。然而，如果第一行有最後一個字元，它將會被包在 `Some` 變體中回傳。中間的 `?` 運算子提供了一種簡潔的方式來表達這個邏輯，讓我們可以用一行來實作這個函式。如果我們不能在 `Option` 上使用 `?` 運算子，我們就必須用更多的方法呼叫或 `match` 表達式來實作這個邏輯。
 
-請注意，你可以在回傳 `Result` 的 function 中對 `Result` 使用 `?` operator，並且可以在回傳 `Option` 的 function 中對 `Option` 使用 `?` operator，但你不能混用。`?` operator 不會自動將 `Result` 轉換為 `Option`，反之亦然；在這些情況下，你可以使用 `Result` 上的 `ok` method 或 `Option` 上的 `ok_or` method 來明確地進行轉換。
+請注意，你可以在回傳 `Result` 的函式中對 `Result` 使用 `?` 運算子，也可以在回傳 `Option` 的函式中對 `Option` 使用 `?` 運算子，但你不能混用。`?` 運算子不會自動將 `Result` 轉換為 `Option`，反之亦然；在這些情況下，你可以使用 `Result` 上的 `ok` 方法或 `Option` 上的 `ok_or` 方法來明確地進行轉換。
 
-到目前為止，我們使用的所有 `main` functions 都回傳 `()`。`main` function 很特別，因為它是 executable program 的進入點和退出點，並且對其回傳型別有所限制，以便程式能夠按預期執行。
+到目前為止，我們用過的所有 `main` 函式都回傳 `()`。`main` 函式很特別，因為它是一個可執行程式的進入點和結束點，對於它的回傳型別有一些限制，以確保程式能如預期般運作。
 
-幸運的是，`main` 也可以回傳 `Result<(), E>`。Listing 9-12 包含了 Listing 9-10 中的程式碼，但我們已將 `main` 的回傳型別更改為 `Result<(), Box<dyn Error>>`，並在末尾添加了回傳值 `Ok(())`。這段程式碼現在將會編譯。
+幸運的是，`main` 也可以回傳 `Result<(), E>`。列表 9-12 包含了列表 9-10 的程式碼，但我們將 `main` 的回傳型別改為 `Result<(), Box<dyn Error>>`，並在結尾加上了回傳值 `Ok(())`。這段程式碼現在可以編譯了。
 
 src/main.rs
 
@@ -527,33 +529,33 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-Listing 9-12: 將 `main` 更改為回傳 `Result<(), E>` 允許在 `Result` 值上使用 `?` operator。
+列表 9-12：將 `main` 改為回傳 `Result<(), E>` 允許在 `Result` 值上使用 `?` 運算子。
 
-`Box<dyn Error>` 型別是一個 _trait object_，我們將在 Chapter 18 的「[使用 trait 物件來允許不同型別的值](https://doc.rust-lang.org/book/ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types)」中討論。目前，你可以將 `Box<dyn Error>` 理解為「任何類型的錯誤」。在 `main` function 中，對錯誤型別為 `Box<dyn Error>` 的 `Result` 值使用 `?` 是允許的，因為它允許任何 `Err` 值提早回傳。儘管這個 `main` function 的主體只會回傳 `std::io::Error` 型別的錯誤，但透過指定 `Box<dyn Error>`，即使在 `main` 的主體中添加了回傳其他錯誤的更多程式碼，這個 signature 仍然會保持正確。
+`Box<dyn Error>` 型別是一個 _trait object_，我們將在第 18 章的「使用 Trait Objects 來允許多種類型的值」中討論。目前，你可以將 `Box<dyn Error>` 理解為「任何種類的錯誤」。在一個錯誤型別為 `Box<dyn Error>` 的 `main` 函式中對 `Result` 值使用 `?` 是允許的，因為它允許任何 `Err` 值被提早回傳。即使這個 `main` 函式的主體只會回傳 `std::io::Error` 型別的錯誤，透過指定 `Box<dyn Error>`，即使未來在 `main` 的主體中加入更多回傳其他錯誤的程式碼，這個簽名也將繼續是正確的。
 
-當 `main` function 回傳 `Result<(), E>` 時，如果 `main` 回傳 `Ok(())`，則 executable 將以值 `0` 退出；如果 `main` 回傳 `Err` 值，則以非零值退出。以 C 語言編寫的 executable 在退出時會回傳整數：成功退出的程式回傳整數 `0`，而錯誤退出的程式回傳非 `0` 的整數。Rust 也從 executables 回傳整數以與此慣例相容。
+當 `main` 函式回傳 `Result<(), E>` 時，如果 `main` 回傳 `Ok(())`，可執行檔將以 `0` 的值退出，如果 `main` 回傳 `Err` 值，則會以非零值退出。用 C 語言編寫的可執行檔在退出時會回傳整數：成功退出的程式回傳整數 `0`，出錯的程式回傳非 `0` 的整數。Rust 也從可執行檔回傳整數，以與此慣例相容。
 
-`main` function 可以回傳任何實作 `std::process::Termination` trait 的型別，該 trait 包含一個回傳 `ExitCode` 的 function `report`。有關為你自己的型別實作 `Termination` trait 的更多資訊，請查閱 standard library documentation。
+`main` 函式可以回傳任何實作 `std::process::Termination` trait 的型別，該 trait 包含一個回傳 `ExitCode` 的 `report` 函式。請查閱標準函式庫文件以獲取更多關於為你自己的型別實作 `Termination` trait 的資訊。
 
-既然我們已經討論了呼叫 `panic!` 或回傳 `Result` 的細節，讓我們回到如何決定在哪些情況下適當使用的主題。
+現在我們已經討論了呼叫 `panic!` 或回傳 `Result` 的細節，讓我們回到如何決定在哪種情況下使用哪種方式是合適的話題。
 
-## 要 panic! 還是不要 panic!
+## 要 `panic!` 還是不要 `panic!`
 
-那麼，你如何決定何時應該呼叫 `panic!` 以及何時應該回傳 `Result` 呢？當程式碼 panic 時，就沒有辦法復原了。你可以針對任何錯誤情況呼叫 `panic!`，無論是否有辦法復原，但這樣你就代表呼叫端程式碼決定了情況是不可復原的。當你選擇回傳 `Result` 值時，你給予呼叫端程式碼選項。呼叫端程式碼可以選擇以適合其情況的方式嘗試復原，或者它可以決定在這種情況下 `Err` 值是不可復原的，所以它可以呼叫 `panic!` 並將你的可復原錯誤變成不可復原的錯誤。因此，當你定義一個可能失敗的 function 時，回傳 `Result` 是一個很好的預設選擇。
+那麼，你該如何決定何時應該呼叫 `panic!`，何時應該回傳 `Result` 呢？當程式碼 panic 時，沒有辦法復原。你可以對任何錯誤情況呼叫 `panic!`，無論是否有復原的可能性，但這樣你就代表呼叫端程式碼做出了情況是不可復原的決定。當你選擇回傳一個 `Result` 值時，你給了呼叫端程式碼選擇權。呼叫端程式碼可以選擇以適合其情況的方式嘗試復原，或者它可以決定在這種情況下 `Err` 值是不可復原的，所以它可以呼叫 `panic!` 並將你的可復原錯誤變成不可復原的錯誤。因此，當你定義一個可能會失敗的函式時，回傳 `Result` 是一個很好的預設選擇。
 
-在範例、prototype 程式碼和 tests 等情況下，編寫會 panic 的程式碼比回傳 `Result` 更為合適。讓我們探討原因，然後討論 compiler 無法判斷失敗是不可能的情況，但你身為人類卻可以判斷的情況。本章將以一些關於如何在 library 程式碼中決定是否 panic 的一般準則作結。
+在諸如範例、原型程式碼和測試等情況下，寫會 panic 的程式碼比回傳 `Result` 更合適。讓我們探討一下原因，然後討論在哪些情況下編譯器無法判斷失敗是不可能的，但你作為一個人可以。本章將以一些關於如何在函式庫程式碼中決定是否要 panic 的一般性指導方針作結。
 
-### 範例、Prototype 程式碼與 Tests
+### 範例、原型程式碼與測試
 
-當你編寫一個範例來闡述某個概念時，同時包含強健的錯誤處理程式碼可能會使範例不那麼清晰。在範例中，對 `unwrap` 等可能 panic 的 method 的呼叫，被理解為你希望應用程式處理錯誤的方式的 placeholder，這可能因你程式碼的其餘部分所執行的操作而異。
+當你編寫一個範例來闡述某些概念時，同時包含穩健的錯誤處理程式碼可能會使範例變得不那麼清晰。在範例中，大家都能理解，呼叫一個像 `unwrap` 這樣可能會 panic 的方法，是作為你希望應用程式處理錯誤方式的佔位符，這可能會根據你程式碼的其他部分而有所不同。
 
-同樣地，`unwrap` 和 `expect` methods 在 prototyping 時非常方便，在你準備好決定如何處理錯誤之前。它們在你的程式碼中留下了清晰的標記，以便你在準備好讓程式更健壯時進行處理。
+同樣地，`unwrap` 和 `expect` 方法在原型開發階段非常方便，在你還沒準備好決定如何處理錯誤之前。它們在你的程式碼中留下了清晰的標記，當你準備好讓你的程式更穩健時，就可以處理這些標記。
 
-如果 method 呼叫在 test 中失敗，你會希望整個 test 都失敗，即使該 method 不是正在測試的功能。由於 `panic!` 是 test 被標記為失敗的方式，因此呼叫 `unwrap` 或 `expect` 正是應該發生的情況。
+如果在測試中一個方法呼叫失敗了，你會希望整個測試都失敗，即使那個方法不是正在測試的功能。因為 `panic!` 是標記測試失敗的方式，所以呼叫 `unwrap` 或 `expect` 正是應該發生的事。
 
-### 你比 Compiler 擁有更多資訊的情況
+### 你比編譯器擁有更多資訊的情況
 
-當你有一些其他邏輯可以確保 `Result` 將會是 `Ok` 值，但 compiler 無法理解這些邏輯時，呼叫 `expect` 也是適當的。你仍然會有一個 `Result` 值需要處理：無論你呼叫什麼操作，它通常仍然可能失敗，即使在你特定情況下邏輯上不可能。如果你能透過手動檢查程式碼來確保你永遠不會有 `Err` variant，那麼呼叫 `expect` 並在參數文字中記錄你認為永遠不會有 `Err` variant 的原因，這是完全可以接受的。這是一個範例：
+當你有一些其他的邏輯確保 `Result` 會有一個 `Ok` 值，但這個邏輯是編譯器無法理解的時候，呼叫 `expect` 也是合適的。你仍然會有一個需要處理的 `Result` 值：你正在呼叫的任何操作一般來說仍然有失敗的可能性，即使在你特定的情況下邏輯上是不可能的。如果你可以透過手動檢查程式碼來確保你永遠不會有 `Err` 變體，那麼呼叫 `expect` 並在參數文字中記錄你認為永遠不會有 `Err` 變體的原因是完全可以接受的。這裡有一個例子：
 
 ```rust
     use std::net::IpAddr;
@@ -563,29 +565,29 @@ Listing 9-12: 將 `main` 更改為回傳 `Result<(), E>` 允許在 `Result` 值�
         .expect("Hardcoded IP address should be valid");
 ```
 
-我們透過解析一個 hardcoded 的 string 來建立一個 `IpAddr` 實例。我們可以看到 `127.0.0.1` 是一個有效的 IP address，所以在這裡使用 `expect` 是可以接受的。然而，擁有一個 hardcoded 的有效 string 並不會改變 `parse` method 的回傳型別：我們仍然會得到一個 `Result` 值，並且 compiler 仍然會要求我們處理 `Result`，就好像 `Err` variant 是一種可能性一樣，因為 compiler 不夠聰明，無法看到這個 string 總是有效的 IP address。如果 IP address string 是來自使用者而不是 hardcoded 在程式中，因此確實存在失敗的可能性，我們肯定會想要以更強健的方式處理 `Result`。提到這個 IP address 是 hardcoded 的假設，將會促使我們在未來需要從其他來源獲取 IP address 時，將 `expect` 更改為更好的錯誤處理程式碼。
+我們透過解析一個硬編碼的字串來建立一個 `IpAddr` 實例。我們可以看到 `127.0.0.1` 是一個有效的 IP 位址，所以在這裡使用 `expect` 是可以接受的。然而，擁有一個硬編碼的有效字串並不會改變 `parse` 方法的回傳型別：我們仍然得到一個 `Result` 值，編譯器仍然會讓我們處理 `Result`，就好像 `Err` 變體是一種可能性一樣，因為編譯器不夠聰明，無法看出這個字串永遠是一個有效的 IP 位址。如果 IP 位址字串來自使用者而不是硬編碼在程式中，因此*確實*有失敗的可能性，我們肯定會想用更穩健的方式來處理 `Result`。提到這個 IP 位址是硬編碼的假設，會促使我們在未來需要從其他來源獲取 IP 位址時，將 `expect` 改為更好的錯誤處理程式碼。
 
-### 錯誤處理的準則
+### 錯誤處理的指導方針
 
-建議讓你的程式碼在可能進入 _不健全狀態 (bad state)_ 時 panic。在這種情況下，_不健全狀態_ 是指某些假設、保證、契約或 invariant 被破壞，例如當無效值、矛盾值或缺失值被傳遞給你的程式碼時——加上以下一或多個情況：
+當你的程式碼有可能進入一個壞狀態時，建議讓你的程式碼 panic。在這個情境下，_壞狀態_（bad state）是指某些假設、保證、合約或不變性（invariant）被破壞了，例如當無效值、矛盾值或缺失值被傳遞給你的程式碼時——加上以下一項或多項情況：
 
-- 不健全狀態是意料之外的情況，而不是偶爾會發生的情況，例如使用者輸入了錯誤格式的資料。
-- 程式碼在此之後需要依賴於不處於這種不健全狀態，而不是在每個步驟都檢查問題。
-- 沒有一個好的方法可以將這些資訊編碼到你使用的型別中。我們將在 Chapter 18 的「[將狀態與行為編碼為型別](https://doc.rust-lang.org/book/ch17-03-advanced-traits.html#encoding-states-and-behavior-as-types)」中透過範例解釋我們的意思。
+- 這個壞狀態是意料之外的，而不是像使用者輸入錯誤格式的資料那樣可能會偶爾發生的事情。
+- 你在此之後的程式碼需要依賴於不處於這個壞狀態，而不是每一步都檢查問題。
+- 沒有一個好的方法可以在你使用的型別中編碼這些資訊。我們將在第 18 章的「將狀態與行為編碼為型別」中透過一個例子來說明我們的意思。
 
-如果有人呼叫你的程式碼並傳入沒有意義的值，如果可以的話，最好回傳一個錯誤，這樣 library 的使用者就可以決定在這種情況下他們想做什麼。然而，在繼續執行可能會不安全或有害的情況下，最好的選擇可能是呼叫 `panic!` 並提醒使用你 library 的人他們程式碼中的 bug，以便他們在開發過程中修復它。同樣地，如果你呼叫外部程式碼，而它超出了你的控制，並且它回傳了一個你無法修復的無效狀態，那麼 `panic!` 通常是適當的。
+如果有人呼叫你的程式碼並傳入沒有意義的值，如果可以的話，最好是回傳一個錯誤，這樣函式庫的使用者就可以決定他們在這種情況下想做什麼。然而，在繼續執行可能不安全或有害的情況下，最好的選擇可能是呼叫 `panic!` 並提醒使用你函式庫的人他們程式碼中的 bug，以便他們在開發過程中修復它。同樣地，如果你正在呼叫超出你控制範圍的外部程式碼，而它回傳了一個你無法修復的無效狀態，`panic!` 通常是合適的。
 
-然而，當失敗是預期中的情況時，回傳 `Result` 比呼叫 `panic!` 更為合適。範例包括 parser 收到格式錯誤的資料，或者 HTTP request 回傳一個表示你已達到 rate limit 的 status。在這些情況下，回傳 `Result` 表示失敗是一種預期的可能性，呼叫端程式碼必須決定如何處理。
+然而，當失敗是預期中的情況時，回傳 `Result` 比呼叫 `panic!` 更合適。例子包括解析器被給予格式錯誤的資料，或者一個 HTTP 請求回傳了一個表示你已達到速率限制的狀態。在這些情況下，回傳 `Result` 表示失敗是一種預期的可能性，呼叫端程式碼必須決定如何處理。
 
-當你的程式碼執行一個操作，如果使用無效值呼叫它可能會使用戶處於風險之中時，你的程式碼應該首先驗證值的有效性，如果值無效則 panic。這主要是出於安全原因：嘗試對無效資料進行操作可能會使你的程式碼面臨 vulnerabilities。這是 standard library 會在你嘗試記憶體越界存取時呼叫 `panic!` 的主要原因：試圖存取不屬於目前 data structure 的記憶體是一個常見的 security problem。Functions 通常有 _contracts_：只有當輸入符合特定要求時，它們的行為才得到保證。當 contract 被違反時發生 panicking 是有道理的，因為 contract 違反總是表示呼叫端 bug，而且這不是你希望呼叫端程式碼必須明確處理的錯誤。事實上，呼叫端程式碼沒有合理的恢復方法；呼叫端 _programmer_ 需要修復程式碼。function 的 contracts，特別是當違反會導致 panic 時，應在 function 的 API documentation 中解釋。
+當你的程式碼執行一個如果使用無效值呼叫可能會讓使用者處於風險中的操作時，你的程式碼應該先驗證這些值是否有效，如果值無效就 panic。這主要是出於安全原因：試圖對無效資料進行操作可能會讓你的程式碼暴露於漏洞之下。這也是為什麼如果你試圖進行越界記憶體存取，標準函式庫會呼叫 `panic!` 的主要原因：試圖存取不屬於當前資料結構的記憶體是一個常見的安全問題。函式通常有_合約_（contracts）：它們的行為只有在輸入滿足特定要求時才得到保證。當合約被違反時 panic 是合理的，因為合約違反總是表示呼叫端的 bug，而且這不是你希望呼叫端程式碼必須明確處理的一種錯誤。事實上，呼叫端程式碼沒有合理的方式可以復原；呼叫端的*程式設計師*需要修復程式碼。函式的合約，特別是當違反會導致 panic 時，應該在函式的 API 文件中加以解釋。
 
-然而，在所有 function 中進行大量的錯誤檢查會很冗長且令人煩惱。幸運的是，你可以使用 Rust 的型別系統（以及 compiler 完成的 type checking）為你完成許多檢查。如果你的 function 有一個特定型別作為 parameter，你可以繼續你的程式碼邏輯，因為你知道 compiler 已經確保你擁有一個有效值。例如，如果你有一個型別而不是 `Option`，你的程式預期會有_某個東西 (something)_ 而不是_沒有東西 (nothing)_。你的程式碼就不必處理 `Some` 和 `None` variants 的兩種情況：它只會有一種情況，即明確地擁有一個值。試圖向你的 function 傳遞 nothing 的程式碼甚至無法編譯，所以你的 function 不必在 runtime 檢查這種情況。另一個範例是使用 unsigned integer 型別，例如 `u32`，這確保 parameter 永遠不會是負數。
+然而，在你所有的函式中都有大量的錯誤檢查會很囉嗦和煩人。幸運的是，你可以使用 Rust 的型別系統（以及因此由編譯器完成的型別檢查）來為你做許多檢查。如果你的函式有一個特定的型別作為參數，你就可以繼續你的程式碼邏輯，知道編譯器已經確保了你有一個有效的值。例如，如果你有一個型別而不是一個 `Option`，你的程式期望有*東西*而不是_沒有東西_。你的程式碼就不需要處理 `Some` 和 `None` 變體的兩種情況：它只會有一種情況，就是確定有值。試圖傳遞空值給你的函式的程式碼甚至無法編譯，所以你的函式不需要在執行時檢查這種情況。另一個例子是使用無符號整數型別如 `u32`，這確保了參數永遠不會是負數。
 
-### 建立用於驗證的自訂型別
+### 建立自訂型別進行驗證
 
-讓我們將使用 Rust 的型別系統來確保我們有一個有效值的想法再進一步，看看如何建立一個用於驗證的自訂型別。回想 Chapter 2 中的猜數字遊戲，我們的程式要求使用者猜測一個介於 1 到 100 之間的數字。我們在將其與我們的 secret number 進行比較之前，從未驗證使用者的猜測是否介於這些數字之間；我們只驗證了猜測是否為正數。在這種情況下，後果不是很嚴重：「太高 (Too high)」或「太低 (Too low)」的輸出仍然是正確的。但如果能引導使用者進行有效猜測，並在使用者猜測的數字超出範圍與使用者輸入字母等情況下有不同的行為，那將是一個有用的增強功能。
+讓我們把使用 Rust 的型別系統來確保我們有有效值的想法更進一步，看看如何建立一個自訂型別來進行驗證。回想一下第 2 章中的猜數字遊戲，我們的程式碼要求使用者猜一個 1 到 100 之間的數字。我們從未在將使用者的猜測與我們的秘密數字進行比較之前驗證它是否介於這些數字之間；我們只驗證了猜測是正數。在這種情況下，後果不是很嚴重：我們輸出的「太高了」或「太低了」仍然是正確的。但一個有用的增強功能是引導使用者進行有效的猜測，並在使用者猜測超出範圍的數字時，與使用者輸入例如字母等情況有不同的行為。
 
-一種方法是將猜測解析為 `i32` 而不是只有 `u32`，以允許潛在的負數，然後添加一個檢查數字是否在範圍內的程式碼，像這樣：
+一種方法是將猜測解析為 `i32` 而不僅僅是 `u32`，以允許潛在的負數，然後加上一個檢查數字是否在範圍內的程式碼，像這樣：
 
 src/main.rs
 
@@ -608,11 +610,11 @@ src/main.rs
     }
 ```
 
-`if` expression 檢查我們的值是否超出範圍，告訴使用者問題，並呼叫 `continue` 來開始迴圈的下一次迭代並要求再次猜測。在 `if` expression 之後，我們可以繼續進行 `guess` 和 secret number 之間的比較，因為我們知道 `guess` 介於 1 到 100 之間。
+`if` 表達式檢查我們的值是否超出範圍，告訴使用者問題所在，並呼叫 `continue` 來開始迴圈的下一次迭代，要求另一個猜測。在 `if` 表達式之後，我們可以繼續 `guess` 和秘密數字之間的比較，因為我們知道 `guess` 在 1 和 100 之間。
 
-然而，這不是一個理想的解決方案：如果程式絕對必須只對 1 到 100 之間的值進行操作，並且有許多 functions 具有此要求，那麼在每個 function 中都有這樣一個檢查將會很繁瑣（並且可能會影響 performance）。
+然而，這不是一個理想的解決方案：如果程式絕對關鍵地只能操作 1 到 100 之間的值，並且它有許多函式都有這個要求，那麼在每個函式中都有這樣的檢查會很乏味（而且可能會影響效能）。
 
-相反地，我們可以在專用 module 中建立一個新型別，並將驗證放在一個 function 中來建立該型別的實例，而不是在各處重複驗證。這樣一來，function 就可以安全地在其 signatures 中使用新類型，並自信地使用它們接收到的值。Listing 9-13 顯示了定義 `Guess` 型別的一種方式，它只會在 `new` function 收到 1 到 100 之間的值時建立 `Guess` 的實例。
+取而代之的是，我們可以在一個專用的模組中建立一個新的型別，並將驗證放在一個函式中來建立該型別的實例，而不是在各處重複驗證。這樣一來，函式就可以安全地在其簽名中使用這個新的型別，並自信地使用它們收到的值。列表 9-13 展示了一種定義 `Guess` 型別的方式，只有當 `new` 函式收到一個 1 到 100 之間的值時，才會建立一個 `Guess` 的實例。
 
 src/guessing_game.rs
 
@@ -636,18 +638,18 @@ impl Guess {
 }
 ```
 
-Listing 9-13: 一個只處理 1 到 100 之間的值的 `Guess` 型別
+列表 9-13：一個只會接受 1 到 100 之間的值的 `Guess` 型別
 
-首先，我們建立一個名為 `guessing_game` 的新 module。接下來，我們在該 module 中定義一個名為 `Guess` 的 struct，它有一個名為 `value` 的 field，用於存放 `i32`。這就是數字儲存的地方。
+首先，我們建立一個名為 `guessing_game` 的新模組。接下來，我們在該模組中定義一個名為 `Guess` 的 struct，它有一個名為 `value` 的欄位，用來存放一個 `i32`。數字將儲存在這裡。
 
-然後我們在 `Guess` 上實作一個名為 `new` 的 associated function，它會建立 `Guess` 值的實例。`new` function 被定義為有一個名為 `value` 的 parameter，其型別為 `i32`，並回傳一個 `Guess`。`new` function 主體中的程式碼會測試 `value`，以確保它介於 1 到 100 之間。如果 `value` 未通過此測試，我們就會發出 `panic!` 呼叫，這會提醒編寫呼叫端程式碼的 programmer，他們有一個需要修復的 bug，因為建立一個 `value` 超出此範圍的 `Guess` 將會違反 `Guess::new` 所依賴的 contract。`Guess::new` 可能會 panic 的條件應該在其 public-facing API documentation 中討論；我們將在 Chapter 14 中涵蓋你在 API documentation 中建立表示可能 `panic!` 的文件慣例。如果 `value` 通過測試，我們就會建立一個新的 `Guess`，將其 `value` field 設定為 `value` parameter，並回傳 `Guess`。
+然後我們在 `Guess` 上實作一個名為 `new` 的關聯函式，用來建立 `Guess` 值的實例。`new` 函式被定義為有一個名為 `value` 的 `i32` 型別參數，並回傳一個 `Guess`。`new` 函式主體中的程式碼測試 `value` 以確保它在 1 和 100 之間。如果 `value` 沒有通過這個測試，我們會呼叫 `panic!`，這會提醒正在編寫呼叫端程式碼的程式設計師，他們有一個需要修復的 bug，因為用超出此範圍的 `value` 建立 `Guess` 會違反 `Guess::new` 所依賴的合約。`Guess::new` 可能會 panic 的條件應該在其公開的 API 文件中討論；我們將在第 14 章介紹在您建立的 API 文件中標示 `panic!` 可能性的文件慣例。如果 `value` 通過了測試，我們就建立一個新的 `Guess`，其 `value` 欄位設定為 `value` 參數，並回傳這個 `Guess`。
 
-接下來，我們實作一個名為 `value` 的 method，它借用 `self`，沒有任何其他 parameters，並回傳一個 `i32`。這種 method 有時被稱為 _getter_，因為其目的是從其 fields 中獲取一些 data 並回傳。這個 public method 是必要的，因為 `Guess` struct 的 `value` field 是 private 的。`value` field 必須是 private 的這一點很重要，這樣使用 `Guess` struct 的程式碼就不允許直接設定 `value`：`guessing_game` module 外部的程式碼*必須*使用 `Guess::new` function 來建立 `Guess` 的實例，從而確保 `Guess` 不會有未經 `Guess::new` function 中條件檢查的 `value`。
+接下來，我們實作一個名為 `value` 的方法，它借用 `self`，沒有其他參數，並回傳一個 `i32`。這種方法有時被稱為 _getter_，因為它的目的是從其欄位中獲取一些資料並回傳。這個公開方法是必要的，因為 `Guess` struct 的 `value` 欄位是私有的。`value` 欄位是私有的很重要，這樣使用 `Guess` struct 的程式碼就不被允許直接設定 `value`：`guessing_game` 模組外的程式碼*必須*使用 `Guess::new` 函式來建立 `Guess` 的實例，從而確保沒有辦法讓 `Guess` 的 `value` 沒有經過 `Guess::new` 函式中的條件檢查。
 
-那麼，一個參數只接受或回傳介於 1 到 100 之間的數字的 function，可以在其 signature 中聲明它接受或回傳 `Guess` 而不是 `i32`，並且不需要在其主體中進行任何額外的檢查。
+一個參數或回傳值只在 1 到 100 之間的函式，可以在其簽名中聲明它接收或回傳一個 `Guess` 而不是 `i32`，並且不需要在其主體中做任何額外的檢查。
 
 ## 總結
 
-Rust 的錯誤處理功能旨在幫助你編寫更健壯的程式碼。`panic!` macro 表示你的程式處於無法處理的狀態，並讓你告知程序停止，而不是試圖使用無效或不正確的值繼續執行。`Result` enum 使用 Rust 的型別系統來表明操作可能會以你的程式碼可以復原的方式失敗。你可以使用 `Result` 來告訴呼叫你程式碼的程式碼，它也需要處理潛在的成功或失敗。在適當情況下使用 `panic!` 和 `Result` 將使你的程式碼在面對不可避免的問題時更加可靠。
+Rust 的錯誤處理功能旨在幫助你編寫更穩健的程式碼。`panic!` macro 表示你的程式處於無法處理的狀態，並讓你告訴程序停止，而不是試圖用無效或不正確的值繼續執行。`Result` enum 使用 Rust 的型別系統來表示操作可能會以你的程式碼可以復原的方式失敗。你可以使用 `Result` 來告訴呼叫你程式碼的程式碼，它也需要處理潛在的成功或失敗。在適當的情況下使用 `panic!` 和 `Result` 將使你的程式碼在面對不可避免的問題時更加可靠。
 
-既然你已經看到了 standard library 如何利用 generics 搭配 `Option` 和 `Result` enums 的有用方式，接下來我們將討論 generics 的運作方式以及如何在你的程式碼中使用它們。
+現在你已經看到了標準函式庫如何有效地將泛型與 `Option` 和 `Result` enum 結合使用，我們將討論泛型是如何工作的，以及你如何在你的程式碼中使用它們。
