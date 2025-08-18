@@ -67,7 +67,8 @@ async function translateFile({ name, download_url: url }: File) {
         }
 
         const data = await apiResponse.json();
-        const translation: string = data.choices[0].message.content;
+        const translation: string = data?.choices[0]?.message?.content;
+        if (translation) throw Error('Response is empty');
         const outputFile = `book/${name}`;
         await Deno.writeTextFile(outputFile, translation.trim());
         const end = Date.now();
