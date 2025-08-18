@@ -22,8 +22,8 @@ Your task is to translate provided markdown segments from "The Rust Programming 
 
 ### Rule C: Technical Terminology Preservation
 
-- **DO NOT** translate common programming concepts or Rust-specific keywords. Keep them in their original English form to maintain technical precision.
-- For example, keep general concepts like `stack`, `heap`, `runtime`, and `async`, as well as Rust-specific keywords like `ownership`, `borrowing`, `lifetime`, `crate`, `Cargo`, `slice`, `trait` and `macro`.
+- Do not translate common programming concepts or Rust-specific keywords. Keep them in their original English form to maintain technical precision.
+- For example, keep general concepts like `stack`, `heap`, `runtime`, and `async`, as well as Rust-specific keywords like `ownership`, `borrowing`, `lifetime`, `crate`, `Cargo`, `slice`, `trait`, and `macro`.
 
 ### Rule D: URL and Path Conversion
 
