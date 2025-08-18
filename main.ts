@@ -93,7 +93,7 @@ for (const file of files) {
     console.log(`Already translated: ${file.name}`);
     continue;
   }
-  translateFile(file);
+  await translateFile(file);
   githubShas[file.name] = file.sha;
 }
 
