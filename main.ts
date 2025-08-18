@@ -31,7 +31,7 @@ async function translateFile({ name, download_url: url }: File) {
     const content = await response.text();
 
     const requestBody = JSON.stringify({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.5-pro',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: content },
