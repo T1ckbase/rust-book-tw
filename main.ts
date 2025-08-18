@@ -31,7 +31,7 @@ async function translateFile({ name, download_url: url }: File) {
     const content = await response.text();
 
     const requestBody = JSON.stringify({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.5-pro',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: content },
@@ -53,9 +53,14 @@ async function translateFile({ name, download_url: url }: File) {
         );
 
         if (!apiResponse.ok) {
-          const responseBody = await apiResponse.text();
-          console.error(`API request failed with status ${apiResponse.status}. Response body:`);
-          console.error(responseBody);
+          console.error(`API request failed with status ${apiResponse.status}. Response:`);
+          try {
+            const responseBody = await apiResponse.json();
+            console.error(responseBody[0].error.message);
+          } catch {
+            const responseBody = await apiResponse.text();
+            console.error(responseBody);
+          }
           console.log('Retrying in 20 seconds...');
           await new Promise((resolve) => setTimeout(resolve, 20000));
           continue;
