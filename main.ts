@@ -36,6 +36,7 @@ async function translateFile({ name, download_url: url }: File) {
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user', content: content },
       ],
+      stream: false,
     });
 
     while (true) {
@@ -79,7 +80,7 @@ async function translateFile({ name, download_url: url }: File) {
         const end = Date.now();
         const seconds = ((end - start) / 1000).toFixed(2);
         console.log(`Translated: ${name} in ${seconds} seconds`);
-        await new Promise((resolve) => setTimeout(resolve, 10000));
+        await new Promise((resolve) => setTimeout(resolve, 15000));
         break;
       } catch (apiError) {
         console.error('API request failed:', apiError);
