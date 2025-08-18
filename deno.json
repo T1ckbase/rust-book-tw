@@ -16,7 +16,10 @@
     "useTabs": false
   },
   "lock": false,
-  "unstable": [
-    "raw-imports"
-  ]
+  "lint": {
+    "rules": {
+      "exclude": ["no-empty"]
+    }
+  },
+  "unstable": ["raw-imports"]
 }

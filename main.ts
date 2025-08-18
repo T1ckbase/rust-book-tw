@@ -58,8 +58,10 @@ async function translateFile({ name, download_url: url }: File) {
             const responseBody = await apiResponse.json();
             console.error(responseBody[0].error.message);
           } catch {
-            const responseBody = await apiResponse.text();
-            console.error(responseBody);
+            try {
+              const responseBody = await apiResponse.text();
+              console.error(responseBody);
+            } catch {}
           }
           console.log('Retrying in 20 seconds...');
           await new Promise((resolve) => setTimeout(resolve, 20000));
@@ -68,7 +70,10 @@ async function translateFile({ name, download_url: url }: File) {
 
         const data = await apiResponse.json();
         const translation: string = data?.choices[0]?.message?.content;
-        if (translation) throw Error('Response is empty');
+        if (translation) {
+          console.dir(data, { depth: null });
+          throw Error('Response is empty');
+        }
         const outputFile = `book/${name}`;
         await Deno.writeTextFile(outputFile, translation.trim());
         const end = Date.now();
